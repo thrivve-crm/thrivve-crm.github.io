@@ -77,6 +77,9 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <nav id="nav">
       <button class="tab on" data-v="queue">Today</button>
       <button class="tab" data-v="lead">Customer / Log call</button>
+      <button class="tab admin" data-v="perf">Performance</button>
+      <button class="tab admin" data-v="quality">Quality</button>
+      <button class="tab admin" data-v="review">Review list</button>
       <button class="tab admin" data-v="followups">Follow-ups</button>
       <button class="tab admin" data-v="bookings">Booking attribution</button>
       <button class="tab admin" data-v="imports">Uploads</button>
@@ -131,6 +134,52 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
           <h2>Customer history</h2>
           <div id="l-tl" class="small muted">—</div>
         </div>
+      </div>
+    </section>
+
+    <!-- PERFORMANCE (admin) -->
+    <section id="v-perf" class="hide">
+      <div class="card">
+        <h2>Agent performance</h2>
+        <div class="row"><div class="f"><label>From</label><input type="date" id="pf-from"></div>
+          <div class="f"><label>To</label><input type="date" id="pf-to"></div><button class="btn" id="pf-go">Calculate</button></div>
+        <p class="small muted">Four separate measures — no weights and no overall score. "Insufficient data" means a required source is missing for that agent and period.</p>
+        <div id="pf-banner"></div>
+        <div id="pf-out"></div>
+      </div>
+      <div class="card"><h3 style="margin-top:0">Booking credit (attributed shares)</h3><div id="pf-credit"></div></div>
+    </section>
+
+    <!-- QUALITY (admin) -->
+    <section id="v-quality" class="hide">
+      <div class="card">
+        <h2>Call quality sample</h2>
+        <div class="row"><div class="f" style="max-width:220px"><label>Day</label><input type="date" id="qa-day"></div>
+          <button class="btn ghost" id="qa-show">Show</button><button class="btn" id="qa-draw">Draw sample for this day</button></div>
+        <p class="small muted">3 random answered calls per agent, each with at least 30 seconds of talk time. Once drawn, the sample for a day never changes. Unreviewed calls stay pending and do not count as zero.</p>
+        <div id="qa-list"></div>
+      </div>
+      <div class="card hide" id="qa-form">
+        <h2 id="qa-title"></h2>
+        <div id="qa-call" class="small muted" style="margin-bottom:10px"></div>
+        <div id="qa-items"></div>
+        <div class="row" style="margin-top:10px">
+          <div class="f" style="max-width:260px"><label>CRM log for this call</label><select id="qa-crm"><option value="">Not checked</option><option value="true">Correct</option><option value="false">Wrong / missing</option></select></div>
+          <div class="f"><label>Reviewer comment</label><input id="qa-comment"></div></div>
+        <div class="row" style="margin-top:12px"><button class="btn" id="qa-save">Save review</button><span id="qa-err" class="err small"></span></div>
+      </div>
+    </section>
+
+    <!-- REVIEW LIST (admin) -->
+    <section id="v-review" class="hide">
+      <div class="card">
+        <h2>Review list</h2>
+        <div class="row"><div class="f"><label>From</label><input type="date" id="rv-from"></div>
+          <div class="f"><label>To</label><input type="date" id="rv-to"></div>
+          <div class="f"><label>Show</label><select id="rv-filter"><option value="open">Not decided</option><option value="all">All</option></select></div>
+          <button class="btn" id="rv-go">Show</button></div>
+        <p class="small muted">Separate from the four measures. Each item shows the rule and the evidence. Nothing here deducts points automatically — the reviewer decides.</p>
+        <div id="rv-out"></div>
       </div>
     </section>
 
@@ -220,7 +269,7 @@ async function boot(){
   $('#q-agent').innerHTML = AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
   $('#l-car').innerHTML = '<option value="">—</option>' + (LOOK.car_model||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
   const t = todayRiyadh();
-  $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
+  $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#pf-from').value = addDays(t, -30); $('#pf-to').value = addDays(t, -1); $('#rv-from').value = addDays(t, -14); $('#rv-to').value = t; $('#qa-day').value = addDays(t, -1); $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
   show(location.hash.slice(1) || 'queue');
 }
 function showLogin(msg){
@@ -260,11 +309,11 @@ $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''
 
 // ---------------- nav ----------------
 function show(v){
-  if (!$('#v-' + v) || (ME.role !== 'admin' && ['followups','bookings','imports'].includes(v))) v = 'queue';
+  if (!$('#v-' + v) || (ME.role !== 'admin' && ['perf','quality','review','followups','bookings','imports'].includes(v))) v = 'queue';
   $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
   $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   location.hash = v;
-  ({queue: loadQueue, followups: loadAdherence, bookings: loadBookings, imports: loadImports})[v]?.();
+  ({queue: loadQueue, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports})[v]?.();
 }
 $('#nav').onclick = e => { if (e.target.dataset.v) show(e.target.dataset.v); };
 
@@ -449,7 +498,7 @@ async function importLegacy(f, out){
   out.innerHTML = 'Reading the workbook…';
   const wb = XLSX.read(await f.arrayBuffer(), { cellDates: false, cellNF: true });
   const T = n => sheetRows(wb, n);
-  const leads = T('Leads'), audit = T('Audit_Log'), comments = T('Lead_Comments'), sched = T('Agent_Schedule'), wa = T('WhatsApp_Duty');
+  const leads = T('Leads'), audit = T('Audit_Log'), comments = T('Lead_Comments'), sched = T('Agent_Schedule'), wa = T('WhatsApp_Duty'), attr = T('Booking_Attribution');
   if (!leads || !audit) return out.innerHTML = '<p class="err">The file must contain the Leads and Audit_Log tabs.</p>';
   const res = {};
   const run = async (label, fn, rows, size) => { const agg = {};
@@ -464,6 +513,8 @@ async function importLegacy(f, out){
     { const { data, error } = await sb.rpc('build_legacy_follow_ups'); if (error) throw error; res['Follow-ups'] = data; }
     if (comments) await run('Comments', 'import_legacy_comments', comments, 2000);
     if (sched) { const { data, error } = await sb.rpc('import_legacy_schedule', { p_schedule: sched, p_wa: wa || [] }); if (error) throw error; res['Schedule'] = data; }
+    if (attr) { out.innerHTML = 'Booking attribution…'; const { data, error } = await sb.rpc('import_legacy_attribution', { p_rows: attr }); if (error) throw error; res['Booking attribution'] = data;
+      if (data.booking_not_found) res['Note'] = data.booking_not_found + ' attributed bookings are not in the system yet — upload the Metabase bookings file, then upload this workbook again (nothing will be duplicated).'; }
   } catch (e) { return out.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
   out.innerHTML = '<h3>Imported ✓</h3><pre>' + esc(JSON.stringify(res, null, 1)) + '</pre>';
 }
@@ -502,6 +553,102 @@ async function loadImports(){
     (h||[]).map(r => `<tr><td class="small">${fmtDT(r.imported_at)}</td><td>${esc(r.source)}</td><td class="small">${esc(r.file_name||'')}</td><td>${r.rows_total}</td><td>${r.inserted}</td><td>${r.updated}</td><td>${r.unchanged}</td><td>${r.rejected}</td></tr>`).join('')}</table>`;
   $('#i-unm').innerHTML = (u||[]).length ? `<table><tr><th>Name in Maqsam</th><th>Rows</th></tr>${u.map(r => `<tr><td>${esc(r.alias)}</td><td>${r.rows_seen}</td></tr>`).join('')}</table>` : '<p class="muted">All names are recognized.</p>';
 }
+
+// ---------------- performance (admin) ----------------
+const pct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+const nm = id => AGENTS.find(a => a.id === id)?.name || '—';
+async function loadPerf(){
+  $('#pf-out').innerHTML = 'Calculating…';
+  const { data, error } = await sb.rpc('performance', { p_from: $('#pf-from').value, p_to: $('#pf-to').value });
+  if (error) return $('#pf-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const by = (arr) => Object.fromEntries((arr||[]).map(r => [r.agent_id, r]));
+  const S = by(data.shift), C = by(data.conversion), F = by(data.followups), Q = by(data.quality);
+  const u = data.unattributed || {total:0, unattributed:0};
+  $('#pf-banner').innerHTML = u.unattributed ? `<p class="small"><span class="pill p-amber">Partial</span> ${u.unattributed} of ${u.total} bookings in this period are not attributed yet — conversion and booking credit will rise as they are attributed.</p>` : '';
+  const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active).map(a => a.id);
+  const shiftCell = s => !s ? '<span class="muted">Insufficient data — no schedule in period</span>'
+    : !s.days_measured ? `<span class="muted">Insufficient data — ${s.days_insufficient} day(s) missing a source${s.days_whatsapp ? ', ' + s.days_whatsapp + ' WhatsApp day(s)' : ''}</span>`
+    : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)</div>
+       <div class="small">Lost ${s.lost_min} min · late ${s.late_min} · early leave ${s.early_min}</div>
+       <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${s.days_whatsapp ? ' · ' + s.days_whatsapp + ' WhatsApp day(s) not measured' : ''}${s.days_insufficient ? ' · ' + s.days_insufficient + ' day(s) insufficient data' : ''}</div>`;
+  const convCell = c => !c ? '—' : c.customers === 0 ? `<span class="muted">${esc(c.display)}</span>`
+    : `<b>${pct(c.conversion)}</b><div class="small muted">${esc(c.display)} customers</div>${c.customers_pending_window ? `<div class="small muted">${c.customers_pending_window} more still inside the window</div>` : ''}`;
+  const fuCell = f => !f ? '—' : f.adherence == null ? '<span class="muted">N/A — no follow-ups due</span>'
+    : `<b>${pct(f.adherence)}</b><div class="small muted">${esc(f.display)} on time</div><div class="small">${f.missed} missed${f.pending ? ' · ' + f.pending + ' pending' : ''}${f.covered_by_other ? ' · ' + f.covered_by_other + ' covered by another' : ''}</div>`;
+  const qCell = q => !q || !q.sampled ? '<span class="muted">No sample drawn</span>'
+    : `<b>${q.avg_quality ?? '—'}</b><span class="small muted"> / 5 avg</span> · CRM <b>${pct(q.crm_accuracy)}</b>
+       <div class="small muted">${q.reviewed} reviewed of ${q.sampled}${q.pending ? ' · ' + q.pending + ' pending' : ''} · CRM ${q.crm_correct}/${q.crm_checked}</div>`;
+  $('#pf-out').innerHTML = `<table><thead><tr><th>Agent</th><th>1 · Shift adherence</th><th>2 · Conversion to valid booking</th><th>3 · Follow-up adherence</th><th>4 · Call quality & CRM accuracy</th></tr></thead><tbody>${
+    ids.map(id => `<tr><td><b>${esc(nm(id))}</b></td><td>${shiftCell(S[id])}</td><td>${convCell(C[id])}</td><td>${fuCell(F[id])}</td><td>${qCell(Q[id])}</td></tr>`).join('')}</tbody></table>`;
+  const cr = data.credit || [];
+  $('#pf-credit').innerHTML = cr.length ? `<table><thead><tr><th>Agent</th><th>Product</th><th>Open</th><th>Delivered</th><th>Failed at supplier</th><th>Rejected at review</th><th>Under review</th><th>Without a call on record</th></tr></thead><tbody>${
+    cr.filter(r => ids.includes(r.agent_id)).map(r => `<tr><td>${esc(nm(r.agent_id))}</td><td class="small">${esc(r.product||'')}</td><td>${r.open_share ?? 0}</td><td>${r.delivered_share ?? 0}</td><td>${r.failed_share ?? 0}</td><td>${r.rejected_review_share ?? 0}</td><td>${r.pending_review_share ?? 0}</td><td>${r.without_call_evidence ?? 0}</td></tr>`).join('')}</tbody></table>
+    <p class="small muted">A rejection at review or a supplier failure is shown for context and is not counted against the agent.</p>` : '<p class="muted">No attributed bookings in this period.</p>';
+}
+$('#pf-go').onclick = loadPerf;
+
+// ---------------- quality (admin) ----------------
+const QI = [['opening','Opening'],['needs','Understanding the need'],['offer','Explaining the offer'],['objections','Handling objections'],['closing','Closing / agreeing the next step']];
+let QS = null;
+async function loadQuality(){
+  const day = $('#qa-day').value;
+  const { data, error } = await sb.from('quality_samples').select('id,agent_id,call_id,sample_date,quality_reviews(*),calls(started_at,handling_sec,customer_phone,recording_url,summary)').eq('sample_date', day).order('agent_id');
+  if (error) return $('#qa-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  $('#qa-list').innerHTML = data.length ? `<table><thead><tr><th>Agent</th><th>Call</th><th>Time</th><th>Talk</th><th>Recording</th><th>Review</th></tr></thead><tbody>${
+    data.map(s => { const r = Array.isArray(s.quality_reviews) ? s.quality_reviews[0] : s.quality_reviews; return `<tr class="click" data-id="${s.id}"><td>${esc(nm(s.agent_id))}</td><td class="small">#${s.call_id}</td><td class="small">${fmtDT(s.calls?.started_at)}</td><td class="small">${Math.round((s.calls?.handling_sec||0)/60*10)/10} min</td>
+      <td class="small">${s.calls?.recording_url ? `<a href="${esc(s.calls.recording_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Listen</a>` : '—'}</td>
+      <td>${r ? pill(['Reviewed','p-green']) : pill(['Pending','p-amber'])}</td></tr>`; }).join('')}</tbody></table>` : '<p class="muted">No sample for this day yet. Press "Draw sample for this day".</p>';
+  QS = data;
+}
+$('#qa-show').onclick = loadQuality; $('#qa-day').onchange = loadQuality;
+$('#qa-draw').onclick = async () => { const { data, error } = await sb.rpc('draw_quality_sample', { p_date: $('#qa-day').value });
+  if (error) return toast(error.message); toast(data ? `${data} calls drawn` : 'Sample already drawn for this day (it does not change)'); loadQuality(); };
+$('#qa-list').onclick = e => {
+  const tr = e.target.closest('tr[data-id]'); if (!tr) return; const s = QS.find(x => x.id == tr.dataset.id); if (!s) return;
+  const r = (Array.isArray(s.quality_reviews) ? s.quality_reviews[0] : s.quality_reviews) || {};
+  $('#qa-form').classList.remove('hide'); $('#qa-form').dataset.id = s.id; $('#qa-err').textContent = '';
+  $('#qa-title').textContent = `Review — ${nm(s.agent_id)} · call #${s.call_id}`;
+  $('#qa-call').innerHTML = `${fmtDT(s.calls?.started_at)} · customer <span class="ltr">${esc(s.calls?.customer_phone||'')}</span>${s.calls?.recording_url ? ` · <a href="${esc(s.calls.recording_url)}" target="_blank" rel="noopener">Listen to recording</a>` : ''}${s.calls?.summary ? '<br>' + esc(s.calls.summary) : ''}`;
+  $('#qa-items').innerHTML = QI.map(([k,l]) => `<div class="row" style="margin-bottom:6px;align-items:center"><div style="min-width:220px">${l}</div>
+    <div class="seg" data-k="${k}">${[1,2,3,4,5].map(n => `<button data-v="${n}" class="${r[k]==n?'on':''}">${n}</button>`).join('')}<button data-v="na" class="${r.na_reasons?.[k]?'on':''}">N/A</button></div>
+    <input class="na-reason ${r.na_reasons?.[k]?'':'hide'}" data-k="${k}" placeholder="Why N/A?" style="max-width:260px" value="${esc(r.na_reasons?.[k]||'')}"></div>`).join('');
+  $('#qa-crm').value = r.crm_correct == null ? '' : String(r.crm_correct); $('#qa-comment').value = r.comment || '';
+  $('#qa-form').scrollIntoView({behavior:'smooth'});
+};
+$('#qa-items').onclick = e => { const b = e.target.closest('.seg button'); if (!b) return; const g = b.parentElement;
+  g.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  $(`#qa-items .na-reason[data-k="${g.dataset.k}"]`).classList.toggle('hide', b.dataset.v !== 'na'); };
+$('#qa-save').onclick = async () => {
+  const scores = {}, na = {};
+  for (const [k,l] of QI) { const on = $(`#qa-items .seg[data-k="${k}"] button.on`);
+    if (!on) return $('#qa-err').textContent = `Rate "${l}" or mark it N/A.`;
+    if (on.dataset.v === 'na') { const why = $(`#qa-items .na-reason[data-k="${k}"]`).value.trim(); if (!why) return $('#qa-err').textContent = `Give a reason for N/A on "${l}".`; na[k] = why; }
+    else scores[k] = Number(on.dataset.v); }
+  const crm = $('#qa-crm').value === '' ? null : $('#qa-crm').value === 'true';
+  const { error } = await sb.rpc('save_quality_review', { p_sample: Number($('#qa-form').dataset.id), p_scores: scores, p_na: na, p_crm_correct: crm, p_comment: $('#qa-comment').value || null });
+  if (error) return $('#qa-err').textContent = error.message;
+  toast('Review saved ✓'); $('#qa-form').classList.add('hide'); loadQuality();
+};
+
+// ---------------- review list (admin) ----------------
+let RV = [];
+async function loadReview(){
+  $('#rv-out').innerHTML = 'Loading…';
+  const { data, error } = await sb.rpc('review_flags', { p_from: $('#rv-from').value, p_to: $('#rv-to').value });
+  if (error) return $('#rv-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  RV = data; const rows = $('#rv-filter').value === 'open' ? data.filter(r => !r.decision) : data;
+  const K = {data_error:['Data error','p-gray'], pattern:['Needs review','p-amber']}, D = {ok:['OK','p-green'], issue:['Issue','p-red'], data_fixed:['Data fixed','p-blue']};
+  $('#rv-out').innerHTML = rows.length ? `<table><thead><tr><th>Type</th><th>Rule</th><th>Agent</th><th>Reference</th><th>When</th><th>#</th><th>Evidence</th><th>Decision</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${pill(K[r.kind]||[r.kind,'p-gray'])}</td><td class="small">${esc(r.rule)}</td><td class="small">${esc(r.agent_id ? nm(r.agent_id) : '—')}</td><td class="small ltr">${esc(r.ref||'')}</td>
+      <td class="small">${fmtDT(r.at)}</td><td>${r.occurrences}</td><td class="small muted" style="max-width:280px">${esc(r.evidence||'')}</td>
+      <td class="small">${r.decision ? pill(D[r.decision]) + (r.decision_comment ? '<div class="muted">' + esc(r.decision_comment) + '</div>' : '') : ''}
+        <div class="row" style="gap:4px;margin-top:4px">${['ok','issue','data_fixed'].map(d => `<button class="btn ghost" style="padding:3px 8px" data-k="${esc(r.flag_key)}" data-d="${d}">${D[d][0]}</button>`).join('')}</div></td></tr>`).join('')}</tbody></table>`
+    : '<p class="muted">Nothing to review.</p>';
+}
+$('#rv-go').onclick = loadReview; $('#rv-filter').onchange = loadReview;
+$('#rv-out').onclick = async e => { const b = e.target.closest('button[data-d]'); if (!b) return;
+  const c = prompt('Comment (optional):') ?? ''; const { error } = await sb.rpc('decide_flag', { p_key: b.dataset.k, p_decision: b.dataset.d, p_comment: c || null });
+  if (error) return toast(error.message); toast('Saved ✓'); loadReview(); };
 
 boot();
 </script>
