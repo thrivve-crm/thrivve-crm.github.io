@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Thrivve CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#667085; --line:#e4e7ec;
+  --brand:#0f6e56; --brand-ink:#fff; --brand-soft:#e6f3ef;
+  --red:#c0362c; --red-soft:#fdecea; --amber:#b25e09; --amber-soft:#fff4e5; --blue:#1d5fbf; --blue-soft:#eaf1fd;
+  --radius:10px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+button,input,select,textarea{font:inherit}
+.top{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;padding:10px 16px}
+.top b{font-weight:700;color:var(--brand)} .top nav{display:flex;gap:4px;flex-wrap:wrap} .top .sp{flex:1}
+.tab{border:0;background:none;padding:7px 12px;border-radius:8px;cursor:pointer;color:var(--muted)}
+.tab.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 12px} h3{font-size:15px;margin:16px 0 8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.f{display:flex;flex-direction:column;gap:4px;min-width:150px;flex:1} .f label{font-size:13px;color:var(--muted)}
+input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:70px}
+.btn{border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:var(--brand);color:var(--brand-ink);font-weight:600}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)} .btn:disabled{opacity:.5;cursor:default}
+.seg{display:flex;flex-wrap:wrap;gap:6px} .seg button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:13px} tr.click{cursor:pointer} tr.click:hover{background:#fafbfc}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.p-red{background:var(--red-soft);color:var(--red)} .p-amber{background:var(--amber-soft);color:var(--amber)}
+.p-green{background:var(--brand-soft);color:var(--brand)} .p-blue{background:var(--blue-soft);color:var(--blue)} .p-gray{background:#eef0f3;color:#475467}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.kpi .n{font-size:24px;font-weight:700} .kpi .l{color:var(--muted);font-size:13px}
+.muted{color:var(--muted)} .small{font-size:13px} .ltr{direction:ltr;unicode-bidi:embed}
+.tl{border-left:2px solid var(--line);padding-left:12px;margin-left:4px}
+.tl .it{margin-bottom:10px} .tl .it .h{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:800px){.grid2{grid-template-columns:1fr}}
+.toast{position:fixed;bottom:16px;left:16px;right:16px;max-width:520px;margin:auto;background:#14181f;color:#fff;padding:12px 16px;border-radius:10px;display:none;z-index:20}
+.err{color:var(--red)} .hide{display:none!important}
+.login{max-width:380px;margin:12vh auto}
+pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-radius:8px;max-height:260px;overflow:auto;direction:ltr;text-align:left}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<!-- ============ LOGIN ============ -->
+<section id="v-login" class="login hide">
+  <div class="card">
+    <h2>Thrivve CRM — Sign in</h2>
+    <div id="g-btn" style="margin-bottom:14px"></div>
+    <div id="pw-box">
+    <div class="f"><label>Work email</label><input id="lg-email" type="email" class="ltr" placeholder="name@thrivve.me" autocomplete="username"></div>
+    <div class="f" style="margin-top:10px"><label>Password</label><input id="lg-pass" type="password" class="ltr" autocomplete="current-password"></div>
+    <div class="row" style="margin-top:14px"><button class="btn" id="lg-go">Sign in</button>
+      <button class="btn ghost" id="lg-reset">Forgot password / first time</button></div>
+    </div>
+    <p id="lg-msg" class="small muted"></p>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hide">
+  <div class="top">
+    <b>Thrivve CRM</b>
+    <nav id="nav">
+      <button class="tab on" data-v="queue">Today</button>
+      <button class="tab" data-v="lead">Customer / Log call</button>
+      <button class="tab admin" data-v="followups">Follow-ups</button>
+      <button class="tab admin" data-v="bookings">Booking attribution</button>
+      <button class="tab admin" data-v="imports">Uploads</button>
+    </nav>
+    <span class="sp"></span>
+    <span id="me" class="small muted"></span>
+    <button class="btn ghost" id="logout">Sign out</button>
+  </div>
+
+  <main>
+    <!-- QUEUE -->
+    <section id="v-queue">
+      <div class="row" style="margin-bottom:12px">
+        <div class="f admin" style="max-width:260px"><label>Agent</label><select id="q-agent"></select></div>
+        <div class="f" style="max-width:320px"><label>Customer phone</label><input id="q-phone" class="ltr" placeholder="05xxxxxxxx"></div>
+        <button class="btn" id="q-open">Open</button>
+      </div>
+      <div class="kpis" id="q-kpis"></div>
+      <div class="card" style="margin-top:14px"><div id="q-list"></div></div>
+    </section>
+
+    <!-- LEAD -->
+    <section id="v-lead" class="hide">
+      <div class="row" style="margin-bottom:12px">
+        <div class="f" style="max-width:320px"><label>Customer phone</label><input id="l-phone" class="ltr" placeholder="05xxxxxxxx"></div>
+        <button class="btn" id="l-load">Show</button>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h2>Log a call</h2>
+          <div id="l-head" class="small muted" style="margin-bottom:10px">Type the phone number and press Show.</div>
+          <div class="f"><label>Contact type</label>
+            <div class="seg" id="l-kind"><button data-v="call" class="on">Call</button><button data-v="whatsapp">WhatsApp</button><button data-v="note">Note only</button></div></div>
+          <div class="f" style="margin-top:10px"><label>Outcome</label>
+            <div class="seg" id="l-outcome">
+              <button data-v="interested">Interested</button><button data-v="call_back">Call back later</button>
+              <button data-v="no_answer">No answer</button><button data-v="not_interested">Not interested</button>
+              <button data-v="disqualified">Disqualified</button><button data-v="booked">Booked</button>
+              <button data-v="wrong_number">Wrong number</button><button data-v="other">Other</button></div></div>
+          <div class="row" style="margin-top:10px">
+            <div class="f" id="l-reason-w"><label>Reason</label><select id="l-reason"></select></div>
+            <div class="f" id="l-next-w"><label>Next follow-up date</label><input id="l-next" type="date"></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="f"><label>Car</label><select id="l-car"></select></div>
+            <div class="f"><label>Customer name</label><input id="l-name"></div>
+          </div>
+          <div class="f" style="margin-top:10px"><label>Notes</label><textarea id="l-note"></textarea></div>
+          <div class="row" style="margin-top:12px"><button class="btn" id="l-save">Save</button><span id="l-err" class="err small"></span></div>
+        </div>
+        <div class="card">
+          <h2>Customer history</h2>
+          <div id="l-tl" class="small muted">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOLLOW-UPS (admin) -->
+    <section id="v-followups" class="hide">
+      <div class="card">
+        <h2>Follow-up adherence</h2>
+        <div class="row"><div class="f"><label>From (due date)</label><input type="date" id="fa-from"></div>
+          <div class="f"><label>To</label><input type="date" id="fa-to"></div><button class="btn" id="fa-go">Calculate</button></div>
+        <p class="small muted">A follow-up is <b>on time</b> if its owner made a Maqsam call or logged a call/WhatsApp from the due date through the next 2 working days, even if the customer did not answer. Days off and holidays are skipped. Pending and awaiting-data follow-ups are not counted.</p>
+        <div id="fa-out"></div>
+      </div>
+    </section>
+
+    <!-- BOOKINGS ATTRIBUTION (admin) -->
+    <section id="v-bookings" class="hide">
+      <div class="card">
+        <h2>Booking attribution</h2>
+        <div class="row">
+          <div class="f"><label>From</label><input type="date" id="b-from"></div><div class="f"><label>To</label><input type="date" id="b-to"></div>
+          <div class="f"><label>Show</label><select id="b-filter"><option value="un">Unattributed</option><option value="all">All</option></select></div>
+          <button class="btn" id="b-go">Show</button></div>
+        <div id="b-sum" class="kpis" style="margin-top:12px"></div>
+        <div id="b-list" style="margin-top:12px"></div>
+      </div>
+      <div class="card hide" id="b-edit">
+        <h2 id="b-title"></h2>
+        <div id="b-sugg" class="small"></div>
+        <h3>Shares (must total 100%)</h3>
+        <div id="b-rows"></div>
+        <div class="row" style="margin-top:10px"><button class="btn ghost" id="b-add">+ Agent</button><button class="btn" id="b-save">Save attribution</button><span id="b-err" class="err small"></span></div>
+      </div>
+    </section>
+
+    <!-- IMPORTS (admin) -->
+    <section id="v-imports" class="hide">
+      <div class="card">
+        <h2>Uploads</h2>
+        <p class="small muted">Uploading the same file again never duplicates anything. Bookings: an older file cannot move a booking back to an earlier status unless you tick "Allow".</p>
+        <div class="row">
+          <div class="f"><label>Type</label><select id="i-src">
+            <option value="maqsam_calls">Maqsam — Calls export</option>
+            <option value="maqsam_states">Maqsam — Agent State Activity</option>
+            <option value="metabase_bookings">Metabase — Booking Status Breakdown</option>
+            <option value="legacy_crm">Old CRM — full sheet export (.xlsx)</option></select></div>
+          <div class="f"><label>File</label><input type="file" id="i-file" accept=".csv,text/csv,.xlsx"></div>
+          <label class="small"><input type="checkbox" id="i-back" style="width:auto"> Allow moving back to an older status</label>
+          <button class="btn" id="i-go">Upload</button></div>
+        <div id="i-out" style="margin-top:12px"></div>
+      </div>
+      <div class="card"><h2>Recent uploads</h2><div id="i-hist"></div></div>
+      <div class="card"><h2>Unrecognized Maqsam names</h2><div id="i-unm"></div></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const CFG = { googleClientId: '955510983368-t5e645d2limmtbcg7c5sggkkcat9c8ag.apps.googleusercontent.com', url: 'https://plghwoslyncrwjtkidyp.supabase.co', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZ2h3b3NseW5jcndqdGtpZHlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyMjAwMTYsImV4cCI6MjEwMjc5NjAxNn0.JkFWF3W3EFb-ofezwaEtnnUEEDs43w3WT2j2Y_4bPo8' }; // public anon key — data is protected by row-level security
+const sb = supabase.createClient(CFG.url, CFG.key, { db: { schema: 'app' } });
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDT = t => t ? new Date(t).toLocaleString('en-GB', {timeZone:'Asia/Riyadh', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+const fmtD = d => d ? new Date(d + (String(d).length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-GB', {day:'2-digit', month:'short'}) : '—';
+const todayRiyadh = () => new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Riyadh'});
+const addDays = (d, n) => { const x = new Date(d + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0,10); };
+function toast(m){ const t=$('#toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.display='none',3500); }
+const OUT = {interested:'Interested',call_back:'Call back later',no_answer:'No answer',not_interested:'Not interested',disqualified:'Disqualified',booked:'Booked',wrong_number:'Wrong number',other:'Other'};
+const LST = {new:['New','p-blue'],contacted:['Contacted','p-gray'],no_answer:['No answer','p-gray'],follow_up:['Follow-up','p-amber'],won:['Won','p-green'],lost:['Lost','p-red'],disqualified:['Disqualified','p-red']};
+const FUS = {done_on_time:['On time','p-green'],missed:['Missed','p-red'],pending:['Pending','p-amber'],awaiting_data:['Awaiting data','p-gray'],covered_by_other:['Covered by another agent','p-blue'],cancelled_before_due:['Cancelled before due','p-gray']};
+const pill = ([t,c]) => `<span class="pill ${c}">${esc(t)}</span>`;
+let ME = null, AGENTS = [], LOOK = {};
+
+// ---------------- auth ----------------
+async function boot(){
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const { data, error } = await sb.rpc('whoami');
+  if (error || !data) { await sb.auth.signOut(); return showLogin('This email is not registered as an agent. Contact your admin.'); }
+  ME = data; $('#me').textContent = ME.name;
+  $('#v-login').classList.add('hide'); $('#app').classList.remove('hide');
+  $$('.admin').forEach(e => e.classList.toggle('hide', ME.role !== 'admin'));
+  const [ag, lk] = await Promise.all([
+    sb.from('agents').select('id,name,email,role,active,in_performance').order('name'),
+    sb.from('lookup_options').select('*').eq('active', true).order('sort')]);
+  AGENTS = ag.data || [];
+  (lk.data || []).forEach(o => (LOOK[o.list] ||= []).push(o));
+  $('#q-agent').innerHTML = AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  $('#l-car').innerHTML = '<option value="">—</option>' + (LOOK.car_model||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
+  const t = todayRiyadh();
+  $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
+  show(location.hash.slice(1) || 'queue');
+}
+function showLogin(msg){
+  $('#app').classList.add('hide'); $('#v-login').classList.remove('hide'); $('#lg-msg').textContent = msg || '';
+  if (CFG.googleClientId) {
+    $('#pw-box').classList.add('hide');
+    const go = () => {
+      google.accounts.id.initialize({ client_id: CFG.googleClientId, hd: 'thrivve.me', ux_mode: 'popup',
+        callback: async (r) => {
+          const { error } = await sb.auth.signInWithIdToken({ provider: 'google', token: r.credential });
+          if (error) return $('#lg-msg').textContent = 'Sign-in failed: ' + error.message;
+          boot();
+        } });
+      google.accounts.id.renderButton($('#g-btn'), { theme: 'outline', size: 'large', text: 'signin_with', locale: 'en', width: 300 });
+    };
+    if (window.google?.accounts?.id) go();
+    else { const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.onload = go; document.head.appendChild(sc); }
+  }
+}
+$('#lg-go').onclick = async () => {
+  const { error } = await sb.auth.signInWithPassword({ email: $('#lg-email').value.trim().toLowerCase(), password: $('#lg-pass').value });
+  if (error) return $('#lg-msg').textContent = 'Wrong email or password.';
+  boot();
+};
+$('#lg-reset').onclick = async () => {
+  const email = $('#lg-email').value.trim().toLowerCase(); if (!email) return $('#lg-msg').textContent = 'Type your email first.';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  $('#lg-msg').textContent = error ? error.message : 'We sent you an email link to set your password.';
+};
+sb.auth.onAuthStateChange(async (ev) => {
+  if (ev === 'PASSWORD_RECOVERY') {
+    const p = prompt('Type a new password (at least 8 characters):');
+    if (p) { const { error } = await sb.auth.updateUser({ password: p }); toast(error ? error.message : 'Password changed.'); boot(); }
+  }
+});
+$('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''; showLogin(); };
+
+// ---------------- nav ----------------
+function show(v){
+  if (!$('#v-' + v) || (ME.role !== 'admin' && ['followups','bookings','imports'].includes(v))) v = 'queue';
+  $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
+  $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  location.hash = v;
+  ({queue: loadQueue, followups: loadAdherence, bookings: loadBookings, imports: loadImports})[v]?.();
+}
+$('#nav').onclick = e => { if (e.target.dataset.v) show(e.target.dataset.v); };
+
+// ---------------- queue ----------------
+async function loadQueue(){
+  const agent = ME.role === 'admin' ? $('#q-agent').value : null;
+  const { data, error } = await sb.rpc('my_queue', { p_agent: agent });
+  if (error) return $('#q-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const order = {overdue:0, today:1, new:2, upcoming:3};
+  data.sort((a,b) => order[a.bucket]-order[b.bucket] || String(a.due_date).localeCompare(String(b.due_date)));
+  const c = k => data.filter(r => r.bucket === k).length;
+  $('#q-kpis').innerHTML = [['overdue','Overdue','p-red'],['today','Due today','p-amber'],['new','New leads','p-blue'],['upcoming','Upcoming','p-gray']]
+    .map(([k,l]) => `<div class="kpi"><div class="n">${c(k)}</div><div class="l">${l}</div></div>`).join('');
+  const B = {overdue:['Overdue','p-red'], today:['Today','p-amber'], new:['New','p-blue'], upcoming:['Upcoming','p-gray']};
+  $('#q-list').innerHTML = data.length ? `<table><thead><tr><th></th><th>Phone</th><th>Customer</th><th>Follow-up</th><th>Car</th><th>Last call</th><th>Last note</th></tr></thead><tbody>${
+    data.map(r => `<tr class="click" data-p="${esc(r.phone)}"><td>${pill(B[r.bucket])}</td><td class="ltr">${esc(r.phone)}</td><td>${esc(r.customer_name||'')}</td>
+      <td>${fmtD(r.due_date)}</td><td>${esc(r.car_interested||'')}</td><td class="small">${fmtDT(r.last_call_at)}</td><td class="small muted">${esc((r.last_note||'').slice(0,60))}</td></tr>`).join('')
+  }</tbody></table>` : '<p class="muted">Nothing in the queue.</p>';
+}
+$('#q-agent').onchange = loadQueue;
+$('#q-list').onclick = e => { const tr = e.target.closest('tr[data-p]'); if (tr) openLead(tr.dataset.p); };
+$('#q-open').onclick = () => openLead($('#q-phone').value);
+function openLead(p){ show('lead'); $('#l-phone').value = p; loadLead(); }
+
+// ---------------- lead + log ----------------
+let KIND = 'call', OUTCOME = null;
+function seg(id, cb){ $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; $$(id + ' button').forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset.v); }; }
+seg('#l-kind', v => KIND = v);
+seg('#l-outcome', v => { OUTCOME = v; formRules(); });
+function formRules(){
+  const needR = ['not_interested','disqualified'].includes(OUTCOME), needN = ['interested','call_back'].includes(OUTCOME);
+  const closed = ['not_interested','disqualified','booked','wrong_number'].includes(OUTCOME);
+  $('#l-reason-w').classList.toggle('hide', !needR);
+  $('#l-next-w').classList.toggle('hide', closed);
+  $('#l-next-w label').textContent = needN ? 'Next follow-up date (required)' : 'Next follow-up date (optional)';
+  const list = OUTCOME === 'disqualified' ? LOOK.disqualify_reason : LOOK.lost_reason;
+  $('#l-reason').innerHTML = '<option value="">Choose…</option>' + (list||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
+  const t = todayRiyadh(); $('#l-next').min = t; $('#l-next').max = addDays(t, 60);
+}
+async function loadLead(){
+  const p = $('#l-phone').value.trim(); if (!p) return;
+  $('#l-tl').textContent = '...';
+  const { data, error } = await sb.rpc('lead_timeline', { p_phone: p });
+  if (error) return $('#l-tl').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const L = data.lead;
+  $('#l-head').innerHTML = L ? `${pill(LST[L.status])} <span class="ltr">${esc(data.phone)}</span> · Owner: ${esc(L.assigned_name||'—')} ${L.lost_reason ? ' · ' + esc(L.lost_reason) : ''}`
+                            : `<span class="ltr">${esc(data.phone||p)}</span> — new customer, will be assigned to you.`;
+  $('#l-name').value = L?.customer_name || ''; $('#l-car').value = L?.car_interested || '';
+  const items = [
+    ...data.calls.map(c => ({t:c.started_at, h:`📞 Maqsam · ${esc((c.agents||[]).join(' + ')||'—')} · ${esc(c.state)}${c.talk_sec ? ' · ' + Math.round(c.talk_sec/60*10)/10 + ' min' : ''}`,
+                              b: (c.summary ? esc(c.summary) : '') + (c.recording ? ` <a href="${esc(c.recording)}" target="_blank" rel="noopener">Recording</a>` : '')})),
+    ...data.logs.map(g => ({t:g.at, h:`📝 ${esc(g.agent)} · ${g.kind === 'whatsapp' ? 'WhatsApp · ' : g.kind === 'note' ? 'Note · ' : ''}${esc(OUT[g.outcome]||g.outcome)}${g.reason ? ' · ' + esc(g.reason) : ''}${g.next ? ' · follow-up ' + fmtD(g.next) : ''}`, b: esc(g.note||'')})),
+    ...data.bookings.map(b => ({t:b.created, h:`🚗 Booking #${b.id} · ${esc(b.status)}`, b: esc(b.model||'') + ' · ' + esc(b.product||'')})),
+  ].sort((a,b) => String(b.t).localeCompare(String(a.t)));
+  const fus = data.follow_ups.map(f => `${fmtD(f.due)} ${pill(FUS[f.status]||[f.status,'p-gray'])}${f.flag ? ' <span class="pill p-amber">Rescheduled after missing</span>' : ''}`).join(' · ');
+  $('#l-tl').innerHTML = (fus ? `<p><b>Follow-ups:</b> ${fus}</p>` : '') +
+    (items.length ? `<div class="tl">${items.map(i => `<div class="it"><div class="h">${fmtDT(i.t)} · ${i.h}</div><div>${i.b}</div></div>`).join('')}</div>` : '<p class="muted">No history.</p>');
+}
+$('#l-load').onclick = loadLead;
+$('#l-save').onclick = async () => {
+  $('#l-err').textContent = '';
+  if (!OUTCOME) return $('#l-err').textContent = 'Choose an outcome.';
+  const btn = $('#l-save'); btn.disabled = true;
+  const reasonSel = $('#l-reason'); const reason = $('#l-reason-w').classList.contains('hide') ? null : (reasonSel.value || null);
+  const { error } = await sb.rpc('log_call', {
+    p_phone: $('#l-phone').value, p_outcome: OUTCOME, p_kind: KIND, p_reason: reason,
+    p_next_follow_up: $('#l-next-w').classList.contains('hide') ? null : ($('#l-next').value || null),
+    p_note: $('#l-note').value || null, p_car: $('#l-car').value || null, p_customer_name: $('#l-name').value || null });
+  btn.disabled = false;
+  if (error) return $('#l-err').textContent = arErr(error.message);
+  toast('Saved ✓'); $('#l-note').value = ''; $('#l-next').value = ''; loadLead();
+};
+function arErr(m){
+  if (/needs a next follow-up/.test(m)) return 'Set the next follow-up date.';
+  if (/needs a reason/.test(m)) return 'Choose a reason.';
+  if (/between today/.test(m)) return 'Follow-up date must be between today and 60 days ahead.';
+  if (/closed lead cannot/.test(m)) return 'A closed lead cannot have a follow-up.';
+  if (/phone is required/.test(m)) return 'Type the customer phone.';
+  return m;
+}
+
+// ---------------- adherence (admin) ----------------
+async function loadAdherence(){
+  const { data, error } = await sb.rpc('follow_up_adherence', { p_from: $('#fa-from').value, p_to: $('#fa-to').value });
+  if (error) return $('#fa-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const nm = id => AGENTS.find(a => a.id === id)?.name || id;
+  data.sort((a,b) => (b.adherence ?? -1) - (a.adherence ?? -1));
+  $('#fa-out').innerHTML = `<table><thead><tr><th>Agent</th><th>Adherence</th><th>On time / due</th><th>Missed</th><th>Pending / awaiting data</th><th>Covered by another</th><th>Rescheduled after missing</th></tr></thead><tbody>${
+    data.map(r => `<tr><td>${esc(nm(r.agent_id))}</td><td><b>${r.adherence == null ? 'N/A' : (r.adherence*100).toFixed(1) + '%'}</b></td><td>${esc(r.display)}</td>
+      <td>${r.missed}</td><td>${r.pending}</td><td>${r.covered_by_other}</td><td>${r.rescheduled_without_attempt}</td></tr>`).join('')}</tbody></table>`;
+}
+$('#fa-go').onclick = loadAdherence;
+
+// ---------------- bookings attribution (admin) ----------------
+let BK = null;
+async function loadBookings(){
+  let q = sb.from('v_bookings').select('booking_id,status_actual,validity,outcome,product,customer_phone,customer_name,vehicle_model,created_at,attributed_share,attribution')
+    .gte('created_at', $('#b-from').value).lt('created_at', addDays($('#b-to').value, 1)).order('created_at', {ascending:false}).limit(500);
+  const { data, error } = await q;
+  if (error) return $('#b-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const un = data.filter(b => Number(b.attributed_share) === 0);
+  const cnt = (f) => data.filter(f).length;
+  $('#b-sum').innerHTML = [['Bookings', data.length],['Unattributed', un.length],['Open', cnt(b=>b.outcome==='open')],['Delivered', cnt(b=>b.outcome==='delivered')],
+    ['Failed at supplier', cnt(b=>b.outcome==='failed')],['Rejected at review', cnt(b=>b.validity==='invalid')]]
+    .map(([l,n]) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+  const rows = $('#b-filter').value === 'un' ? un : data;
+  const V = {valid:['Valid','p-green'], invalid:['Rejected at review','p-red'], pending:['Under review','p-amber'], unmapped:['New status','p-gray']};
+  const O = {open:['Open','p-blue'], delivered:['Delivered','p-green'], failed:['Failed at supplier','p-red'], none:['—','p-gray'], unmapped:['?','p-gray']};
+  $('#b-list').innerHTML = `<table><thead><tr><th>#</th><th>Created</th><th>Customer</th><th>Product</th><th>Validity</th><th>Outcome</th><th>Attribution</th></tr></thead><tbody>${
+    rows.map(b => `<tr class="click" data-id="${b.booking_id}"><td>${b.booking_id}</td><td class="small">${fmtDT(b.created_at)}</td><td>${esc(b.customer_name||'')}<div class="small muted ltr">${esc(b.customer_phone||'')}</div></td>
+      <td class="small">${esc(b.product||'')}<div class="muted">${esc(b.vehicle_model||'')}</div></td><td>${pill(V[b.validity])}</td><td>${pill(O[b.outcome])}</td>
+      <td class="small">${(b.attribution||[]).map(x => `${esc(AGENTS.find(a=>a.id===x.agent_id)?.name)} ${Math.round(x.share*100)}%${x.has_call_evidence ? '' : ' <span class="pill p-amber">No call on record</span>'}`).join('<br>') || '<span class="pill p-gray">Unattributed</span>'}</td></tr>`).join('')}</tbody></table>`;
+}
+$('#b-go').onclick = loadBookings; $('#b-filter').onchange = loadBookings;
+$('#b-list').onclick = async e => {
+  const tr = e.target.closest('tr[data-id]'); if (!tr) return;
+  const id = Number(tr.dataset.id);
+  const [{ data: b }, { data: sug }] = await Promise.all([
+    sb.from('v_bookings').select('*').eq('booking_id', id).single(), sb.rpc('suggest_attribution', { p_booking: id })]);
+  BK = b; $('#b-edit').classList.remove('hide'); $('#b-err').textContent = '';
+  $('#b-title').textContent = `Booking #${id} — ${b.status_actual}${b.failure_reason ? ' — ' + b.failure_reason : ''}`;
+  $('#b-sugg').innerHTML = sug?.length ? `<b>Called this customer in the 30 days before the booking:</b><table><tr><th>Agent</th><th>Calls</th><th>Answered</th><th>Talk time</th><th>Last call</th></tr>${
+      sug.map(s => `<tr><td>${esc(s.agent_name)}</td><td>${s.calls}</td><td>${s.answered}</td><td>${Math.round(s.talk_sec/60)} min</td><td>${fmtDT(s.last_call_at)}</td></tr>`).join('')}</table>`
+    : '<p class="muted">No agent called this customer in the 30 days before the booking. Any attribution will be marked "No call on record".</p>';
+  const cur = b.attribution?.length ? b.attribution : (sug?.length ? [{agent_id: sug[0].agent_id, share: 1}] : []);
+  $('#b-rows').innerHTML = ''; cur.forEach(x => addRow(x.agent_id, Math.round(x.share*100), x.role));
+  $('#b-edit').scrollIntoView({behavior:'smooth'});
+};
+function addRow(agent='', pct='', role=''){
+  const d = document.createElement('div'); d.className = 'row'; d.style.marginBottom = '6px';
+  d.innerHTML = `<div class="f"><select class="ba">${AGENTS.filter(a=>a.active).map(a => `<option value="${a.id}" ${a.id===agent?'selected':''}>${esc(a.name)}</option>`).join('')}</select></div>
+    <div class="f" style="max-width:110px"><input class="bp" type="number" min="1" max="100" value="${pct}" placeholder="%"></div>
+    <div class="f" style="max-width:150px"><select class="br"><option value="">Role</option><option value="opener" ${role==='opener'?'selected':''}>Opener</option><option value="closer" ${role==='closer'?'selected':''}>Closer</option><option value="both" ${role==='both'?'selected':''}>Both</option></select></div>
+    <button class="btn ghost" onclick="this.parentElement.remove()">×</button>`;
+  $('#b-rows').appendChild(d);
+}
+$('#b-add').onclick = () => addRow();
+$('#b-save').onclick = async () => {
+  const shares = $$('#b-rows .row').map(r => ({ agent_id: r.querySelector('.ba').value, share: Number(r.querySelector('.bp').value)/100, role: r.querySelector('.br').value || null }));
+  const tot = shares.reduce((s,x) => s + x.share, 0);
+  if (shares.length && Math.abs(tot - 1) > 0.0001) return $('#b-err').textContent = `Total is ${Math.round(tot*100)}% — must be 100%.`;
+  if (new Set(shares.map(s=>s.agent_id)).size !== shares.length) return $('#b-err').textContent = 'The same agent is listed twice.';
+  const { error } = await sb.rpc('set_booking_attribution', { p_booking: BK.booking_id, p_shares: shares });
+  if (error) return $('#b-err').textContent = error.message;
+  toast('Attribution saved ✓'); $('#b-edit').classList.add('hide'); loadBookings();
+};
+
+// ---------------- imports (admin) ----------------
+async function sha256(file){ const b = await file.arrayBuffer(); const h = await crypto.subtle.digest('SHA-256', b); return [...new Uint8Array(h)].map(x => x.toString(16).padStart(2,'0')).join(''); }
+// Old CRM workbook: Leads, Audit_Log, Lead_Comments, Agent_Schedule, WhatsApp_Duty
+function sheetRows(wb, name){
+  // Reads each cell by its own number format: dates/times become timezone-free text (sheet local time).
+  const ws = wb.Sheets[name]; if (!ws || !ws['!ref']) return null;
+  const rg = XLSX.utils.decode_range(ws['!ref']), pad = n => String(n).padStart(2,'0');
+  const txt = c => {
+    if (!c) return '';
+    if (c.t === 'n' && c.z && XLSX.SSF.is_date(c.z)) {
+      // exact to the millisecond, no timezone conversion
+      const day = Math.floor(c.v), ms = Math.round((c.v - day) * 86400000);
+      const hh = Math.floor(ms / 3600000), mi = Math.floor(ms / 60000) % 60, ss = Math.floor(ms / 1000) % 60, mmm = ms % 1000;
+      const hms = `${pad(hh)}:${pad(mi)}:${pad(ss)}` + (mmm ? '.' + String(mmm).padStart(3,'0') : '');
+      if (day < 1) return hms;
+      const d = XLSX.SSF.parse_date_code(day); if (!d || d.y < 2000 || d.y > 2100) return '';
+      return `${d.y}-${pad(d.m)}-${pad(d.d)} ${hms}`;
+    }
+    if (c.t === 'n') return Number.isInteger(c.v) ? String(c.v) : String(c.v);
+    if (c.t === 'b') return c.v ? 'TRUE' : 'FALSE';
+    if (c.t === 'e') return '';
+    return String(c.v ?? '');
+  };
+  const head = []; for (let C = rg.s.c; C <= rg.e.c; C++) head.push(txt(ws[XLSX.utils.encode_cell({r: rg.s.r, c: C})]).trim());
+  const out = [];
+  for (let R = rg.s.r + 1; R <= rg.e.r; R++) {
+    const o = {}; let any = false;
+    for (let C = rg.s.c; C <= rg.e.c; C++) { if (!head[C - rg.s.c]) continue;
+      const v = txt(ws[XLSX.utils.encode_cell({r: R, c: C})]); if (v !== '') any = true; o[head[C - rg.s.c]] = v; }
+    if (any) out.push(o);
+  }
+  return out;
+}
+async function importLegacy(f, out){
+  out.innerHTML = 'Reading the workbook…';
+  const wb = XLSX.read(await f.arrayBuffer(), { cellDates: false, cellNF: true });
+  const T = n => sheetRows(wb, n);
+  const leads = T('Leads'), audit = T('Audit_Log'), comments = T('Lead_Comments'), sched = T('Agent_Schedule'), wa = T('WhatsApp_Duty');
+  if (!leads || !audit) return out.innerHTML = '<p class="err">The file must contain the Leads and Audit_Log tabs.</p>';
+  const res = {};
+  const run = async (label, fn, rows, size) => { const agg = {};
+    for (let i = 0; i < rows.length; i += size) { out.innerHTML = `${label}: ${Math.min(i+size, rows.length)} / ${rows.length}…`;
+      const { data, error } = await sb.rpc(fn, { p_rows: rows.slice(i, i+size) }); if (error) throw new Error(label + ': ' + error.message);
+      Object.entries(data).forEach(([k,v]) => agg[k] = (agg[k]||0) + v); }
+    res[label] = agg; };
+  try {
+    await run('Leads', 'import_legacy_leads', leads, 1500);
+    await run('Audit log', 'import_legacy_audit', audit, 4000);
+    out.innerHTML = 'Rebuilding follow-ups…';
+    { const { data, error } = await sb.rpc('build_legacy_follow_ups'); if (error) throw error; res['Follow-ups'] = data; }
+    if (comments) await run('Comments', 'import_legacy_comments', comments, 2000);
+    if (sched) { const { data, error } = await sb.rpc('import_legacy_schedule', { p_schedule: sched, p_wa: wa || [] }); if (error) throw error; res['Schedule'] = data; }
+  } catch (e) { return out.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  out.innerHTML = '<h3>Imported ✓</h3><pre>' + esc(JSON.stringify(res, null, 1)) + '</pre>';
+}
+$('#i-go').onclick = async () => {
+  const f = $('#i-file').files[0]; if (!f) return toast('Choose a file.');
+  const src = $('#i-src').value, out = $('#i-out'); out.innerHTML = 'Reading the file…';
+  if (src === 'legacy_crm') return importLegacy(f, out);
+  const parsed = await new Promise(res => Papa.parse(f, { header: true, skipEmptyLines: true, transformHeader: h => h.replace(/^\uFEFF/,'').trim(), complete: res }));
+  const rows = parsed.data;
+  const need = {maqsam_calls:['ID','Created','State'], maqsam_states:['Agent Name','Timestamp','State'], metabase_bookings:['Booking ID','Booking Actual Status']}[src];
+  const miss = need.filter(c => !parsed.meta.fields.includes(c));
+  if (miss.length) return out.innerHTML = `<p class="err">This file does not match the selected type — missing columns: ${esc(miss.join(', '))}</p>`;
+  const { data: imp, error: e1 } = await sb.rpc('start_import', { p_source: src, p_file: f.name, p_sha: await sha256(f), p_rows: rows.length });
+  if (e1) return out.innerHTML = `<p class="err">${esc(e1.message)}</p>`;
+  const fn = {maqsam_calls:'import_maqsam_calls', maqsam_states:'import_agent_states', metabase_bookings:'import_bookings'}[src];
+  const size = src === 'maqsam_states' ? 5000 : 1000, agg = {}; const probs = [];
+  for (let i = 0; i < rows.length; i += size) {
+    out.innerHTML = `Uploading ${Math.min(i+size, rows.length)} / ${rows.length}…`;
+    const args = { p_import: imp, p_rows: rows.slice(i, i+size) }; if (src === 'metabase_bookings') args.p_allow_backward = $('#i-back').checked;
+    const { data, error } = await sb.rpc(fn, args);
+    if (error) return out.innerHTML = `<p class="err">Stopped at row ${i+1}: ${esc(error.message)}</p>`;
+    Object.entries(data).forEach(([k,v]) => { if (typeof v === 'number') agg[k] = (agg[k]||0) + v; });
+    probs.push(...(data.problems||[]));
+  }
+  if (src === 'maqsam_calls') { const { data: n } = await sb.rpc('link_logs_to_calls'); agg.linked_logs = n; }
+  const L = {inserted:'New', updated:'Updated', status_changed:'Status changed', unchanged:'Already there (ignored)', rejected:'Rejected', skipped_backward:'Skipped (older file)', linked_logs:'Logs linked to a call'};
+  out.innerHTML = `<div class="kpis">${Object.entries(agg).map(([k,v]) => `<div class="kpi"><div class="n">${v}</div><div class="l">${L[k]||k}</div></div>`).join('')}</div>` +
+    (probs.length ? `<h3>Notes (${probs.length})</h3><pre>${esc(JSON.stringify(probs.slice(0,200), null, 1))}</pre>` : '');
+  loadImports();
+};
+async function loadImports(){
+  const [{ data: h }, { data: u }] = await Promise.all([
+    sb.from('imports').select('*').order('imported_at', {ascending:false}).limit(20),
+    sb.from('unmapped_agent_names').select('*').order('rows_seen', {ascending:false})]);
+  $('#i-hist').innerHTML = `<table><tr><th>Time</th><th>Type</th><th>File</th><th>Rows</th><th>New</th><th>Updated</th><th>Existing</th><th>Rejected</th></tr>${
+    (h||[]).map(r => `<tr><td class="small">${fmtDT(r.imported_at)}</td><td>${esc(r.source)}</td><td class="small">${esc(r.file_name||'')}</td><td>${r.rows_total}</td><td>${r.inserted}</td><td>${r.updated}</td><td>${r.unchanged}</td><td>${r.rejected}</td></tr>`).join('')}</table>`;
+  $('#i-unm').innerHTML = (u||[]).length ? `<table><tr><th>Name in Maqsam</th><th>Rows</th></tr>${u.map(r => `<tr><td>${esc(r.alias)}</td><td>${r.rows_seen}</td></tr>`).join('')}</table>` : '<p class="muted">All names are recognized.</p>';
+}
+
+boot();
+</script>
+</body>
+</html>
