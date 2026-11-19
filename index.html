@@ -690,11 +690,17 @@ async function loadPerf(){
   const u = data.unattributed || {total:0, unattributed:0};
   $('#pf-banner').innerHTML = u.unattributed ? `<p class="small"><span class="pill p-amber">Partial</span> ${u.unattributed} of ${u.total} bookings in this period are not attributed yet — conversion and booking credit will rise as they are attributed.</p>` : '';
   const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active).map(a => a.id);
-  const shiftCell = s => !s ? '<span class="muted">Insufficient data — no schedule in period</span>'
-    : !s.days_measured ? `<span class="muted">Insufficient data — ${s.days_insufficient} day(s) missing a source${s.days_whatsapp ? ', ' + s.days_whatsapp + ' WhatsApp day(s)' : ''}</span>`
-    : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)</div>
+  const notMeasured = s => [
+      s.days_in_progress ? s.days_in_progress + ' shift(s) still running' : '',
+      s.days_whatsapp ? s.days_whatsapp + ' WhatsApp duty day(s) — not measured' : '',
+      (s.days_insufficient - (s.days_in_progress || 0)) > 0 ? (s.days_insufficient - (s.days_in_progress || 0)) + ' day(s) without Maqsam states' : '',
+      s.days_off ? s.days_off + ' day(s) off' : ''].filter(Boolean).join(' · ');
+  const shiftCell = s => !s ? '<span class="muted">No schedule in this period</span>'
+    : !s.days_scheduled ? `<span class="muted">Day off${s.days_off > 1 ? ' (' + s.days_off + ' days)' : ''} — nothing to measure</span>`
+    : !s.days_measured ? `<span class="muted">Not measured yet — ${esc(notMeasured(s))}</span>`
+    : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)${s.days_live ? ' · ' + s.days_live + ' from live checks (±1 min)' : ''}</div>
        <div class="small">Lost ${s.lost_min} min · late ${s.late_min} · early leave ${s.early_min}</div>
-       <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${s.days_whatsapp ? ' · ' + s.days_whatsapp + ' WhatsApp day(s) not measured' : ''}${s.days_insufficient ? ' · ' + s.days_insufficient + ' day(s) insufficient data' : ''}</div>`;
+       <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${notMeasured(s) ? ' · ' + esc(notMeasured(s)) : ''}</div>`;
   const convCell = c => !c ? '—' : c.customers === 0 ? `<span class="muted">${esc(c.display)}</span>`
     : `<b>${pct(c.conversion)}</b><div class="small muted">${esc(c.display)} customers</div>${c.customers_pending_window ? `<div class="small muted">${c.customers_pending_window} more still inside the window</div>` : ''}`;
   const fuCell = f => !f ? '—' : f.adherence == null ? '<span class="muted">N/A — no follow-ups due</span>'
