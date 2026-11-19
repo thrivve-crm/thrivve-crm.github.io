@@ -218,9 +218,9 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <section id="v-imports" class="hide">
       <div class="card">
         <h2>Automatic sync</h2>
-        <p class="small muted">Maqsam calls every 10 min, Metabase bookings every 30 min — pulled server-side, no files. Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
+        <p class="small muted">Maqsam calls every 10 min (server-side). Metabase bookings arrive by the hourly e-mail report and are imported automatically. Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
         <div id="s-stat"></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><span class="small muted" id="s-msg"></span></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><button class="btn" id="s-key" style="background:#eef0f3;color:#344054">Copy e-mail ingest key</button><span class="small muted" id="s-msg"></span></div>
         <div id="s-live" style="margin-top:12px"></div>
       </div>
       <div class="card">
@@ -565,6 +565,12 @@ async function loadSync(){
       return `<tr><td>${SYNC_L[k]}</td><td class="small">${r ? fmtDT(r.finished_at) : '—'}</td><td class="small">${!r ? '<span class="muted">Not run yet</span>' : r.ok ? '<span class="pill p-green">OK</span> ' + esc(Object.entries(r.result||{}).map(([a,b]) => a + ' ' + b).join(', ')) : '<span class="pill p-red">Failed</span> ' + esc(r.error||'')}</td><td class="small">${o ? fmtDT(o.finished_at) : '—'}</td><td class="small">${o && k === 'maqsam_calls' ? fmtDT(o.window_to) : '—'}</td></tr>`; }).join('')}</table>`;
   $('#s-live').innerHTML = (live||[]).length ? `<h3>Agents right now</h3><table><tr><th>Agent</th><th>State</th><th>Since</th><th>Checked</th></tr>${live.filter(l => l.active !== false).map(l => `<tr><td>${esc(l.agent_id ? nm(l.agent_id) : l.agent_raw)}</td><td>${esc(l.state)}</td><td class="small">${fmtDT(l.since)}</td><td class="small">${fmtDT(l.polled_at)}</td></tr>`).join('')}</table>` : '';
 }
+$('#s-key').onclick = async () => {
+  const { data, error } = await sb.rpc('get_ingest_key', {});
+  if (error) return $('#s-msg').textContent = error.message;
+  try { await navigator.clipboard.writeText(data); $('#s-msg').textContent = 'Key copied — paste it into the Apps Script as INGEST_KEY.'; }
+  catch { prompt('Copy this key into the Apps Script (INGEST_KEY):', data); }
+};
 $('#s-go').onclick = async () => {
   $('#s-msg').textContent = 'Started — results appear here in a minute…';
   const { error } = await sb.rpc('request_sync', { p_what: 'all' });
