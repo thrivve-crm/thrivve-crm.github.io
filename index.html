@@ -23,7 +23,7 @@ button,input,select,textarea{font:inherit}
 .top b{font-weight:700;color:var(--brand)} .top nav{display:flex;gap:4px;flex-wrap:wrap} .top .sp{flex:1}
 .tab{border:0;background:none;padding:7px 12px;border-radius:8px;cursor:pointer;color:var(--muted)}
 .tab.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
-main{max-width:1100px;margin:0 auto;padding:16px}
+main{max-width:1100px;margin:0 auto;padding:16px} body.wide main{max-width:1560px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
 h2{font-size:17px;margin:0 0 12px} h3{font-size:15px;margin:16px 0 8px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
@@ -50,6 +50,24 @@ th{color:var(--muted);font-weight:500;font-size:13px} tr.click{cursor:pointer} t
 .err{color:var(--red)} .hide{display:none!important}
 .login{max-width:380px;margin:12vh auto}
 pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-radius:8px;max-height:260px;overflow:auto;direction:ltr;text-align:left}
+.sc{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:74px;padding:5px 6px;border-radius:7px;font-size:12.5px;font-weight:500;border:1px solid transparent;white-space:nowrap}
+.sc b{font-size:10px;background:#0f6e56;color:#fff;border-radius:4px;padding:0 4px}
+.sc-on{background:var(--blue-soft);color:var(--blue);border-color:#cfdcf6} .sc-wa{background:#e3f5ec;color:#0f6e56;border-color:#9fd9bd}
+.sc-off{background:var(--red-soft);color:var(--red);border-color:#f6cfcb} .sc-ph{background:#fff7d6;color:#8a6a00;border-color:#f0e0a0}
+.sc-abs{background:#f1e9fb;color:#6b3fa0;border-color:#dccbf2} .sc-unk{background:#f2f4f7;color:#b25e09;border:1px dashed #e0a060}
+.sc-empty{background:#fff;color:#98a2b3;border:1px dashed var(--line)}
+.scx{overflow-x:auto} .scx table{min-width:max-content} .scx td,.scx th{padding:4px;border-bottom:1px solid #f0f2f5;text-align:center;vertical-align:middle}
+.scx th.d{font-size:12px;line-height:1.2;color:var(--muted)} .scx th.d.today{color:var(--brand);font-weight:700}
+.scx .nm{position:sticky;left:0;background:#fff;text-align:left;min-width:170px;z-index:1} .scx .nm small{display:block;color:var(--muted);font-size:11.5px}
+.scx tr.me td.nm{box-shadow:inset 3px 0 0 var(--brand)} .scx td.wk{border-left:2px solid var(--line)}
+.scx td .sc{cursor:default} .can-edit .scx td .sc{cursor:pointer} .can-edit .scx td .sc:hover{outline:2px solid var(--brand)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:11.5px;background:#fff} .can-edit .chip{cursor:pointer}
+.sc-pop{position:fixed;z-index:30;max-height:calc(100vh - 16px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(16,24,40,.18);padding:12px;width:290px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px} .cal .h{font-size:12px;color:var(--muted);text-align:center}
+.cal .day{border:1px solid var(--line);border-radius:8px;padding:6px;min-height:84px;cursor:pointer;font-size:12px} .cal .day.sel{outline:2px solid var(--brand)}
+.cal .day.out{opacity:.45} .cal .day .wa{background:#e3f5ec;color:#0f6e56;border-radius:5px;padding:1px 5px;margin:3px 0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tline{position:relative;height:26px;background:#f7f8fa;border-radius:6px} .tline .sh{position:absolute;top:3px;bottom:3px;border-radius:5px;background:var(--blue-soft);border:1px solid #cfdcf6}
+.tline .sh.wa{background:#e3f5ec;border-color:#9fd9bd} .tline .br{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(45deg,#f6cfcb,#f6cfcb 4px,#fdecea 4px,#fdecea 8px);border-radius:3px}
 </style>
 </head>
 <body>
@@ -77,6 +95,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <nav id="nav">
       <button class="tab on" data-v="queue">Today</button>
       <button class="tab" data-v="lead">Customer / Log call</button>
+      <button class="tab" data-v="schedule">Schedule</button>
       <button class="tab admin" data-v="perf">Performance</button>
       <button class="tab admin" data-v="quality">Quality</button>
       <button class="tab admin" data-v="review">Review list</button>
@@ -214,6 +233,47 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
       </div>
     </section>
 
+    <!-- SCHEDULE (everyone views, admins edit) -->
+    <section id="v-schedule" class="hide">
+      <div class="card">
+        <div class="row" style="align-items:center;justify-content:space-between">
+          <h2 style="margin:0">Team schedule</h2>
+          <div class="row" style="gap:6px" id="sc-stats"></div>
+        </div>
+        <div class="row" style="margin-top:12px;align-items:center">
+          <div class="seg" id="sc-view">
+            <button data-v="matrix" class="on">Matrix</button><button data-v="calendar">Calendar</button><button data-v="timeline">Day timeline &amp; breaks</button>
+            <button data-v="fair">Fairness</button><button data-v="breaks">Break sets</button><button data-v="history" class="admin">Change history</button>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;align-items:center" id="sc-range">
+          <button class="btn ghost" id="sc-prev">‹</button>
+          <button class="btn ghost" id="sc-today">This week</button>
+          <button class="btn ghost" id="sc-next">›</button>
+          <select id="sc-weeks" style="width:auto"><option value="1">1 week</option><option value="2" selected>2 weeks</option><option value="4">4 weeks</option><option value="8">8 weeks</option></select>
+          <span id="sc-label" class="small muted"></span>
+          <span style="flex:1"></span>
+          <input id="sc-search" placeholder="Search employee…" style="max-width:200px">
+          <div class="seg" id="sc-loc"><button data-l="" class="on">All</button><button data-l="WFH">WFH</button><button data-l="WFO">WFO</button></div>
+        </div>
+        <div class="row admin" style="margin-top:10px;align-items:center" id="sc-tools">
+          <span class="small muted">Click mode:</span>
+          <div class="seg" id="sc-brush">
+            <button data-b="edit" class="on">✎ Edit cell</button><button data-b="09:00">09:00</button><button data-b="10:00">10:00</button><button data-b="11:00">11:00</button><button data-b="12:00">12:00</button>
+            <button data-b="wa">± WhatsApp duty</button><button data-b="off">OFF</button><button data-b="public_holiday">PH</button><button data-b="approved_absence">Absence</button><button data-b="clear">Clear</button>
+          </div>
+          <span style="flex:1"></span>
+          <button class="btn ghost" id="sc-copy">Copy previous week → this week</button>
+          <button class="btn ghost" id="sc-add">+ Add employee</button>
+        </div>
+        <div class="row" style="margin-top:8px;gap:6px">
+          <span class="sc sc-on">09:00</span><span class="sc sc-wa">10:00 <b>WA</b></span><span class="sc sc-off">OFF</span><span class="sc sc-ph">PH</span><span class="sc sc-abs">Absence</span><span class="sc sc-unk">? check</span><span class="sc sc-empty">— not set</span>
+        </div>
+      </div>
+      <div class="card" id="sc-body"></div>
+      <div id="sc-pop" class="sc-pop hide"></div>
+    </section>
+
     <!-- IMPORTS (admin) -->
     <section id="v-imports" class="hide">
       <div class="card">
@@ -224,6 +284,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
             <option value="metabase_bookings">Metabase — Booking Status Breakdown (CSV)</option>
             <option value="maqsam_states">Maqsam — Agent State Activity</option>
             <option value="maqsam_calls">Maqsam — Calls export (only if the automatic sync is down)</option>
+            <option value="schedule_sheet">Team schedule — old schedule sheet (.xlsx / .csv)</option>
             <option value="legacy_crm">Old CRM — full sheet export (.xlsx)</option></select></div>
           <div class="f"><label>File</label><input type="file" id="i-file" accept=".csv,text/csv,.xlsx"></div>
           <label class="small"><input type="checkbox" id="i-back" style="width:auto"> Allow moving back to an older status</label>
@@ -319,9 +380,10 @@ $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''
 function show(v){
   if (!$('#v-' + v) || (ME.role !== 'admin' && ['perf','quality','review','followups','bookings','imports'].includes(v))) v = 'queue';
   $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
+  document.body.classList.toggle('wide', v === 'schedule');
   $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   location.hash = v;
-  ({queue: loadQueue, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports})[v]?.();
+  ({queue: loadQueue, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
 }
 $('#nav').onclick = e => { if (e.target.dataset.v) show(e.target.dataset.v); };
 
@@ -530,6 +592,7 @@ $('#i-go').onclick = async () => {
   const f = $('#i-file').files[0]; if (!f) return toast('Choose a file.');
   const src = $('#i-src').value, out = $('#i-out'); out.innerHTML = 'Reading the file…';
   if (src === 'legacy_crm') return importLegacy(f, out);
+  if (src === 'schedule_sheet') return importScheduleFile(f, out);
   const parsed = await new Promise(res => Papa.parse(f, { header: true, skipEmptyLines: true, transformHeader: h => h.replace(/^\uFEFF/,'').trim(), complete: res }));
   const rows = parsed.data;
   const need = {maqsam_calls:['ID','Created','State'], maqsam_states:['Agent Name','Timestamp','State'], metabase_bookings:['Booking ID','Booking Actual Status']}[src];
@@ -710,6 +773,333 @@ $('#rv-go').onclick = loadReview; $('#rv-filter').onchange = loadReview;
 $('#rv-out').onclick = async e => { const b = e.target.closest('button[data-d]'); if (!b) return;
   const c = prompt('Comment (optional):') ?? ''; const { error } = await sb.rpc('decide_flag', { p_key: b.dataset.k, p_decision: b.dataset.d, p_comment: c || null });
   if (error) return toast(error.message); toast('Saved ✓'); loadReview(); };
+
+// Parse the "Thrivve sales-squad Schedule" layout (Sheet1) from a 2-D array of display strings.
+// Returns { cells:[{d,n,loc,bs,v}], breakSets:[{id,shift,breaks:[{start,end}]}], weeks }
+function parseScheduleGrid(grid, startYear) {
+  const t24 = s => { const m = String(s).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i); if (!m) return null;
+    let h = +m[1]; const ap = (m[3] || '').toUpperCase(); if (ap === 'PM' && h < 12) h += 12; if (ap === 'AM' && h === 12) h = 0;
+    return String(h).padStart(2, '0') + ':' + m[2]; };
+  const cells = [], breakSets = []; let hdr = null, year = startYear, lastMonth = 0, weeks = 0;
+  for (const row of grid) {
+    if (!row || !row.length) continue;
+    const r = Array.from(row, x => x == null ? '' : String(x).trim());
+    const bs = r[0].match(/^Break set\s*(\d+)/i);
+    if (bs) {
+      const breaks = r.slice(2).map(x => x.split(/\s*-\s*/)).filter(p => p.length === 2 && t24(p[0]) && t24(p[1]))
+        .map(([a, b]) => ({ start: t24(a), end: t24(b) }));
+      breakSets.push({ id: +bs[1], shift: t24(r[1]) || '', breaks }); continue;
+    }
+    if (r[0].toLowerCase() === 'name' && r.slice(3).some(x => /^\d{1,2}\/\d{1,2}/.test(x))) {
+      hdr = r.map((x, i) => { if (i < 3) return null; const m = x.match(/^(\d{1,2})\/(\d{1,2})/); if (!m) return null;
+        const mo = +m[1], dd = +m[2]; if (lastMonth && mo < lastMonth) year++; lastMonth = mo;
+        return `${year}-${String(mo).padStart(2, '0')}-${String(dd).padStart(2, '0')}`; });
+      weeks++; continue;
+    }
+    if (!hdr || !r[0] || /^notes?$/i.test(r[0])) continue;
+    hdr.forEach((d, i) => { if (d) cells.push({ d, n: r[0], loc: r[1], bs: r[2], v: r[i] ?? '' }); });
+  }
+  return { cells, breakSets, weeks };
+}
+
+// ---------------- team schedule ----------------
+// One table (agent_schedule) for the editor, the agents' view and shift adherence.
+const SC = { view: 'matrix', start: null, weeks: 2, brush: 'edit', loc: '', q: '', rows: [], team: [], sets: [], day: null, month: null };
+const SC_ST = { on: 'sc-on', off: 'sc-off', public_holiday: 'sc-ph', approved_absence: 'sc-abs', unknown: 'sc-unk' };
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const weekStart = d => { const x = new Date(d + 'T00:00:00Z'); return addDays(d, -((x.getUTCDay() + 1) % 7)); };   // Saturday
+const dowOf = d => new Date(d + 'T00:00:00Z').getUTCDay();
+const hm = t => t ? String(t).slice(0, 5) : '';
+const toMin = t => { const [h, m] = hm(t).split(':').map(Number); return h * 60 + m; };
+const fmtMin = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+const scEdit = () => ME?.role === 'admin';
+const scKey = (d, a) => d + '|' + a;
+
+async function loadSchedule(){
+  if (!SC.start) SC.start = weekStart(todayRiyadh());
+  SC.weeks = +$('#sc-weeks').value;
+  $('#v-schedule').classList.toggle('can-edit', scEdit());
+  const from = SC.view === 'calendar' ? addDays(SC.month || SC.start.slice(0, 8) + '01', -7) : SC.start;
+  const to = SC.view === 'calendar' ? addDays(SC.month || SC.start.slice(0, 8) + '01', 45) : addDays(SC.start, SC.weeks * 7 - 1);
+  const [t, s, b] = await Promise.all([
+    sb.from('agents').select('id,name,email,role,active,on_schedule,schedule_order,default_location').eq('on_schedule', true).order('schedule_order', { nullsFirst: false }).order('name'),
+    sb.from('agent_schedule').select('*').gte('work_date', from).lte('work_date', to),
+    sb.from('break_sets').select('*').order('id')]);
+  if (t.error || s.error) return $('#sc-body').innerHTML = `<p class="err">${esc((t.error || s.error).message)}</p>`;
+  SC.team = (t.data || []).sort((x, y) => (x.schedule_order ?? 1e9) - (y.schedule_order ?? 1e9) || x.name.localeCompare(y.name)); SC.sets = b.data || [];
+  SC.map = new Map((s.data || []).map(r => [scKey(r.work_date, r.agent_id), r]));
+  // anyone with a row in range who is no longer on the roster still shows (history stays visible)
+  const extra = [...new Set((s.data || []).map(r => r.agent_id))].filter(id => !SC.team.some(m => m.id === id));
+  extra.forEach(id => { const a = AGENTS.find(x => x.id === id); if (a) SC.team.push({ ...a, on_schedule: false }); });
+  renderSchedule();
+}
+function scDays(){ return Array.from({ length: SC.weeks * 7 }, (_, i) => addDays(SC.start, i)); }
+function scTeamFiltered(){
+  const q = SC.q.toLowerCase();
+  return SC.team.filter(m => (!q || m.name.toLowerCase().includes(q)) && (!SC.loc || (m.default_location || '') === SC.loc));
+}
+function scCell(r){
+  if (!r) return `<span class="sc sc-empty">—</span>`;
+  const lbl = r.status === 'on' ? hm(r.shift_start) : r.status === 'off' ? 'OFF' : r.status === 'public_holiday' ? 'PH'
+            : r.status === 'approved_absence' ? 'Absence' : '? check';
+  const cls = r.status === 'on' && r.whatsapp_duty ? 'sc-wa' : SC_ST[r.status];
+  return `<span class="sc ${cls}" title="${esc(r.note || '')}">${lbl}${r.whatsapp_duty ? ' <b>WA</b>' : ''}</span>`;
+}
+function scStats(days){
+  const ids = new Set(scTeamFiltered().map(m => m.id)); let wa = 0, ph = 0, off = 0, on = 0;
+  days.forEach(d => ids.forEach(a => { const r = SC.map.get(scKey(d, a)); if (!r) return;
+    if (r.whatsapp_duty) wa++; if (r.status === 'public_holiday') ph++; if (r.status === 'off') off++; if (r.status === 'on') on++; }));
+  const team = scTeamFiltered(), wfh = team.filter(m => m.default_location === 'WFH').length;
+  $('#sc-stats').innerHTML = [[on + ' shifts', 'p-blue'], [wa + ' WA duties', 'p-green'], [ph + ' public holidays', 'p-amber'], [off + ' days off', 'p-red'],
+    [team.length + ' staff (' + wfh + ' WFH, ' + (team.length - wfh) + ' WFO)', 'p-gray']].map(pill).join(' ');
+}
+function renderSchedule(){
+  const days = scDays();
+  $('#sc-label').textContent = fmtD(days[0]) + ' – ' + fmtD(days.at(-1)) + ' ' + days.at(-1).slice(0, 4);
+  $('#sc-range').classList.toggle('hide', ['breaks', 'history', 'calendar'].includes(SC.view));
+  $('#sc-tools').classList.toggle('hide', !scEdit() || SC.view !== 'matrix');
+  scStats(days);
+  ({ matrix: scMatrix, calendar: scCalendar, timeline: scTimeline, fair: scFair, breaks: scBreaks, history: scHistory })[SC.view](days);
+}
+
+// --- matrix (the sheet / ShiftSync grid) ---
+function scWeekMeta(a, ws){
+  const rs = Array.from({ length: 7 }, (_, i) => SC.map.get(scKey(addDays(ws, i), a))).filter(Boolean);
+  const mode = k => { const c = {}; rs.forEach(r => r[k] != null && (c[r[k]] = (c[r[k]] || 0) + 1)); return Object.entries(c).sort((x, y) => y[1] - x[1])[0]?.[0] ?? null; };
+  return { loc: mode('location'), bs: mode('break_set') };
+}
+function scMatrix(days){
+  const t = todayRiyadh(), team = scTeamFiltered();
+  const head = days.map((d, i) => `<th class="d ${d === t ? 'today' : ''} ${i % 7 === 0 && i ? 'wk' : ''}">${DOW[dowOf(d)]}<br>${fmtD(d)}</th>`).join('');
+  const weeks = [...Array(SC.weeks).keys()].map(w => addDays(SC.start, w * 7));
+  const body = team.map(m => {
+    const rs = days.map(d => SC.map.get(scKey(d, m.id)));
+    const shifts = rs.filter(r => r?.status === 'on').length, wa = rs.filter(r => r?.whatsapp_duty).length;
+    const meta = scWeekMeta(m.id, weeks[0]);
+    return `<tr class="${m.id === ME.id ? 'me' : ''}"><td class="nm"><b>${esc(m.name)}</b><small>${shifts} shifts · ${wa} WA${m.on_schedule ? '' : ' · not on roster'}</small></td>
+      <td><span class="chip" data-meta="loc" data-a="${m.id}">${esc(meta.loc || m.default_location || '—')}</span></td>
+      <td><span class="chip" data-meta="bs" data-a="${m.id}">${meta.bs ? 'Set ' + meta.bs : 'Set —'}</span></td>
+      ${days.map((d, i) => `<td class="${i % 7 === 0 && i ? 'wk' : ''}" data-d="${d}" data-a="${m.id}">${scCell(rs[i])}</td>`).join('')}</tr>`;
+  }).join('');
+  $('#sc-body').innerHTML = team.length ? `<div class="scx"><table><thead><tr><th class="nm">Employee</th><th>Loc</th><th>Break</th>${head}</tr></thead><tbody>${body}</tbody></table></div>
+    <p class="small muted" style="margin-top:8px">${scEdit() ? 'Pick a click mode above, then click cells. Loc / Break chips apply to the first week shown. ' : ''}WhatsApp duty days are not used for attendance (the agent is on WhatsApp, not the dialer).</p>`
+    : '<p class="muted">No one on the roster yet.</p>';
+}
+async function scSave(cells, msg){
+  const { data, error } = await sb.rpc('save_schedule', { p_cells: cells, p_source: 'crm' });
+  if (error) return toast(error.message);
+  if (data.problems?.length) toast(data.problems.map(p => p.reason).join(' · ')); else if (msg !== false) toast(msg || 'Saved ✓');
+  await loadSchedule();
+}
+function scCellPayload(d, a, patch){
+  const r = SC.map.get(scKey(d, a)) || {};
+  return { d, a, status: r.status || 'on', start: hm(r.shift_start), wa: !!r.whatsapp_duty, loc: r.location || null, bs: r.break_set || null, note: r.note || null, ...patch };
+}
+$('#sc-body').addEventListener('click', async e => {
+  if (!scEdit() || SC.view !== 'matrix') return;
+  const chip = e.target.closest('.chip[data-meta]');
+  if (chip) return scMetaEdit(chip);
+  const td = e.target.closest('td[data-d]'); if (!td) return;
+  const { d, a } = td.dataset, r = SC.map.get(scKey(d, a)), b = SC.brush;
+  if (b === 'edit') return scPopup(td, d, a);
+  if (b === 'clear') return scSave([{ d, a, status: 'clear' }], false);
+  if (b === 'wa') {
+    if (!r || r.status !== 'on') return toast('WhatsApp duty goes on a working day — set a shift time first.');
+    return scSave([scCellPayload(d, a, { wa: !r.whatsapp_duty })], false);
+  }
+  if (/^\d\d:\d\d$/.test(b)) return scSave([scCellPayload(d, a, { status: 'on', start: b })], false);
+  scSave([scCellPayload(d, a, { status: b, start: null, wa: false })], false);
+});
+function scPopup(td, d, a){
+  const r = SC.map.get(scKey(d, a)) || {}, m = SC.team.find(x => x.id === a), p = $('#sc-pop'), box = td.getBoundingClientRect();
+  p.innerHTML = `<div class="small muted">${esc(m?.name || '')} · ${DOW[dowOf(d)]} ${fmtD(d)}</div>
+    <div class="seg" style="margin:8px 0" id="pp-st">${[['on','Working'],['off','OFF'],['public_holiday','PH'],['approved_absence','Absence']].map(([k, l]) =>
+      `<button data-s="${k}" class="${(r.status || 'on') === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+    <div class="row"><div class="f" style="min-width:110px"><label>Shift start</label><input type="time" id="pp-t" value="${hm(r.shift_start) || '10:00'}"></div>
+      <div class="f" style="min-width:90px"><label>Break set</label><select id="pp-bs"><option value="">—</option>${SC.sets.map(s => `<option value="${s.id}" ${r.break_set == s.id ? 'selected' : ''}>Set ${s.id}</option>`).join('')}</select></div></div>
+    <div class="row" style="margin-top:6px"><div class="f" style="min-width:90px"><label>Location</label><select id="pp-loc">${['WFO','WFH'].map(l => `<option ${(r.location || m?.default_location) === l ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <label class="small" style="align-self:center"><input type="checkbox" id="pp-wa" style="width:auto" ${r.whatsapp_duty ? 'checked' : ''}> WhatsApp duty</label></div>
+    <div class="f" style="margin-top:6px"><label>Note (optional)</label><input id="pp-note" value="${esc(r.note || '')}"></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="pp-save">Save</button><button class="btn ghost" id="pp-clear">Clear day</button><button class="btn ghost" id="pp-x">Cancel</button></div>`;
+  p.classList.remove('hide');
+  const ph = p.offsetHeight, pw = p.offsetWidth;
+  p.style.left = Math.max(8, Math.min(box.left, innerWidth - pw - 12)) + 'px';
+  p.style.top = (box.bottom + 6 + ph < innerHeight ? box.bottom + 6 : Math.max(8, box.top - ph - 6)) + 'px';
+  let st = r.status === 'unknown' ? 'on' : (r.status || 'on');
+  $('#pp-st').onclick = e => { const b = e.target.closest('button'); if (!b) return; st = b.dataset.s; $$('#pp-st button').forEach(x => x.classList.toggle('on', x === b)); };
+  $('#pp-x').onclick = () => p.classList.add('hide');
+  $('#pp-clear').onclick = () => { p.classList.add('hide'); scSave([{ d, a, status: 'clear' }]); };
+  $('#pp-save').onclick = () => {
+    if (st !== 'on' && $('#pp-wa').checked) return toast('WhatsApp duty goes on a working day.');
+    p.classList.add('hide');
+    scSave([{ d, a, status: st, start: st === 'on' ? $('#pp-t').value : null, wa: st === 'on' && $('#pp-wa').checked,
+              loc: $('#pp-loc').value, bs: $('#pp-bs').value || null, note: $('#pp-note').value.trim() || null }]);
+  };
+}
+async function scMetaEdit(chip){
+  const a = chip.dataset.a, k = chip.dataset.meta, ws = SC.start;
+  const val = k === 'loc' ? prompt('Location for this week (WFO or WFH):', chip.textContent.trim())?.trim().toUpperCase()
+                          : prompt('Break set for this week (' + SC.sets.map(s => s.id).join(', ') + '):', chip.textContent.replace(/\D/g, ''))?.trim();
+  if (!val) return;
+  if (k === 'loc' && !['WFO', 'WFH'].includes(val)) return toast('Type WFO or WFH.');
+  if (k === 'bs' && !SC.sets.some(s => String(s.id) === val)) return toast('Unknown break set.');
+  const cells = Array.from({ length: 7 }, (_, i) => addDays(ws, i)).filter(d => SC.map.has(scKey(d, a)))
+    .map(d => scCellPayload(d, a, k === 'loc' ? { loc: val } : { bs: +val }));
+  if (!cells.length) return toast('Fill the week first, then set its location / break set.');
+  scSave(cells);
+}
+function scPrompt(msg){ return confirm(msg); }
+$('#sc-copy').onclick = async () => {
+  const prev = addDays(SC.start, -7), cells = [];
+  // the previous week may be outside the loaded range → fetch it
+  const { data, error } = await sb.from('agent_schedule').select('*').gte('work_date', prev).lte('work_date', addDays(prev, 6));
+  if (error) return toast(error.message);
+  const ids = new Set(scTeamFiltered().map(m => m.id)); let overwrite = 0;
+  (data || []).filter(r => ids.has(r.agent_id)).forEach(r => {
+    const d = addDays(r.work_date, 7); if (SC.map.has(scKey(d, r.agent_id))) overwrite++;
+    cells.push({ d, a: r.agent_id, status: r.status, start: hm(r.shift_start), wa: r.whatsapp_duty, loc: r.location, bs: r.break_set, note: null });
+  });
+  if (!cells.length) return toast('The previous week is empty.');
+  if (!scPrompt(`Copy ${cells.length} days from the week of ${fmtD(prev)} into the week of ${fmtD(SC.start)}?` + (overwrite ? `\n${overwrite} filled days will be replaced.` : ''))) return;
+  scSave(cells, 'Week copied ✓');
+};
+$('#sc-add').onclick = async () => {
+  const name = prompt('Full name (as it should appear on the schedule):'); if (!name) return;
+  const email = prompt('Work e-mail (@thrivve.me) — they sign in to the CRM with it:'); if (!email) return;
+  const loc = (prompt('Location: WFO or WFH', 'WFO') || 'WFO').trim().toUpperCase();
+  const { error } = await sb.rpc('add_team_member', { p_name: name, p_email: email, p_location: loc === 'WFH' ? 'WFH' : 'WFO' });
+  if (error) return toast(error.message);
+  toast(name + ' added to the team ✓'); loadSchedule();
+};
+
+// --- calendar + day inspector ---
+function scCalendar(){
+  const m0 = SC.month || SC.start.slice(0, 8) + '01', mDate = new Date(m0 + 'T00:00:00Z');
+  const label = mDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const first = weekStart(m0), team = scTeamFiltered(), t = todayRiyadh(); SC.day ||= t;
+  const cells = Array.from({ length: 42 }, (_, i) => addDays(first, i)).filter((d, i) => i < 35 || d.slice(0, 7) === m0.slice(0, 7));
+  const dayBox = d => { const rs = team.map(m => [m, SC.map.get(scKey(d, m.id))]);
+    const wa = rs.filter(([, r]) => r?.whatsapp_duty).map(([m]) => m.name.split(' ')[0]);
+    const on = rs.filter(([, r]) => r?.status === 'on').length, off = rs.filter(([, r]) => r && r.status !== 'on').length;
+    return `<div class="day ${d.slice(0, 7) !== m0.slice(0, 7) ? 'out' : ''} ${d === SC.day ? 'sel' : ''}" data-day="${d}"><b>${+d.slice(8)}</b>${d === t ? ' <span class="pill p-green">today</span>' : ''}
+      ${wa.map(n => `<div class="wa">WA: ${esc(n)}</div>`).join('')}<div class="muted">${on} on duty · <span style="color:var(--red)">${off} off</span></div></div>`; };
+  $('#sc-body').innerHTML = `<div class="row" style="align-items:center;margin-bottom:10px"><button class="btn ghost" id="cal-p">‹</button><b>${label}</b><button class="btn ghost" id="cal-n">›</button></div>
+    <div class="grid2" style="grid-template-columns:2fr 1fr"><div><div class="cal">${['Sat','Sun','Mon','Tue','Wed','Thu','Fri'].map(h => `<div class="h">${h}</div>`).join('')}${cells.map(dayBox).join('')}</div></div>
+    <div id="cal-ins"></div></div>`;
+  const mv = n => { const x = new Date(m0 + 'T00:00:00Z'); x.setUTCMonth(x.getUTCMonth() + n); SC.month = x.toISOString().slice(0, 10); loadSchedule(); };
+  $('#cal-p').onclick = () => mv(-1); $('#cal-n').onclick = () => mv(1);
+  $('.cal').onclick = e => { const b = e.target.closest('[data-day]'); if (!b) return; SC.day = b.dataset.day; scCalendar(); };
+  scInspector(SC.day, $('#cal-ins'));
+}
+function scBreaksOf(bs){ return (SC.sets.find(s => s.id == bs)?.breaks) || []; }
+function scInspector(d, el){
+  const rs = scTeamFiltered().map(m => [m, SC.map.get(scKey(d, m.id))]);
+  el.innerHTML = `<div class="small muted">DAY SCHEDULE</div><h3 style="margin-top:2px">${DOW[dowOf(d)]} ${fmtD(d)}</h3>` + rs.map(([m, r]) =>
+    `<div style="border:1px solid ${r?.whatsapp_duty ? '#9fd9bd' : 'var(--line)'};background:${r?.whatsapp_duty ? '#f3fbf7' : '#fff'};border-radius:8px;padding:8px;margin-bottom:6px">
+      <div class="row" style="justify-content:space-between;align-items:center"><b>${esc(m.name)}</b>${scCell(r)}</div>
+      <div class="small muted">${esc(r?.location || m.default_location || '')}${r?.break_set ? ' · Set ' + r.break_set + ': ' + scBreaksOf(r.break_set).map(b => b.start + '–' + b.end).join(', ') : ''}${r?.note ? ' · ' + esc(r.note) : ''}</div></div>`).join('');
+}
+
+// --- day timeline & breaks ---
+function scTimeline(days){
+  SC.day = SC.day && days.includes(SC.day) ? SC.day : (days.includes(todayRiyadh()) ? todayRiyadh() : days[0]);
+  const rs = scTeamFiltered().map(m => [m, SC.map.get(scKey(SC.day, m.id))]);
+  const lo = 8 * 60, hi = 21 * 60, X = m => ((Math.max(lo, Math.min(hi, m)) - lo) / (hi - lo) * 100).toFixed(2) + '%';
+  const W = (a, b) => ((Math.min(hi, b) - Math.max(lo, a)) / (hi - lo) * 100).toFixed(2) + '%';
+  const axis = [...Array(14).keys()].map(i => `<span style="position:absolute;left:${X(lo + i * 60)};font-size:11px;color:var(--muted)">${fmtMin(lo + i * 60)}</span>`).join('');
+  const len = 480;
+  $('#sc-body').innerHTML = `<div class="row" style="align-items:center;margin-bottom:10px"><b>Day:</b><select id="tl-day" style="width:auto">${days.map(d => `<option value="${d}" ${d === SC.day ? 'selected' : ''}>${DOW[dowOf(d)]} ${fmtD(d)}</option>`).join('')}</select>
+    <span class="small muted">Blue = shift, striped = planned breaks (break set), green = WhatsApp duty</span></div>
+    <table><tr><td style="width:180px"></td><td><div style="position:relative;height:16px">${axis}</div></td></tr>${rs.map(([m, r]) => {
+      if (!r || r.status !== 'on') return `<tr><td><b>${esc(m.name)}</b></td><td>${scCell(r)}</td></tr>`;
+      const s = toMin(r.shift_start), e = s + (r.shift_minutes || len);
+      return `<tr><td><b>${esc(m.name)}</b><div class="small muted">${hm(r.shift_start)}–${fmtMin(e)} · ${esc(r.location || '')}${r.break_set ? ' · Set ' + r.break_set : ''}</div></td>
+        <td><div class="tline"><div class="sh ${r.whatsapp_duty ? 'wa' : ''}" style="left:${X(s)};width:${W(s, e)}"></div>${scBreaksOf(r.break_set).map(b =>
+          `<div class="br" title="Break ${b.start}–${b.end}" style="left:${X(toMin(b.start))};width:${W(toMin(b.start), toMin(b.end))}"></div>`).join('')}</div></td></tr>`;
+    }).join('')}</table>`;
+  $('#tl-day').onchange = e => { SC.day = e.target.value; scTimeline(days); };
+}
+
+// --- fairness report ---
+function scFair(days){
+  const rows = scTeamFiltered().map(m => {
+    const rs = days.map(d => [d, SC.map.get(scKey(d, m.id))]).filter(([, r]) => r);
+    const on = rs.filter(([, r]) => r.status === 'on'), c = st => rs.filter(([, r]) => r.status === st).length;
+    const starts = {}; on.forEach(([, r]) => { const k = hm(r.shift_start); starts[k] = (starts[k] || 0) + 1; });
+    const sat = on.filter(([d]) => dowOf(d) === 6).length;
+    return { m, set: rs.length, on: on.length, wa: on.filter(([, r]) => r.whatsapp_duty).length, off: c('off'), ph: c('public_holiday'), abs: c('approved_absence'), unk: c('unknown'), sat, starts };
+  });
+  const avg = k => rows.length ? rows.reduce((s, r) => s + r[k], 0) / rows.length : 0;
+  const flag = (v, k) => { const a = avg(k); return a && Math.abs(v - a) >= Math.max(2, a * 0.3) ? ` <span class="pill ${v > a ? 'p-amber' : 'p-blue'}">${v > a ? 'above' : 'below'} avg</span>` : ''; };
+  $('#sc-body').innerHTML = `<h3 style="margin-top:0">Workload &amp; days-off fairness — ${fmtD(days[0])} to ${fmtD(days.at(-1))}</h3>
+    <table><thead><tr><th>Employee</th><th>Working days</th><th>WhatsApp duty</th><th>OFF</th><th>PH</th><th>Absence</th><th>Saturdays worked</th><th>Start times</th><th>Days not set / to check</th></tr></thead><tbody>${rows.map(r =>
+      `<tr><td><b>${esc(r.m.name)}</b></td><td>${r.on}${flag(r.on, 'on')}</td><td>${r.wa}${flag(r.wa, 'wa')}</td><td>${r.off}${flag(r.off, 'off')}</td><td>${r.ph}</td><td>${r.abs}</td><td>${r.sat}</td>
+       <td class="small">${Object.entries(r.starts).sort().map(([k, v]) => `${k} ×${v}`).join(', ') || '—'}</td><td>${days.length - r.set + r.unk || ''}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td class="muted">Team average</td><td>${avg('on').toFixed(1)}</td><td>${avg('wa').toFixed(1)}</td><td>${avg('off').toFixed(1)}</td><td colspan="5"></td></tr></tfoot></table>
+    <p class="small muted">Use the week range above (e.g. 4 or 8 weeks) to compare over a longer period. Flags mark anyone ≥30% (and ≥2 days) away from the team average.</p>`;
+}
+
+// --- break sets ---
+function scBreaks(){
+  const ed = scEdit();
+  $('#sc-body').innerHTML = `<h3 style="margin-top:0">Break sets</h3><table><thead><tr><th>Set</th><th>Usual shift</th><th>Break 1 (15 min)</th><th>Break 2 (30 min)</th><th>Break 3 (15 min)</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${
+    SC.sets.map(s => `<tr data-id="${s.id}"><td><b>Set ${s.id}</b></td><td>${ed ? `<input type="time" class="bs-sh" value="${hm(s.shift_hint)}">` : hm(s.shift_hint)}</td>${
+      [0, 1, 2].map(i => { const b = s.breaks[i] || {}; return ed ? `<td><input type="time" class="bs-a" value="${b.start || ''}" style="width:135px"> – <input type="time" class="bs-b" value="${b.end || ''}" style="width:135px"></td>` : `<td>${b.start || ''}–${b.end || ''}</td>`; }).join('')}${ed ? '<td><button class="btn ghost bs-save">Save</button></td>' : ''}</tr>`).join('')}</tbody></table>
+    ${ed ? '<button class="btn ghost" id="bs-new" style="margin-top:10px">+ Add break set</button>' : ''}
+    <p class="small muted">Breaks are shown on the day timeline and in the agents' schedule. Shift adherence allows ${'60'} minutes of breaks per shift.</p>`;
+  if (!ed) return;
+  $$('.bs-save').forEach(b => b.onclick = async () => {
+    const tr = b.closest('tr'), A = [...tr.querySelectorAll('.bs-a')], B = [...tr.querySelectorAll('.bs-b')];
+    const breaks = A.map((x, i) => ({ start: x.value, end: B[i].value })).filter(x => x.start && x.end);
+    if (breaks.some(x => x.end <= x.start)) return toast('A break ends before it starts.');
+    const { error } = await sb.rpc('save_break_set', { p_id: +tr.dataset.id, p_shift: tr.querySelector('.bs-sh').value || null, p_breaks: breaks });
+    if (error) return toast(error.message); toast('Break set saved ✓'); loadSchedule();
+  });
+  $('#bs-new').onclick = async () => { const id = Math.max(0, ...SC.sets.map(s => s.id)) + 1;
+    const { error } = await sb.rpc('save_break_set', { p_id: id, p_shift: '10:00', p_breaks: [] }); if (error) return toast(error.message); loadSchedule(); };
+}
+
+// --- change history ---
+async function scHistory(){
+  const { data, error } = await sb.from('schedule_changes').select('*').order('changed_at', { ascending: false }).limit(150);
+  if (error) return $('#sc-body').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const v = x => x ? scCell(x) : '<span class="muted">—</span>';
+  $('#sc-body').innerHTML = `<h3 style="margin-top:0">Last 150 schedule changes</h3><table><thead><tr><th>When</th><th>By</th><th>Employee</th><th>Day</th><th>Before</th><th>After</th><th>Source</th></tr></thead><tbody>${
+    (data || []).map(c => `<tr><td class="small">${fmtDT(c.changed_at)}</td><td class="small">${c.changed_by ? esc(nm(c.changed_by)) : 'system'}</td><td>${esc(nm(c.agent_id))}</td>
+      <td class="small">${DOW[dowOf(c.work_date)]} ${fmtD(c.work_date)}</td><td>${v(c.before)}</td><td>${v(c.after)}</td><td class="small muted">${esc(c.source)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// --- controls ---
+$('#sc-view').onclick = e => { const b = e.target.closest('button'); if (!b) return; SC.view = b.dataset.v; $$('#sc-view button').forEach(x => x.classList.toggle('on', x === b)); $('#sc-pop').classList.add('hide'); loadSchedule(); };
+$('#sc-brush').onclick = e => { const b = e.target.closest('button'); if (!b) return; SC.brush = b.dataset.b; $$('#sc-brush button').forEach(x => x.classList.toggle('on', x === b)); };
+$('#sc-loc').onclick = e => { const b = e.target.closest('button'); if (!b) return; SC.loc = b.dataset.l; $$('#sc-loc button').forEach(x => x.classList.toggle('on', x === b)); renderSchedule(); };
+$('#sc-search').oninput = e => { SC.q = e.target.value; renderSchedule(); };
+$('#sc-prev').onclick = () => { SC.start = addDays(SC.start, -7); loadSchedule(); };
+$('#sc-next').onclick = () => { SC.start = addDays(SC.start, 7); loadSchedule(); };
+$('#sc-today').onclick = () => { SC.start = weekStart(todayRiyadh()); loadSchedule(); };
+$('#sc-weeks').onchange = loadSchedule;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#sc-pop').classList.add('hide'); });
+
+// --- import the old sheet (Uploads → "Team schedule") ---
+async function importScheduleFile(f, out){
+  let grid;
+  if (/\.xlsx?$/i.test(f.name)) {
+    const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' });
+    const name = wb.SheetNames.find(n => XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: false }).some(r => /^Break set/i.test(String(r?.[0] ?? '')))) || wb.SheetNames[0];
+    grid = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false, defval: '' });
+  } else grid = (await new Promise(res => Papa.parse(f, { skipEmptyLines: false, complete: res }))).data;
+  const now = new Date(), y0 = now.getFullYear();
+  let parsed = parseScheduleGrid(grid, y0);
+  if (parsed.cells.length && parsed.cells[0].d > todayRiyadh().slice(0, 4) + '-' + String(now.getMonth() + 2).padStart(2, '0') + '-31') parsed = parseScheduleGrid(grid, y0 - 1);
+  if (!parsed.cells.length) return out.innerHTML = '<p class="err">No schedule weeks found — expected the sheet layout (Name, Location, Breaks, then dated columns like "11/22 Sun").</p>';
+  out.innerHTML = `Importing ${parsed.weeks} weeks (${parsed.cells.length} cells)…`;
+  const { data, error } = await sb.rpc('import_schedule_sheet', { p_cells: parsed.cells, p_break_sets: parsed.breakSets });
+  if (error) return out.innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  out.innerHTML = `<div class="kpis"><div class="kpi"><div class="n">${parsed.weeks}</div><div class="l">Weeks</div></div><div class="kpi"><div class="n">${data.changed}</div><div class="l">Days added / changed</div></div>
+    <div class="kpi"><div class="n">${data.unchanged}</div><div class="l">Already the same</div></div></div>` +
+    (data.unknown_names?.length ? `<p class="err">Names not matched to a team member (skipped): ${esc(data.unknown_names.join(', '))}</p>` : '') +
+    '<p class="small">Open the <a href="#" onclick="show(\'schedule\');return false">Schedule</a> tab to see it.</p>';
+}
 
 boot();
 </script>
