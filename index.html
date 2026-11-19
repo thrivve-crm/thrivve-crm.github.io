@@ -217,6 +217,13 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <!-- IMPORTS (admin) -->
     <section id="v-imports" class="hide">
       <div class="card">
+        <h2>Automatic sync</h2>
+        <p class="small muted">Maqsam calls every 10 min, Metabase bookings every 30 min — pulled server-side, no files. Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
+        <div id="s-stat"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><span class="small muted" id="s-msg"></span></div>
+        <div id="s-live" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
         <h2>Uploads</h2>
         <p class="small muted">Uploading the same file again never duplicates anything. Bookings: an older file cannot move a booking back to an earlier status unless you tick "Allow".</p>
         <div class="row">
@@ -545,7 +552,27 @@ $('#i-go').onclick = async () => {
     (probs.length ? `<h3>Notes (${probs.length})</h3><pre>${esc(JSON.stringify(probs.slice(0,200), null, 1))}</pre>` : '');
   loadImports();
 };
+const SYNC_L = { maqsam_calls: 'Maqsam calls', maqsam_states: 'Maqsam live agent states', metabase_bookings: 'Metabase bookings' };
+async function loadSync(){
+  const [{ data: runs, error }, { data: live }] = await Promise.all([
+    sb.from('sync_runs').select('*').order('started_at', {ascending:false}).limit(60),
+    sb.from('agent_live_state').select('*').order('agent_raw')]);
+  if (error) return $('#s-stat').innerHTML = `<p class="muted small">Sync is not set up yet.</p>`;
+  const last = {}; for (const r of runs||[]) if (!last[r.source]) last[r.source] = r;
+  const lastOk = {}; for (const r of runs||[]) if (r.ok && !lastOk[r.source]) lastOk[r.source] = r;
+  $('#s-stat').innerHTML = `<table><tr><th>Source</th><th>Last run</th><th>Result</th><th>Last success</th><th>Data up to</th></tr>${
+    Object.keys(SYNC_L).map(k => { const r = last[k], o = lastOk[k];
+      return `<tr><td>${SYNC_L[k]}</td><td class="small">${r ? fmtDT(r.finished_at) : '—'}</td><td class="small">${!r ? '<span class="muted">Not run yet</span>' : r.ok ? '<span class="pill p-green">OK</span> ' + esc(Object.entries(r.result||{}).map(([a,b]) => a + ' ' + b).join(', ')) : '<span class="pill p-red">Failed</span> ' + esc(r.error||'')}</td><td class="small">${o ? fmtDT(o.finished_at) : '—'}</td><td class="small">${o && k === 'maqsam_calls' ? fmtDT(o.window_to) : '—'}</td></tr>`; }).join('')}</table>`;
+  $('#s-live').innerHTML = (live||[]).length ? `<h3>Agents right now</h3><table><tr><th>Agent</th><th>State</th><th>Since</th><th>Checked</th></tr>${live.filter(l => l.active !== false).map(l => `<tr><td>${esc(l.agent_id ? nm(l.agent_id) : l.agent_raw)}</td><td>${esc(l.state)}</td><td class="small">${fmtDT(l.since)}</td><td class="small">${fmtDT(l.polled_at)}</td></tr>`).join('')}</table>` : '';
+}
+$('#s-go').onclick = async () => {
+  $('#s-msg').textContent = 'Started — results appear here in a minute…';
+  const { error } = await sb.rpc('request_sync', { p_what: 'all' });
+  if (error) return $('#s-msg').textContent = error.message;
+  setTimeout(loadSync, 45000);
+};
 async function loadImports(){
+  loadSync();
   const [{ data: h }, { data: u }] = await Promise.all([
     sb.from('imports').select('*').order('imported_at', {ascending:false}).limit(20),
     sb.from('unmapped_agent_names').select('*').order('rows_seen', {ascending:false})]);
