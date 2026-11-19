@@ -217,27 +217,25 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <!-- IMPORTS (admin) -->
     <section id="v-imports" class="hide">
       <div class="card">
-        <h2>Automatic sync</h2>
-        <p class="small muted">Maqsam calls every 10 min (server-side). Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
-        <p class="small"><b>Metabase bookings — one click:</b> drag this button to your bookmarks bar once: <a class="btn" id="s-bm" href="#" style="display:inline-block;cursor:grab">⇪ Send bookings to CRM</a> — then, while you are on Metabase, click the bookmark. The CRM opens and imports the latest bookings report (card 1120).</p>
-        <div id="s-relay"></div>
-        <div id="s-stat"></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><span class="small muted" id="s-msg"></span></div>
-        <div id="s-live" style="margin-top:12px"></div>
-      </div>
-      <div class="card">
         <h2>Uploads</h2>
         <p class="small muted">Uploading the same file again never duplicates anything. Bookings: an older file cannot move a booking back to an earlier status unless you tick "Allow".</p>
         <div class="row">
           <div class="f"><label>Type</label><select id="i-src">
-            <option value="maqsam_calls">Maqsam — Calls export</option>
+            <option value="metabase_bookings">Metabase — Booking Status Breakdown (CSV)</option>
             <option value="maqsam_states">Maqsam — Agent State Activity</option>
-            <option value="metabase_bookings">Metabase — Booking Status Breakdown</option>
+            <option value="maqsam_calls">Maqsam — Calls export (only if the automatic sync is down)</option>
             <option value="legacy_crm">Old CRM — full sheet export (.xlsx)</option></select></div>
           <div class="f"><label>File</label><input type="file" id="i-file" accept=".csv,text/csv,.xlsx"></div>
           <label class="small"><input type="checkbox" id="i-back" style="width:auto"> Allow moving back to an older status</label>
           <button class="btn" id="i-go">Upload</button></div>
         <div id="i-out" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <h2>Automatic sync</h2>
+        <p class="small muted">Maqsam calls are pulled every 10 min. Agent state history (for attendance) still comes from the daily Maqsam report (upload it above).</p>
+        <div id="s-stat"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><span class="small muted" id="s-msg"></span></div>
+        <div id="s-live" style="margin-top:12px"></div>
       </div>
       <div class="card"><h2>Recent uploads</h2><div id="i-hist"></div></div>
       <div class="card"><h2>Unrecognized Maqsam names</h2><div id="i-unm"></div></div>
@@ -555,7 +553,7 @@ $('#i-go').onclick = async () => {
     (probs.length ? `<h3>Notes (${probs.length})</h3><pre>${esc(JSON.stringify(probs.slice(0,200), null, 1))}</pre>` : '');
   loadImports();
 };
-const SYNC_L = { maqsam_calls: 'Maqsam calls', maqsam_states: 'Maqsam live agent states', metabase_bookings: 'Metabase bookings' };
+const SYNC_L = { maqsam_calls: 'Maqsam calls', maqsam_states: 'Maqsam live agent states' };
 async function loadSync(){
   const [{ data: runs, error }, { data: live }] = await Promise.all([
     sb.from('sync_runs').select('*').order('started_at', {ascending:false}).limit(60),
@@ -566,22 +564,18 @@ async function loadSync(){
   $('#s-stat').innerHTML = `<table><tr><th>Source</th><th>Last run</th><th>Result</th><th>Last success</th><th>Data up to</th></tr>${
     Object.keys(SYNC_L).map(k => { const r = last[k], o = lastOk[k];
       return `<tr><td>${SYNC_L[k]}</td><td class="small">${r ? fmtDT(r.finished_at) : '—'}</td><td class="small">${!r ? '<span class="muted">Not run yet</span>' : r.ok ? '<span class="pill p-green">OK</span> ' + esc(Object.entries(r.result||{}).map(([a,b]) => a + ' ' + b).join(', ')) : '<span class="pill p-red">Failed</span> ' + esc(r.error||'')}</td><td class="small">${o ? fmtDT(o.finished_at) : '—'}</td><td class="small">${o && k === 'maqsam_calls' ? fmtDT(o.window_to) : '—'}</td></tr>`; }).join('')}</table>`;
-  $('#s-live').innerHTML = (live||[]).length ? `<h3>Agents right now</h3><table><tr><th>Agent</th><th>State</th><th>Since</th><th>Checked</th></tr>${live.filter(l => l.active !== false).map(l => `<tr><td>${esc(l.agent_id ? nm(l.agent_id) : l.agent_raw)}</td><td>${esc(l.state)}</td><td class="small">${fmtDT(l.since)}</td><td class="small">${fmtDT(l.polled_at)}</td></tr>`).join('')}</table>` : '';
+  const ours = (live||[]).filter(l => l.agent_id && l.active !== false && AGENTS.some(a => a.id === l.agent_id && a.active && a.role === 'agent'))
+    .sort((x, y) => nm(x.agent_id).localeCompare(nm(y.agent_id)));
+  $('#s-live').innerHTML = ours.length ? `<h3>Agents right now</h3><table><tr><th>Agent</th><th>State</th><th>Checked</th></tr>${ours.map(l => `<tr><td>${esc(nm(l.agent_id))}</td><td>${esc(l.state)}</td><td class="small">${fmtDT(l.polled_at)}</td></tr>`).join('')}</table>` : '';
 }
 const MB_ORIGIN = 'https://metabase.services.wedeliverapp.com';
 // bookmarklet: runs on Metabase (same-origin fetch of card 1120 with the user's own session), hands the rows to this page
-$('#s-bm').href = "javascript:(()=>{const C='" + location.origin + "';if(location.origin!=='" + MB_ORIGIN + "'){alert('Open Metabase first, then click this bookmark.');return}" +
-  "const w=window.open(C+'/#metabase-relay','thrivve_relay');" +
-  "const p=fetch('/api/card/1120/query/json',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'parameters=%5B%5D&format_rows=false'}).then(r=>{if(!r.ok)throw new Error('Metabase '+r.status);return r.json()});" +
-  "let sent=0;const h=async e=>{if(e.origin!==C)return;if(e.data&&e.data.type==='thrivve-ready'&&!sent){sent=1;try{w.postMessage({type:'thrivve-bookings',rows:await p},C)}catch(x){alert(x.message)}}" +
-  "if(e.data&&e.data.type==='thrivve-done')removeEventListener('message',h)};addEventListener('message',h)})()";
-$('#s-bm').onclick = e => { e.preventDefault(); toast('Drag this button to your bookmarks bar, then click it while on Metabase.'); };
 let RELAY_BUSY = false;
 window.addEventListener('message', async (e) => {
   if (e.origin !== MB_ORIGIN || e.data?.type !== 'thrivve-bookings' || RELAY_BUSY) return;
   if (!ME || ME.role !== 'admin') return;
   RELAY_BUSY = true;
-  const out = $('#s-relay'), rows = e.data.rows, now = new Date().toISOString(), agg = {};
+  const out = $('#i-out'), rows = e.data.rows, now = new Date().toISOString(), agg = {};
   try {
     if (!Array.isArray(rows) || !rows.length) throw new Error('Metabase sent no rows');
     const miss = ['Booking ID','Booking Actual Status'].filter(c => !(c in rows[0]));
