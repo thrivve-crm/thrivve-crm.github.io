@@ -218,9 +218,11 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <section id="v-imports" class="hide">
       <div class="card">
         <h2>Automatic sync</h2>
-        <p class="small muted">Maqsam calls every 10 min (server-side). Metabase bookings arrive by the hourly e-mail report and are imported automatically. Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
+        <p class="small muted">Maqsam calls every 10 min (server-side). Agent state history (for attendance) still comes from the daily Maqsam report below.</p>
+        <p class="small"><b>Metabase bookings — one click:</b> drag this button to your bookmarks bar once: <a class="btn" id="s-bm" href="#" style="display:inline-block;cursor:grab">⇪ Send bookings to CRM</a> — then, while you are on Metabase, click the bookmark. The CRM opens and imports the latest bookings report (card 1120).</p>
+        <div id="s-relay"></div>
         <div id="s-stat"></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><button class="btn" id="s-key" style="background:#eef0f3;color:#344054">Copy e-mail ingest key</button><span class="small muted" id="s-msg"></span></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="s-go">Sync now</button><span class="small muted" id="s-msg"></span></div>
         <div id="s-live" style="margin-top:12px"></div>
       </div>
       <div class="card">
@@ -277,7 +279,8 @@ async function boot(){
   $('#l-car').innerHTML = '<option value="">—</option>' + (LOOK.car_model||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
   const t = todayRiyadh();
   $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#pf-from').value = addDays(t, -30); $('#pf-to').value = addDays(t, -1); $('#rv-from').value = addDays(t, -14); $('#rv-to').value = t; $('#qa-day').value = addDays(t, -1); $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
-  show(location.hash.slice(1) || 'queue');
+  show(location.hash === '#metabase-relay' ? 'imports' : (location.hash.slice(1) || 'queue'));
+  if (location.hash === '#metabase-relay' && window.opener && ME.role === 'admin') window.opener.postMessage({ type: 'thrivve-ready' }, MB_ORIGIN);
 }
 function showLogin(msg){
   $('#app').classList.add('hide'); $('#v-login').classList.remove('hide'); $('#lg-msg').textContent = msg || '';
@@ -565,12 +568,43 @@ async function loadSync(){
       return `<tr><td>${SYNC_L[k]}</td><td class="small">${r ? fmtDT(r.finished_at) : '—'}</td><td class="small">${!r ? '<span class="muted">Not run yet</span>' : r.ok ? '<span class="pill p-green">OK</span> ' + esc(Object.entries(r.result||{}).map(([a,b]) => a + ' ' + b).join(', ')) : '<span class="pill p-red">Failed</span> ' + esc(r.error||'')}</td><td class="small">${o ? fmtDT(o.finished_at) : '—'}</td><td class="small">${o && k === 'maqsam_calls' ? fmtDT(o.window_to) : '—'}</td></tr>`; }).join('')}</table>`;
   $('#s-live').innerHTML = (live||[]).length ? `<h3>Agents right now</h3><table><tr><th>Agent</th><th>State</th><th>Since</th><th>Checked</th></tr>${live.filter(l => l.active !== false).map(l => `<tr><td>${esc(l.agent_id ? nm(l.agent_id) : l.agent_raw)}</td><td>${esc(l.state)}</td><td class="small">${fmtDT(l.since)}</td><td class="small">${fmtDT(l.polled_at)}</td></tr>`).join('')}</table>` : '';
 }
-$('#s-key').onclick = async () => {
-  const { data, error } = await sb.rpc('get_ingest_key', {});
-  if (error) return $('#s-msg').textContent = error.message;
-  try { await navigator.clipboard.writeText(data); $('#s-msg').textContent = 'Key copied — paste it into the Apps Script as INGEST_KEY.'; }
-  catch { prompt('Copy this key into the Apps Script (INGEST_KEY):', data); }
-};
+const MB_ORIGIN = 'https://metabase.services.wedeliverapp.com';
+// bookmarklet: runs on Metabase (same-origin fetch of card 1120 with the user's own session), hands the rows to this page
+$('#s-bm').href = "javascript:(()=>{const C='" + location.origin + "';if(location.origin!=='" + MB_ORIGIN + "'){alert('Open Metabase first, then click this bookmark.');return}" +
+  "const w=window.open(C+'/#metabase-relay','thrivve_relay');" +
+  "const p=fetch('/api/card/1120/query/json',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'parameters=%5B%5D&format_rows=false'}).then(r=>{if(!r.ok)throw new Error('Metabase '+r.status);return r.json()});" +
+  "let sent=0;const h=async e=>{if(e.origin!==C)return;if(e.data&&e.data.type==='thrivve-ready'&&!sent){sent=1;try{w.postMessage({type:'thrivve-bookings',rows:await p},C)}catch(x){alert(x.message)}}" +
+  "if(e.data&&e.data.type==='thrivve-done')removeEventListener('message',h)};addEventListener('message',h)})()";
+$('#s-bm').onclick = e => { e.preventDefault(); toast('Drag this button to your bookmarks bar, then click it while on Metabase.'); };
+let RELAY_BUSY = false;
+window.addEventListener('message', async (e) => {
+  if (e.origin !== MB_ORIGIN || e.data?.type !== 'thrivve-bookings' || RELAY_BUSY) return;
+  if (!ME || ME.role !== 'admin') return;
+  RELAY_BUSY = true;
+  const out = $('#s-relay'), rows = e.data.rows, now = new Date().toISOString(), agg = {};
+  try {
+    if (!Array.isArray(rows) || !rows.length) throw new Error('Metabase sent no rows');
+    const miss = ['Booking ID','Booking Actual Status'].filter(c => !(c in rows[0]));
+    if (miss.length) throw new Error('Bookings report columns changed — missing: ' + miss.join(', '));
+    const clean = rows.map(r => Object.fromEntries(Object.entries(r).map(([k,v]) => [k, v == null ? '' : String(v)])));
+    const { data: imp, error: e1 } = await sb.rpc('start_import', { p_source: 'metabase_bookings', p_file: 'Metabase one-click (card 1120)', p_sha: null, p_rows: clean.length });
+    if (e1) throw e1;
+    for (let i = 0; i < clean.length; i += 1000) {
+      out.innerHTML = `<p class="small">Importing bookings ${Math.min(i+1000, clean.length)} / ${clean.length}…</p>`;
+      const { data, error } = await sb.rpc('import_bookings', { p_import: imp, p_rows: clean.slice(i, i+1000), p_allow_backward: false });
+      if (error) throw error;
+      Object.entries(data).forEach(([k,v]) => { if (typeof v === 'number') agg[k] = (agg[k]||0) + v; });
+    }
+    agg.rows = clean.length;
+    await sb.rpc('log_sync', { p_source: 'metabase_bookings', p_ok: true, p_from: now, p_to: now, p_result: agg, p_error: null });
+    out.innerHTML = `<p><span class="pill p-green">Bookings imported</span> ${esc(Object.entries(agg).map(([k,v]) => k + ' ' + v).join(', '))}</p>`;
+  } catch (err) {
+    await sb.rpc('log_sync', { p_source: 'metabase_bookings', p_ok: false, p_from: now, p_to: now, p_result: agg, p_error: String(err.message || err) });
+    out.innerHTML = `<p class="err">${esc(err.message || err)}</p>`;
+  }
+  try { e.source.postMessage({ type: 'thrivve-done' }, MB_ORIGIN); } catch {}
+  RELAY_BUSY = false; loadSync();
+});
 $('#s-go').onclick = async () => {
   $('#s-msg').textContent = 'Started — results appear here in a minute…';
   const { error } = await sb.rpc('request_sync', { p_what: 'all' });
