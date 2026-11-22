@@ -247,6 +247,17 @@ table.heat{font-size:12px} table.heat td,table.heat th{padding:5px 6px;text-alig
 td.hm{cursor:pointer;min-width:30px;border:1px solid #fff} td.hm.l0{background:#fafafa;color:#c4c6cc} td.hm.l1{background:#f4ecfa} td.hm.l2{background:#e3cdf2} td.hm.l3{background:#c89ee6}
 td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} td.hm:hover{outline:2px solid var(--accent)}
 .grid2 .tbl table{min-width:0} .grid2 .card{min-width:0}
+.ms{position:relative;display:inline-block}.ms-pop{position:absolute;z-index:40;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:0 12px 32px rgba(16,24,40,.14);min-width:230px}
+.ms-pop label{display:flex;align-items:center;gap:8px;padding:5px 8px;font-size:13px;border-radius:8px;cursor:pointer;margin:0}.ms-pop label:hover{background:#f9fafb}.ms-pop input{width:auto;margin:0}
+.ms-pop .ms-act{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.lchips{display:flex;flex-wrap:wrap;gap:6px}.lchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;cursor:pointer;background:#fff;color:var(--ink);user-select:none}
+.lchip i{display:inline-block;width:9px;height:9px;border-radius:50%}.lchip.off{opacity:.45;text-decoration:line-through}.lchip b{font-weight:600;color:#535862}
+.obar{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 56px;gap:12px;align-items:center;margin:7px 0;font-size:13px}.obar .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.obar .t:hover{color:var(--brand)}
+.obar .b{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#f2f4f7}.obar .b span{display:block;height:100%;cursor:pointer;min-width:2px}.obar .b span:hover{filter:brightness(1.12)}.obar b{text-align:right}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.toprow input[type=search]{max-width:240px}
+table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th.rk.click:hover,table.heat tfoot td[data-ht]:hover{color:var(--brand);text-decoration:underline}
+.busy{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.busy span{background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px}
+.kpi.kpi-top .n{font-size:20px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -613,7 +624,7 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
 
     <!-- CALLS DASHBOARD -->
     <section id="v-calldash" class="hide">
-      <div class="bar"><div><h1>Calls</h1><div class="small muted" id="cd-asof">Loading…</div></div></div>
+      <div class="bar"><div><h1>Call performance</h1><div class="small muted" id="cd-asof">Loading…</div></div></div>
       <div class="card dash-filter">
         <div class="row" style="align-items:center;gap:12px">
           <div class="seg" id="cd-preset">
@@ -624,14 +635,23 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
         </div>
         <div class="row mt" style="align-items:center;gap:12px">
           <span class="small muted">Time of day</span>
-          <div class="seg sm" id="cd-win"><button data-v="0-1440" class="on">All day</button><button data-v="540-720">09–12</button><button data-v="660-780">11–13</button><button data-v="780-1020">13–17</button><button data-v="1020-1260">17–21</button></div>
+          <div class="seg sm" id="cd-win"><button data-v="0-1440" class="on">All day</button><button data-v="540-720">09–12</button><button data-v="660-780">11–13</button><button data-v="780-1020">13–17</button><button data-v="1020-1260">17–21</button><button data-v="custom">Custom</button></div>
+          <span class="row hide" id="cd-win-custom" style="gap:6px;align-items:center"><input type="time" id="cd-win-from" step="300" value="10:30" style="width:120px"><span class="small muted">to</span><input type="time" id="cd-win-to" step="300" value="14:00" style="width:120px"><button class="btn sm" id="cd-win-go">Apply</button></span>
           <span class="small muted" data-perm="performance">Agents</span>
           <div class="seg sm" id="cd-agents" data-perm="performance"></div>
+          <span class="small muted">Outcome</span>
+          <div class="ms" id="cd-states"><button class="btn ghost sm" id="cd-states-btn" type="button">All outcomes ▾</button><div class="ms-pop hide" id="cd-states-pop"></div></div>
         </div>
       </div>
       <div class="kpis" id="cd-kpis"></div>
-      <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Agents</h2><span class="small muted">Click a column to sort. A call with several agents counts for the one who started it.</span></div>
+      <div class="card"><div class="toprow"><div><h2 style="margin:0">Agents</h2><span class="small muted">Click a column to sort, a row to see its calls. A call with several agents counts for the one who started it.</span></div>
+          <input type="search" id="cd-search" placeholder="Search agents"></div>
         <div class="tbl mt" id="cd-agents-t"></div></div>
+      <div class="card"><div class="toprow"><h2 style="margin:0">Calls per agent by outcome</h2><span class="small muted">Click an outcome to show or hide it. Click a bar to see those calls.</span></div>
+        <div class="lchips mt" id="cd-out-legend"></div><div id="cd-out-bars" class="mt"></div></div>
+      <div class="card"><div class="toprow"><h2 style="margin:0">Day by day per agent</h2>
+          <div class="seg sm" id="cd-trend-metric"><button data-v="total" class="on">Total calls</button><button data-v="connected">Connected</button></div></div>
+        <div class="lchips mt" id="cd-trend-legend"></div><div id="cd-trend" class="chart"></div></div>
       <div class="card" id="cd-ab-card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Abandoned calls &mdash; rang the agent, not picked up</h2><span class="small" id="cd-ab-note"></span></div>
         <div class="grid2 mt"><div><h3 class="sec-t" style="margin-top:0">By agent</h3><div id="cd-ab-agents"></div></div>
         <div><h3 class="sec-t" style="margin-top:0">Day by day</h3><div class="legend" id="cd-ab-legend"></div><div id="cd-ab-daily" class="chart"></div></div></div></div>
@@ -639,7 +659,7 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
       <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Heatmap</h2>
           <div class="row" style="align-items:center"><div class="seg sm" id="cd-hm-rows"><button data-v="day" class="on">By day</button><button data-v="agent">By agent</button></div>
           <div class="seg sm" id="cd-hm-metric"><button data-v="total" class="on">All calls</button><button data-v="connected">Connected</button><button data-v="lost">Not connected</button><button data-v="abandoned">Abandoned</button></div></div></div>
-        <div class="tbl mt" id="cd-heat"></div><div class="small muted mt" id="cd-heat-note"></div></div>
+        <div class="busy" id="cd-heat-busy"></div><div class="tbl mt" id="cd-heat"></div><div class="small muted mt" id="cd-heat-note"></div></div>
       <div class="card hide" id="cd-drill">
         <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0" id="cd-drill-t"></h2><div class="row"><button class="btn ghost sm" id="cd-drill-csv">Export CSV</button><button class="btn ghost sm" id="cd-drill-x">Close</button></div></div>
         <div class="tbl mt" id="cd-drill-out"></div>
@@ -1431,7 +1451,14 @@ seg('#bd-mode', v => { BD.mode = v; if (BD.data) renderBookDash(); });
 $('#bd-go').onclick = loadBookDash;
 
 // ---------------- Calls ----------------
-const CD = { preset: 'today', win: [0, 1440], agents: new Set(), data: null, sort: ['total', -1], hmRows: 'day', hmMetric: 'total' };
+const CD = { preset: 'today', win: [0, 1440], agents: new Set(), data: null, sort: ['total', -1], hmRows: 'day', hmMetric: 'total',
+  states: null, hiddenOut: new Set(), trendMetric: 'total', hiddenAgents: new Set(), search: '' };
+// Maqsam call outcomes (names as normalised by app.call_state_norm)
+const OUTCOMES = [['Serviced', '#067647'], ['Successful', '#12b76a'], ['Completed', '#32d583'], ['Abandoned', '#d92d20'], ['No Answer', '#f79009'],
+  ['Busy', '#7a5af8'], ['Dropped', '#98a2b3'], ['Failed', '#475467'], ['In Progress', '#d0d5dd']];
+const outColor = st => (OUTCOMES.find(o => o[0] === st) || [, '#e4e7ec'])[1];
+const AGENT_COLORS = ['#65278a', '#ff9800', '#175cd3', '#067647', '#d92d20', '#ac3eb5', '#0e9384', '#c4320a', '#475467', '#e478fa', '#2e90fa', '#86cb3c'];
+const minLabel = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 function cdRange(){
   if (CD.preset === 'custom') { let f = $('#cd-from').value, t = $('#cd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
   return periodOf(CD.preset);
@@ -1441,13 +1468,13 @@ async function loadCallDash(){
     $('#cd-agents').innerHTML = AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<button data-v="${a.id}">${esc(a.name.split(' ')[0] + ' ' + (a.name.split(' ')[1] || '')[0] + '.')}</button>`).join('');
   const [f, t] = cdRange();
   $('#cd-kpis').innerHTML = '<p class="muted">Loading…</p>';
-  const { data, error } = await sb.rpc('calls_dashboard', { p_from: f, p_to: t, p_agents: CD.agents.size ? [...CD.agents] : null, p_min_from: CD.win[0], p_min_to: CD.win[1] });
+  const { data, error } = await sb.rpc('calls_dashboard', { p_from: f, p_to: t, p_agents: CD.agents.size ? [...CD.agents] : null, p_min_from: CD.win[0], p_min_to: CD.win[1], p_states: CD.states });
   if (error) return $('#cd-kpis').innerHTML = `<p class="err">${esc(error.message)}</p>`;
   CD.data = data; renderCallDash();
 }
 function renderCallDash(){
   const d = CD.data, k = d.kpi, p = d.prev, cmp = p.total > 0;
-  $('#cd-asof').innerHTML = `${d.from === d.to ? dLabel(d.from) : dLabel(d.from) + ' – ' + dLabel(d.to)} · compared with ${dLabel(d.prev_from)} – ${dLabel(d.prev_to)} · Maqsam synced to <b>${fmtDT(d.last_call)}</b>${d.scope === 'own' ? ' · your calls only' : ''}`;
+  $('#cd-asof').innerHTML = `${d.from === d.to ? dLabel(d.from) : dLabel(d.from) + ' – ' + dLabel(d.to)} · compared with ${dLabel(d.prev_from)} – ${dLabel(d.prev_to)} · Maqsam synced to <b>${fmtDT(d.last_call)}</b>${d.scope === 'own' ? ' · your calls only' : ''}${CD.win[0] > 0 || CD.win[1] < 1440 ? ` · <b>${minLabel(CD.win[0])}–${minLabel(CD.win[1])}</b> only` : ''}${CD.states ? ` · outcome: <b>${CD.states.map(esc).join(', ')}</b>` : ''}`;
   const rate = k.total ? k.connected / k.total * 100 : 0, prate = p.total ? p.connected / p.total * 100 : 0;
   const aht = k.connected ? k.talk_sec / k.connected : 0, paht = p.connected ? p.talk_sec / p.connected : 0;
   const avgd = k.total ? k.dur_sec / k.total : 0, pavgd = p.total ? p.dur_sec / p.total : 0;
@@ -1455,6 +1482,7 @@ function renderCallDash(){
   $('#cd-kpis').innerHTML =
     kcard('Total calls', n0(k.total), `${cmp ? delta(k.total, p.total) + ' · ' : ''}${k.days > 1 ? n0(Math.round(k.total / k.days)) + ' per day' : ''}`) +
     kcard('Connected', n0(k.connected), `${ratio(k.connected, k.total)} connect rate ${cmp ? delta(rate, prate, 'pts') : ''}`, null, 'k-green') +
+    topAgentCard() +
     kcard('Not connected', n0(k.lost), `${ratio(k.lost, k.total)} · abandoned ${n0(bs.Abandoned)} · no answer ${n0(bs['No Answer'])} · busy ${n0(bs.Busy)} · dropped ${n0(bs.Dropped)}`, null, 'k-red') +
     kcard('Talk time', hms(k.talk_sec), `${(k.talk_sec / 3600).toFixed(1)} h on connected calls`) +
     kcard('Avg handling (AHT)', ms(aht), `talk time ÷ connected ${cmp ? delta(aht, paht, 'ms') : ''}`) +
@@ -1463,8 +1491,48 @@ function renderCallDash(){
     kcard('Abandoned by agent', n0(k.abandoned), `${ratio(k.abandoned, k.total)} of calls routed to agents${k.ab_ring_sec != null ? ` · rang ${k.ab_ring_sec}s on average` : ''} ${cmp ? delta(k.abandoned, p.abandoned, 'num', false) : ''}`, 'abandoned', 'k-red') +
     (CD.agents.size ? '' : kcard('Missed — no agent', n0((d.unrouted?.inbound || 0) + (d.unrouted?.campaign || 0)), `inbound ${n0(d.unrouted?.inbound)} · campaign ${n0(d.unrouted?.campaign)} · never reached anyone`, 'unrouted', 'k-amber')) +
     kcard('Transferred calls', n0(k.transferred), 'more than one agent on the call');
-  renderAgentTable(); renderAbandoned(); renderHourly(); renderHeat();
+  renderAgentTable(); renderOutcome(); renderTrend(); renderAbandoned(); renderHourly(); renderHeat();
 }
+function topAgent(){
+  return (CD.data?.agents || []).filter(a => a.connected > 0).reduce((m, a) => !m || a.connected > m.connected || (a.connected === m.connected && a.talk_sec > m.talk_sec) ? a : m, null);
+}
+function topAgentCard(){
+  const a = topAgent(); if (!a || CD.data.agents.length < 2) return '';
+  return `<div class="kpi kpi-link kpi-top k-green" data-topagent="${a.agent_id}" tabindex="0" role="button" title="Click to see this agent's connected calls"><div class="l">Most Connected Calls</div><div class="n">${esc(nm(a.agent_id))}</div>
+    <div class="s"><b>${n0(a.connected)}</b> connected · ${ratio(a.connected, a.total)} rate · ${hms(a.talk_sec)} talk</div></div>`;
+}
+function renderOutcome(){
+  const d = CD.data, by = {}, tot = {};
+  d.agent_states.forEach(([a, st, n]) => { (by[a] ||= {})[st] = n; tot[st] = (tot[st] || 0) + n; });
+  const present = [...OUTCOMES.map(o => o[0]).filter(st => tot[st]), ...Object.keys(tot).filter(st => !OUTCOMES.some(o => o[0] === st))];
+  $('#cd-out-legend').innerHTML = present.map(st => `<span class="lchip ${CD.hiddenOut.has(st) ? 'off' : ''}" data-st="${esc(st)}" role="button" tabindex="0"><i style="background:${outColor(st)}"></i>${esc(st)} <b>${n0(tot[st])}</b></span>`).join('');
+  const vis = present.filter(st => !CD.hiddenOut.has(st));
+  const rows = d.agents.map(a => ({ id: a.agent_id, name: nm(a.agent_id), segs: vis.map(st => [st, by[a.agent_id]?.[st] || 0]).filter(x => x[1]) }))
+    .map(r => ({ ...r, total: r.segs.reduce((s, x) => s + x[1], 0) })).filter(r => r.total).sort((a, b) => b.total - a.total);
+  const mx = Math.max(1, ...rows.map(r => r.total));
+  $('#cd-out-bars').innerHTML = rows.length ? rows.map(r => `<div class="obar"><span class="t" data-agent="${r.id}" title="See all of ${esc(r.name)}'s calls">${esc(r.name)}</span>
+      <span class="b" style="width:${Math.max(r.total / mx * 100, 2)}%">${r.segs.map(([st, n]) => `<span style="flex:${n};background:${outColor(st)}" data-agent="${r.id}" data-st="${esc(st)}" title="${esc(r.name)} · ${esc(st)}: ${n0(n)} (${ratio(n, r.total)})"></span>`).join('')}</span><b>${n0(r.total)}</b></div>`).join('')
+    : '<p class="muted small">No calls for the outcomes shown.</p>';
+}
+$('#cd-out-legend').onclick = e => { const c = e.target.closest('[data-st]'); if (!c) return; const st = c.dataset.st; CD.hiddenOut.has(st) ? CD.hiddenOut.delete(st) : CD.hiddenOut.add(st); renderOutcome(); };
+$('#cd-out-bars').onclick = e => { const x = e.target.closest('[data-agent]'); if (!x) return;
+  const visible = OUTCOMES.map(o => o[0]).filter(st => !CD.hiddenOut.has(st) && (!CD.states || CD.states.includes(st)));
+  cdDrill({ agent: x.dataset.agent, states: x.dataset.st ? [x.dataset.st] : (CD.hiddenOut.size ? visible : undefined) }); };
+function renderTrend(){
+  const d = CD.data, days = []; for (let x = d.from; x <= d.to; x = addDays(x, 1)) days.push(x);
+  const idx = CD.trendMetric === 'connected' ? 3 : 2, val = {}, tot = {};
+  d.daily.forEach(r => { (val[r[1]] ||= {})[r[0]] = r[idx]; tot[r[1]] = (tot[r[1]] || 0) + r[idx]; });
+  const ags = d.agents.map(a => a.agent_id).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
+  const color = id => AGENT_COLORS[ags.indexOf(id) % AGENT_COLORS.length];
+  $('#cd-trend-legend').innerHTML = ags.map(id => `<span class="lchip ${CD.hiddenAgents.has(id) ? 'off' : ''}" data-agent="${id}" role="button" tabindex="0"><i style="background:${color(id)}"></i>${esc(nm(id))} <b>${n0(tot[id] || 0)}</b></span>`).join('');
+  const shown = ags.filter(id => !CD.hiddenAgents.has(id));
+  if (!shown.length) { $('#cd-trend').innerHTML = '<p class="muted small">Pick at least one agent above.</p>'; return; }
+  const rows = days.map(x => Object.fromEntries(shown.map(id => [id, val[id]?.[x] || 0])));
+  svgChart($('#cd-trend'), days.map(x => days.length > 7 ? dLabel(x) : `${dayName(x)} ${dLabel(x)}`), rows,
+    shown.map(id => ({ key: id, label: `${nm(id)} — ${CD.trendMetric === 'connected' ? 'connected' : 'calls'}`, color: color(id), type: 'line' })), { h: 260 });
+}
+$('#cd-trend-legend').onclick = e => { const c = e.target.closest('[data-agent]'); if (!c) return; const id = c.dataset.agent; CD.hiddenAgents.has(id) ? CD.hiddenAgents.delete(id) : CD.hiddenAgents.add(id); renderTrend(); };
+seg('#cd-trend-metric', v => { CD.trendMetric = v; renderTrend(); });
 const CD_COLS = [['agent','Agent'],['total','Calls'],['connected','Connected'],['rate','Connect rate'],['lost','Not connected'],['abandoned','Abandoned'],['ab_rate','Abandon rate'],['talk_sec','Talk time'],['aht','AHT'],['avgdur','Avg duration'],
   ['reached','Customers reached'],['sched_h','Scheduled hours'],['per_h','Calls / sched. hour'],['talk_share','Talk / sched. time'],['first_late','First call vs shift start'],['transferred','Transferred']];
 function agentRows(){
@@ -1472,7 +1540,7 @@ function agentRows(){
     sched_h: a.sched_min ? a.sched_min / 60 : null, per_h: a.sched_min ? a.total / (a.sched_min / 60) : null, talk_share: a.sched_min ? a.talk_sec / (a.sched_min * 60) : null, first_late: a.first_call_late_avg, ab_rate: a.total ? (a.abandoned || 0) / a.total : 0 }));
 }
 function renderAgentTable(){
-  const rows = agentRows(), [sk, sd] = CD.sort;
+  const q = CD.search.trim().toLowerCase(), all = agentRows(), rows = q ? all.filter(r => r.agent.toLowerCase().includes(q)) : all, [sk, sd] = CD.sort;
   rows.sort((x, y) => { const a = x[sk], b = y[sk]; if (a == null) return 1; if (b == null) return -1; return (typeof a === 'string' ? a.localeCompare(b) : a - b) * sd; });
   const most = rows.reduce((m, r) => !m || r.connected > m.connected || (r.connected === m.connected && r.talk_sec > m.talk_sec) ? r : m, null);
   const T = rows.reduce((t, r) => { ['total','connected','lost','abandoned','talk_sec','dur_sec','reached','transferred','sched_min'].forEach(k => t[k] = (t[k] || 0) + (r[k] || 0)); return t; }, {});
@@ -1484,9 +1552,10 @@ function renderAgentTable(){
     ab_rate: `<span class="${r.ab_rate > .1 ? 'tx-red' : ''}">${(r.ab_rate * 100).toFixed(1)}%</span>`,
     first_late: r.first_late == null ? '—' : (r.first_late > 0 ? `<span class="${r.first_late > 15 ? 'tx-red' : ''}">${r.first_late} min after</span>` : `${-r.first_late} min before`) + `<div class="small muted">${r.first_call_days} day(s)</div>` })[k] ?? n0(r[k]);
   $('#cd-agents-t').innerHTML = rows.length ? `<table class="sortable"><thead><tr>${CD_COLS.map(([k, l]) => `<th data-k="${k}" class="${sk === k ? (sd > 0 ? 'asc' : 'desc') : ''}">${l}</th>`).join('')}</tr></thead><tbody>${
-    rows.map(r => `<tr class="click" data-agent="${r.agent_id}">${CD_COLS.map(([k]) => `<td class="nowrap">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody>${rows.length > 1 ? `<tfoot><tr><td><b>Total</b></td><td>${n0(T.total)}</td><td>${n0(T.connected)}</td><td>${ratio(T.connected, T.total)}</td><td>${n0(T.lost)}</td><td>${n0(T.abandoned)}</td><td>${ratio(T.abandoned, T.total)}</td><td>${hms(T.talk_sec)}</td><td>${ms(T.connected ? T.talk_sec / T.connected : 0)}</td><td>${ms(T.total ? T.dur_sec / T.total : 0)}</td><td>${n0(T.reached)}</td><td>${T.sched_min ? (T.sched_min / 60).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.total / (T.sched_min / 60)).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.talk_sec / (T.sched_min * 60) * 100).toFixed(0) + '%' : '—'}</td><td></td><td>${n0(T.transferred)}</td></tr></tfoot>` : ''}</table>`
-    : '<p class="muted" style="padding:12px">No calls in this period.</p>';
+    rows.map(r => `<tr class="click" data-agent="${r.agent_id}">${CD_COLS.map(([k]) => `<td class="nowrap">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody>${rows.length > 1 ? `<tfoot><tr><td><b>Total${q ? ` · ${rows.length} of ${all.length} agents` : ''}</b></td><td>${n0(T.total)}</td><td>${n0(T.connected)}</td><td>${ratio(T.connected, T.total)}</td><td>${n0(T.lost)}</td><td>${n0(T.abandoned)}</td><td>${ratio(T.abandoned, T.total)}</td><td>${hms(T.talk_sec)}</td><td>${ms(T.connected ? T.talk_sec / T.connected : 0)}</td><td>${ms(T.total ? T.dur_sec / T.total : 0)}</td><td>${n0(T.reached)}</td><td>${T.sched_min ? (T.sched_min / 60).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.total / (T.sched_min / 60)).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.talk_sec / (T.sched_min * 60) * 100).toFixed(0) + '%' : '—'}</td><td></td><td>${n0(T.transferred)}</td></tr></tfoot>` : ''}</table>`
+    : `<p class="muted" style="padding:12px">${q && all.length ? `No agents match “${esc(CD.search)}”.` : 'No calls in this period.'}</p>`;
 }
+$('#cd-search').oninput = e => { CD.search = e.target.value; renderAgentTable(); };
 function renderAbandoned(){
   const d = CD.data, rows = agentRows().filter(r => r.abandoned).sort((a, b) => b.abandoned - a.abandoned || b.ab_rate - a.ab_rate);
   const mx = Math.max(1, ...rows.map(r => r.abandoned));
@@ -1501,7 +1570,8 @@ function renderAbandoned(){
   svgChart($('#cd-ab-daily'), days.map(dLabel), data, ser, { h: 220, rightMax: Math.max(10, ...data.map(x => x.rate || 0)), rightFmt: v => Math.round(v) + '%', onBar: i => cdDrill({ day: days[i], group: 'abandoned' }) });
 }
 $('#cd-ab-agents').onclick = e => { const r = e.target.closest('[data-agent]'); if (r) cdDrill({ agent: r.dataset.agent, group: 'abandoned' }); };
-$('#cd-kpis').onclick = e => { const k = e.target.closest('[data-drill]'); if (k) cdDrill({ group: k.dataset.drill }); };
+$('#cd-kpis').onclick = e => { const t = e.target.closest('[data-topagent]'); if (t) return cdDrill({ agent: t.dataset.topagent, group: 'connected' });
+  const k = e.target.closest('[data-drill]'); if (k) cdDrill({ group: k.dataset.drill }); };
 $('#cd-agents-t').onclick = e => {
   const th = e.target.closest('th[data-k]'); if (th) { const k = th.dataset.k; CD.sort = [k, CD.sort[0] === k ? -CD.sort[1] : (k === 'agent' ? 1 : -1)]; return renderAgentTable(); }
   const tr = e.target.closest('tr[data-agent]'); if (tr) cdDrill({ agent: tr.dataset.agent });
@@ -1525,24 +1595,34 @@ function renderHeat(){
                         : [...new Set(cells.map(x => x[0]))].sort((a, b) => cells.filter(c => c[0] === b).reduce((s, c) => s + c[2], 0) - cells.filter(c => c[0] === a).reduce((s, c) => s + c[2], 0));
   const map = {}; cells.forEach(x => map[x[0] + '|' + x[1]] = x);
   const max = Math.max(1, ...cells.map(val)), lvl = v => v ? Math.min(5, Math.ceil(5 * v / max)) : 0;
-  let colT = {}, html = `<table class="heat"><thead><tr><th>${byDay ? 'Day' : 'Agent'}</th>${hours.length ? Array.from({ length: hmax - hmin + 1 }, (_, i) => `<th>${String(hmin + i).padStart(2, '0')}</th>`).join('') : ''}<th>Total</th><th>Connect</th></tr></thead><tbody>`;
+  let colT = {}, rowT = {}, html = `<table class="heat"><thead><tr><th>${byDay ? 'Day' : 'Agent'}</th>${hours.length ? Array.from({ length: hmax - hmin + 1 }, (_, i) => `<th>${String(hmin + i).padStart(2, '0')}</th>`).join('') : ''}<th>Total</th><th>Connect</th></tr></thead><tbody>`;
   rowKeys.forEach(rk => { let tot = 0, all = 0, con = 0;
     const tds = Array.from({ length: hmax - hmin + 1 }, (_, i) => { const h = hmin + i, x = map[rk + '|' + h], v = x ? val(x) : 0; tot += v; all += x ? x[2] : 0; con += x ? x[3] : 0; colT[h] = (colT[h] || 0) + v;
       return `<td class="hm l${lvl(v)}" data-r="${rk}" data-h="${h}" title="${x ? `${x[2]} calls · ${x[3]} connected (${ratio(x[3], x[2])})` : 'no calls'}">${v || ''}</td>`; }).join('');
-    html += `<tr><th class="rk">${byDay ? `${dayName(rk)} ${dLabel(rk)}` : esc(nm(rk))}</th>${tds}<td><b>${n0(tot)}</b></td><td class="small">${ratio(con, all)}</td></tr>`; });
-  html += `</tbody><tfoot><tr><th>Total</th>${Array.from({ length: hmax - hmin + 1 }, (_, i) => `<td><b>${colT[hmin + i] || ''}</b></td>`).join('')}<td></td><td></td></tr></tfoot></table>`;
+    rowT[rk] = tot;
+    html += `<tr><th class="rk click" data-rk="${rk}" title="See all calls for this ${byDay ? 'day' : 'agent'}">${byDay ? `${dayName(rk)} ${dLabel(rk)}` : esc(nm(rk))}</th>${tds}<td><b>${n0(tot)}</b></td><td class="small">${ratio(con, all)}</td></tr>`; });
+  html += `</tbody><tfoot><tr><th>Total</th>${Array.from({ length: hmax - hmin + 1 }, (_, i) => `<td data-ht="${hmin + i}" title="See all calls in this hour"><b>${colT[hmin + i] || ''}</b></td>`).join('')}<td></td><td></td></tr></tfoot></table>`;
   $('#cd-heat').innerHTML = html;
   const busiest = cells.reduce((mx, x) => val(x) > val(mx) ? x : mx, cells[0]);
-  $('#cd-heat-note').innerHTML = `Busiest cell: <b>${byDay ? dayName(busiest[0]) + ' ' + dLabel(busiest[0]) : esc(nm(busiest[0]))} ${String(busiest[1]).padStart(2, '0')}:00</b> = ${n0(val(busiest))}. Colour is relative to the busiest cell. Click a cell to see its calls.`;
+  const bh = Object.entries(colT).reduce((m, x) => !m || x[1] > m[1] ? x : m, null), br = Object.entries(rowT).reduce((m, x) => !m || x[1] > m[1] ? x : m, null);
+  const hh = h => `${String(h).padStart(2, '0')}:00`, rl = k => byDay ? `${dayName(k)} ${dLabel(k)}` : esc(nm(k));
+  $('#cd-heat-busy').innerHTML = `<span>Busiest slot: <b>${rl(busiest[0])} · ${hh(busiest[1])}</b> — ${n0(val(busiest))}</span><span>Busiest hour: <b>${hh(bh[0])}</b> — ${n0(bh[1])}</span>`
+    + `<span>Busiest ${byDay ? 'day' : 'agent'}: <b>${rl(br[0])}</b> — ${n0(br[1])}</span>`
+    + (byDay ? (() => { const at = {}; d.heat_agent.forEach(x => at[x[0]] = (at[x[0]] || 0) + val(x)); const ba = Object.entries(at).reduce((m, x) => !m || x[1] > m[1] ? x : m, null); return ba ? `<span>Busiest agent: <b>${esc(nm(ba[0]))}</b> — ${n0(ba[1])}</span>` : ''; })() : '');
+  $('#cd-heat-note').innerHTML = `Busiest cell: <b>${byDay ? dayName(busiest[0]) + ' ' + dLabel(busiest[0]) : esc(nm(busiest[0]))} ${String(busiest[1]).padStart(2, '0')}:00</b> = ${n0(val(busiest))}. Colour is relative to the busiest cell. Click a cell, a ${byDay ? 'day' : 'agent'} name or an hourly total to see its calls.`;
 }
-$('#cd-heat').onclick = e => { const td = e.target.closest('td[data-h]'); if (!td) return; const o = { hour: +td.dataset.h, group: CD.hmMetric === 'total' ? null : CD.hmMetric };
+$('#cd-heat').onclick = e => { const g = CD.hmMetric === 'total' ? null : CD.hmMetric;
+  const rk = e.target.closest('th[data-rk]'); if (rk) return cdDrill(CD.hmRows === 'day' ? { day: rk.dataset.rk, group: g } : { agent: rk.dataset.rk, group: g });
+  const ht = e.target.closest('td[data-ht]'); if (ht) return cdDrill({ hour: +ht.dataset.ht, group: g });
+  const td = e.target.closest('td[data-h]'); if (!td) return; const o = { hour: +td.dataset.h, group: g };
   if (CD.hmRows === 'day') o.day = td.dataset.r; else o.agent = td.dataset.r; cdDrill(o); };
 const CDD_COLS = [['at','Time'],['agent','Agent'],['type','Type'],['state','State'],['phone','Customer'],['dur','Duration'],['ring','Ringing'],['hdl','Handling'],['agents','Agents on the call']];
 async function cdDrill(o){
   const [f, t] = cdRange();
   $('#cd-drill').classList.remove('hide'); $('#cd-drill-out').innerHTML = '<p class="muted" style="padding:12px">Loading…</p>';
-  $('#cd-drill-t').textContent = ['Calls', o.agent ? nm(o.agent) : '', o.day ? dLabel(o.day) : (f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)), o.hour != null ? `${String(o.hour).padStart(2, '0')}:00–${String(o.hour + 1).padStart(2, '0')}:00` : '', o.group === 'connected' ? 'connected' : o.group === 'lost' ? 'not connected' : o.group === 'abandoned' ? 'abandoned by agent' : o.group === 'unrouted' ? 'abandoned, no agent' : ''].filter(Boolean).join(' · ');
-  const { data, error } = await sb.rpc('calls_drill', { p_from: f, p_to: t, p_agent: o.agent || (CD.agents.size === 1 ? [...CD.agents][0] : null), p_day: o.day || null, p_hour: o.hour ?? null, p_group: o.group || null, p_limit: 2000 });
+  $('#cd-drill-t').textContent = ['Calls', o.agent ? nm(o.agent) : '', o.day ? dLabel(o.day) : (f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)), o.hour != null ? `${String(o.hour).padStart(2, '0')}:00–${String(o.hour + 1).padStart(2, '0')}:00` : '', o.group === 'connected' ? 'connected' : o.group === 'lost' ? 'not connected' : o.group === 'abandoned' ? 'abandoned by agent' : o.group === 'unrouted' ? 'abandoned, no agent' : '', (o.states ?? CD.states) ? (o.states ?? CD.states).join(', ') : '', CD.win[0] > 0 || CD.win[1] < 1440 ? `${minLabel(CD.win[0])}–${minLabel(CD.win[1])}` : ''].filter(Boolean).join(' · ');
+  const { data, error } = await sb.rpc('calls_drill', { p_from: f, p_to: t, p_agent: o.agent || (CD.agents.size === 1 ? [...CD.agents][0] : null), p_day: o.day || null, p_hour: o.hour ?? null, p_group: o.group || null, p_limit: 2000,
+    p_states: (o.states === undefined ? CD.states : o.states) || null, p_min_from: CD.win[0], p_min_to: CD.win[1] });
   if (error) return $('#cd-drill-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
   CD.drill = data;
   $('#cd-drill-out').innerHTML = data.length ? `<table><thead><tr>${CDD_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${data.slice(0, 300).map(r => `<tr><td class="nowrap">${fmtDT(r.at)}</td><td>${esc(r.agent || '—')}</td><td>${esc(r.type)}</td><td>${esc(r.state)}</td><td class="ltr nowrap">${esc(r.phone || '')}</td><td>${ms(r.dur)}</td><td>${r.ring != null ? r.ring + 's' : '—'}</td><td>${r.hdl ? ms(r.hdl) : '—'}</td><td class="small">${esc(r.agents || '')}</td></tr>`).join('')}</tbody></table>${data.length > 300 ? `<p class="small muted" style="padding:8px 12px">Showing the latest 300 of ${n0(data.length)} — Export CSV has all of them.</p>` : ''}` : '<p class="muted" style="padding:12px">No calls.</p>';
@@ -1551,7 +1631,30 @@ async function cdDrill(o){
 $('#cd-drill-x').onclick = () => $('#cd-drill').classList.add('hide');
 $('#cd-drill-csv').onclick = () => { if (CD.drill) csvDownload(`thrivve_calls_${cdRange().join('_')}.csv`, CDD_COLS, CD.drill.map(r => ({ ...r, at: new Date(r.at).toLocaleString('sv-SE', { timeZone: 'Asia/Riyadh' }) }))); };
 seg('#cd-preset', v => { CD.preset = v; $('#cd-custom').classList.toggle('hide', v !== 'custom'); if (v !== 'custom') loadCallDash(); else { const [f, t] = periodOf('7'); $('#cd-from').value ||= f; $('#cd-to').value ||= t; } });
-seg('#cd-win', v => { CD.win = v.split('-').map(Number); loadCallDash(); });
+seg('#cd-win', v => { $('#cd-win-custom').classList.toggle('hide', v !== 'custom'); if (v === 'custom') return $('#cd-win-from').focus(); CD.win = v.split('-').map(Number); loadCallDash(); });
+$('#cd-win-go').onclick = () => {
+  const m = v => { const [h, mi] = (v || '').split(':').map(Number); return Number.isFinite(h) ? h * 60 + (mi || 0) : null; };
+  let a = m($('#cd-win-from').value), b = m($('#cd-win-to').value);
+  if (a == null || b == null) return toast('Pick a start and an end time.');
+  if (b === 0) b = 1440; if (a >= b) return toast('The end time must be after the start time.');
+  CD.win = [a, b]; loadCallDash();
+};
+function renderStatesPop(){
+  const on = new Set(CD.states || OUTCOMES.map(o => o[0]));
+  $('#cd-states-pop').innerHTML = OUTCOMES.map(([st, c]) => `<label><input type="checkbox" value="${esc(st)}" ${on.has(st) ? 'checked' : ''}><i class="dot" style="background:${c};margin:0"></i>${esc(st)}</label>`).join('')
+    + `<div class="ms-act"><button class="btn ghost sm" type="button" data-act="all">All</button><button class="btn ghost sm" type="button" data-act="none">Clear</button><button class="btn sm" type="button" data-act="apply">Apply</button></div>`;
+}
+function statesLabel(){ return !CD.states ? 'All outcomes ▾' : CD.states.length === 1 ? `${CD.states[0]} ▾` : `${CD.states.length} outcomes ▾`; }
+$('#cd-states-btn').onclick = e => { e.stopPropagation(); const p = $('#cd-states-pop'); if (p.classList.contains('hide')) renderStatesPop(); p.classList.toggle('hide'); };
+$('#cd-states-pop').onclick = e => { e.stopPropagation(); const a = e.target.closest('[data-act]')?.dataset.act; if (!a) return;
+  const boxes = [...$$('#cd-states-pop input')];
+  if (a === 'all') return boxes.forEach(b => b.checked = true);
+  if (a === 'none') return boxes.forEach(b => b.checked = false);
+  const sel = boxes.filter(b => b.checked).map(b => b.value);
+  if (!sel.length) return toast('Pick at least one outcome.');
+  CD.states = sel.length === boxes.length ? null : sel; CD.hiddenOut.clear();
+  $('#cd-states-btn').textContent = statesLabel(); $('#cd-states-pop').classList.add('hide'); loadCallDash(); };
+document.addEventListener('click', e => { if (!e.target.closest('#cd-states')) $('#cd-states-pop')?.classList.add('hide'); });
 $('#cd-agents').onclick = e => { const b = e.target.closest('button'); if (!b) return; b.classList.toggle('on'); CD.agents.has(b.dataset.v) ? CD.agents.delete(b.dataset.v) : CD.agents.add(b.dataset.v); loadCallDash(); };
 seg('#cd-hm-rows', v => { CD.hmRows = v; renderHeat(); });
 seg('#cd-hm-metric', v => { CD.hmMetric = v; renderHeat(); });
