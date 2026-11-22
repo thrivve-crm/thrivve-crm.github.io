@@ -1333,8 +1333,8 @@ const C = { brand: '#65278a', light: '#ac3eb5', accent: '#ff9800', green: '#0676
 
 // ---------------- Bookings & contracts ----------------
 const BD = { preset: 'yesterday', product: '', mode: 'activity', data: null, drill: null };
-const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected at review', C.gray], pending_supplier: ['Waiting for supplier', C.blue],
-  supplier_failed: ['Supplier rejected', C.red], awaiting_pickup: ['Approved — awaiting pickup', C.light], active: ['Active contract', C.green],
+const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected at review', C.gray], pending_supplier: ['Awaiting pickup — vehicle authorization', C.blue],
+  supplier_failed: ['Supplier rejected', C.red], awaiting_pickup: ['Awaiting pickup — authorization started', C.light], active: ['Active contract', C.green],
   ended: ['Contract ended', '#475467'], pickup_failed: ['Failed at pickup', '#b42318'], other: ['Other', '#d0d5dd'] };
 function bdRange(){
   if (BD.preset === 'custom') { let f = $('#bd-from').value, t = $('#bd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
@@ -1352,10 +1352,11 @@ function renderBookDash(){
   const d = BD.data, s = d.snapshot, a = d.activity, k = d.contracts, c = d.cohort;
   $('#bd-asof').innerHTML = `Data as of the last Metabase upload: <b>${fmtDT(d.as_of)}</b> · newest booking ${d.latest_booking ? dLabel(d.latest_booking) : '—'}${BD.product ? ` · ${esc(BD.product)} only` : ''}`;
   $('#bd-now-note').textContent = s.pending_oldest_days != null ? `· oldest open booking is ${s.pending_oldest_days} days old` : '';
+  const waitPick = s.pending_supplier + s.awaiting_pickup;
   $('#bd-snap').innerHTML =
-    kcard('Active contracts', n0(s.active), BD.product ? '' : `LTO ${n0(s.active_lto)} · Rent ${n0(s.active_rent)}`, 'snap_active', 'k-green') +
-    kcard('Waiting for supplier decision', n0(s.pending_supplier), 'Pending Vehicle Authorization', 'snap_pending_supplier', 'k-blue') +
-    kcard('Approved — awaiting pickup', n0(s.awaiting_pickup), 'Authorization started / pending pickup', 'snap_awaiting_pickup') +
+    kcard('Total open bookings', n0(s.active + waitPick + s.review), `active ${n0(s.active)} · awaiting pickup ${n0(waitPick)} · under review ${n0(s.review)} — ended and rejected are left out`, 'snap_total') +
+    kcard('Active contracts', n0(s.active), (BD.product ? '' : `LTO ${n0(s.active_lto)} · Rent ${n0(s.active_rent)} · `) + 'picked up, contract running', 'snap_active', 'k-green') +
+    kcard('Awaiting pickup', n0(waitPick), 'passed Thrivve review, car not picked up yet', 'snap_awaiting_pickup', 'k-blue') +
     kcard('Under Thrivve review', n0(s.review), 'Booking Pending Review', 'snap_review', 'k-amber');
   if (BD.mode === 'activity') {
     $('#bd-activity').innerHTML = `<div class="kpis">${
@@ -1401,7 +1402,7 @@ function renderBookDash(){
   $('#bd-model').innerHTML = d.by_model.length ? `<table><thead><tr><th>Model</th><th>New bookings</th><th>Pickups</th><th>Active now</th></tr></thead><tbody>${
     d.by_model.slice(0, 15).map(x => `<tr><td>${esc(x.model)}</td><td>${n0(x.created)}</td><td>${n0(x.pickups)}</td><td>${n0(x.active)}</td></tr>`).join('')}</tbody></table>` : '';
 }
-const BD_TITLES = { snap_active: 'Active contracts now', snap_pending_supplier: 'Waiting for supplier decision', snap_awaiting_pickup: 'Approved — awaiting pickup', snap_review: 'Under Thrivve review',
+const BD_TITLES = { snap_active: 'Active contracts now', snap_total: 'All open bookings (active + awaiting pickup + under review)', snap_awaiting_pickup: 'Awaiting pickup', snap_review: 'Under Thrivve review',
   created: 'New bookings', pickups: 'Pickups (new contracts)', ended: 'Contracts ended', rejected: 'Rejected at review', supplier_failed: 'Supplier rejected', pickup_failed: 'Failed at pickup',
   active_end: 'Active contracts at the end of the period', retention_lost: 'Returned within 30 days' };
 const BD_COLS = [['booking_id','Booking'],['product','Product'],['status','Status'],['customer','Customer'],['phone','Phone'],['vehicle','Vehicle'],['supplier','Supplier'],['created','Created'],['pickup','Pickup'],['ended','Ended'],['decided','Decision seen'],['failure_reason','Failure reason'],['credited','Credited to']];
