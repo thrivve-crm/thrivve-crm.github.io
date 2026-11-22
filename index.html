@@ -299,7 +299,7 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
       <button class="tab" data-v="myperf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>My performance</span></button>
       <div class="nav-g" data-group>Dashboards</div>
       <button class="tab" data-perm="bookings" data-v="bookdash"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Bookings &amp; contracts</span></button>
-      <button class="tab" data-v="calldash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span>Calls</span></button>
+      <button class="tab" data-perm="performance" data-v="calldash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span>Calls</span></button>
       <div class="nav-g">Team</div>
       <button class="tab" data-v="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Schedule</span></button>
       <button class="tab" data-v="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Reports</span></button>
@@ -632,10 +632,13 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
       <div class="kpis" id="cd-kpis"></div>
       <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Agents</h2><span class="small muted">Click a column to sort. A call with several agents counts for the one who started it.</span></div>
         <div class="tbl mt" id="cd-agents-t"></div></div>
+      <div class="card" id="cd-ab-card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Abandoned calls &mdash; rang the agent, not picked up</h2><span class="small" id="cd-ab-note"></span></div>
+        <div class="grid2 mt"><div><h3 class="sec-t" style="margin-top:0">By agent</h3><div id="cd-ab-agents"></div></div>
+        <div><h3 class="sec-t" style="margin-top:0">Day by day</h3><div class="legend" id="cd-ab-legend"></div><div id="cd-ab-daily" class="chart"></div></div></div></div>
       <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">By hour</h2><span class="small" id="cd-peak"></span></div><div id="cd-hourly" class="chart"></div></div>
       <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Heatmap</h2>
           <div class="row" style="align-items:center"><div class="seg sm" id="cd-hm-rows"><button data-v="day" class="on">By day</button><button data-v="agent">By agent</button></div>
-          <div class="seg sm" id="cd-hm-metric"><button data-v="total" class="on">All calls</button><button data-v="connected">Connected</button><button data-v="lost">Not connected</button></div></div></div>
+          <div class="seg sm" id="cd-hm-metric"><button data-v="total" class="on">All calls</button><button data-v="connected">Connected</button><button data-v="lost">Not connected</button><button data-v="abandoned">Abandoned</button></div></div></div>
         <div class="tbl mt" id="cd-heat"></div><div class="small muted mt" id="cd-heat-note"></div></div>
       <div class="card hide" id="cd-drill">
         <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0" id="cd-drill-t"></h2><div class="row"><button class="btn ghost sm" id="cd-drill-csv">Export CSV</button><button class="btn ghost sm" id="cd-drill-x">Close</button></div></div>
@@ -786,7 +789,7 @@ sb.auth.onAuthStateChange(async (ev) => {
 $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''; showLogin(); };
 
 // ---------------- nav + permissions ----------------
-const VIEW_PERM = { bookdash: 'bookings', perf: 'performance', quality: 'quality', review: 'review', followups: 'followups', bookings: 'bookings', lists: 'lists', settings: 'settings', imports: 'imports', team: 'team' };
+const VIEW_PERM = { bookdash: 'bookings', calldash: 'performance', perf: 'performance', quality: 'quality', review: 'review', followups: 'followups', bookings: 'bookings', lists: 'lists', settings: 'settings', imports: 'imports', team: 'team' };
 function applyPerms(){
   $$('[data-perm]').forEach(e => e.classList.toggle('hide', !can(e.dataset.perm)));
   $$('#nav [data-group]').forEach(g => { let n = g.nextElementSibling, any = false;
@@ -1451,29 +1454,48 @@ function renderCallDash(){
     kcard('Avg handling (AHT)', ms(aht), `talk time ÷ connected ${cmp ? delta(aht, paht, 'ms') : ''}`) +
     kcard('Avg call duration', ms(avgd), `all ${n0(k.total)} calls ${cmp ? delta(avgd, pavgd, 'ms') : ''}`) +
     kcard('Customers reached', n0(k.customers_reached), `of ${n0(k.customers)} different customers dialled`) +
+    kcard('Abandoned by agent', n0(k.abandoned), `${ratio(k.abandoned, k.total)} of calls routed to agents${k.ab_ring_sec != null ? ` · rang ${k.ab_ring_sec}s on average` : ''} ${cmp ? delta(k.abandoned, p.abandoned, 'num', false) : ''}`, 'abandoned', 'k-red') +
+    (CD.agents.size ? '' : kcard('Missed — no agent', n0((d.unrouted?.inbound || 0) + (d.unrouted?.campaign || 0)), `inbound ${n0(d.unrouted?.inbound)} · campaign ${n0(d.unrouted?.campaign)} · never reached anyone`, 'unrouted', 'k-amber')) +
     kcard('Transferred calls', n0(k.transferred), 'more than one agent on the call');
-  renderAgentTable(); renderHourly(); renderHeat();
+  renderAgentTable(); renderAbandoned(); renderHourly(); renderHeat();
 }
-const CD_COLS = [['agent','Agent'],['total','Calls'],['connected','Connected'],['rate','Connect rate'],['lost','Not connected'],['talk_sec','Talk time'],['aht','AHT'],['avgdur','Avg duration'],
+const CD_COLS = [['agent','Agent'],['total','Calls'],['connected','Connected'],['rate','Connect rate'],['lost','Not connected'],['abandoned','Abandoned'],['ab_rate','Abandon rate'],['talk_sec','Talk time'],['aht','AHT'],['avgdur','Avg duration'],
   ['reached','Customers reached'],['sched_h','Scheduled hours'],['per_h','Calls / sched. hour'],['talk_share','Talk / sched. time'],['first_late','First call vs shift start'],['transferred','Transferred']];
 function agentRows(){
   return CD.data.agents.map(a => ({ ...a, agent: nm(a.agent_id), rate: a.total ? a.connected / a.total : 0, aht: a.connected ? a.talk_sec / a.connected : 0, avgdur: a.total ? a.dur_sec / a.total : 0,
-    sched_h: a.sched_min ? a.sched_min / 60 : null, per_h: a.sched_min ? a.total / (a.sched_min / 60) : null, talk_share: a.sched_min ? a.talk_sec / (a.sched_min * 60) : null, first_late: a.first_call_late_avg }));
+    sched_h: a.sched_min ? a.sched_min / 60 : null, per_h: a.sched_min ? a.total / (a.sched_min / 60) : null, talk_share: a.sched_min ? a.talk_sec / (a.sched_min * 60) : null, first_late: a.first_call_late_avg, ab_rate: a.total ? (a.abandoned || 0) / a.total : 0 }));
 }
 function renderAgentTable(){
   const rows = agentRows(), [sk, sd] = CD.sort;
   rows.sort((x, y) => { const a = x[sk], b = y[sk]; if (a == null) return 1; if (b == null) return -1; return (typeof a === 'string' ? a.localeCompare(b) : a - b) * sd; });
   const most = rows.reduce((m, r) => !m || r.connected > m.connected || (r.connected === m.connected && r.talk_sec > m.talk_sec) ? r : m, null);
-  const T = rows.reduce((t, r) => { ['total','connected','lost','talk_sec','dur_sec','reached','transferred','sched_min'].forEach(k => t[k] = (t[k] || 0) + (r[k] || 0)); return t; }, {});
+  const T = rows.reduce((t, r) => { ['total','connected','lost','abandoned','talk_sec','dur_sec','reached','transferred','sched_min'].forEach(k => t[k] = (t[k] || 0) + (r[k] || 0)); return t; }, {});
   const cell = (r, k) => ({ agent: `<b>${esc(r.agent)}</b>${r === most && rows.length > 1 ? ' <span class="pill p-green" title="Most connected calls in the period">most connected</span>' : ''}`,
     rate: `<div class="mini"><i style="width:${r.rate * 100}%"></i></div>${(r.rate * 100).toFixed(1)}%`, talk_sec: hms(r.talk_sec), aht: ms(r.aht), avgdur: ms(r.avgdur),
     sched_h: r.sched_h == null ? '<span class="muted">no schedule</span>' : r.sched_h.toFixed(1), per_h: r.per_h == null ? '—' : r.per_h.toFixed(1),
     talk_share: r.talk_share == null ? '—' : (r.talk_share * 100).toFixed(0) + '%',
+    abandoned: `${n0(r.abandoned)}${r.abandoned && r.ab_ring != null ? `<div class="small muted">rang ${r.ab_ring}s avg</div>` : ''}`,
+    ab_rate: `<span class="${r.ab_rate > .1 ? 'tx-red' : ''}">${(r.ab_rate * 100).toFixed(1)}%</span>`,
     first_late: r.first_late == null ? '—' : (r.first_late > 0 ? `<span class="${r.first_late > 15 ? 'tx-red' : ''}">${r.first_late} min after</span>` : `${-r.first_late} min before`) + `<div class="small muted">${r.first_call_days} day(s)</div>` })[k] ?? n0(r[k]);
   $('#cd-agents-t').innerHTML = rows.length ? `<table class="sortable"><thead><tr>${CD_COLS.map(([k, l]) => `<th data-k="${k}" class="${sk === k ? (sd > 0 ? 'asc' : 'desc') : ''}">${l}</th>`).join('')}</tr></thead><tbody>${
-    rows.map(r => `<tr class="click" data-agent="${r.agent_id}">${CD_COLS.map(([k]) => `<td class="nowrap">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody>${rows.length > 1 ? `<tfoot><tr><td><b>Total</b></td><td>${n0(T.total)}</td><td>${n0(T.connected)}</td><td>${ratio(T.connected, T.total)}</td><td>${n0(T.lost)}</td><td>${hms(T.talk_sec)}</td><td>${ms(T.connected ? T.talk_sec / T.connected : 0)}</td><td>${ms(T.total ? T.dur_sec / T.total : 0)}</td><td>${n0(T.reached)}</td><td>${T.sched_min ? (T.sched_min / 60).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.total / (T.sched_min / 60)).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.talk_sec / (T.sched_min * 60) * 100).toFixed(0) + '%' : '—'}</td><td></td><td>${n0(T.transferred)}</td></tr></tfoot>` : ''}</table>`
+    rows.map(r => `<tr class="click" data-agent="${r.agent_id}">${CD_COLS.map(([k]) => `<td class="nowrap">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody>${rows.length > 1 ? `<tfoot><tr><td><b>Total</b></td><td>${n0(T.total)}</td><td>${n0(T.connected)}</td><td>${ratio(T.connected, T.total)}</td><td>${n0(T.lost)}</td><td>${n0(T.abandoned)}</td><td>${ratio(T.abandoned, T.total)}</td><td>${hms(T.talk_sec)}</td><td>${ms(T.connected ? T.talk_sec / T.connected : 0)}</td><td>${ms(T.total ? T.dur_sec / T.total : 0)}</td><td>${n0(T.reached)}</td><td>${T.sched_min ? (T.sched_min / 60).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.total / (T.sched_min / 60)).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.talk_sec / (T.sched_min * 60) * 100).toFixed(0) + '%' : '—'}</td><td></td><td>${n0(T.transferred)}</td></tr></tfoot>` : ''}</table>`
     : '<p class="muted" style="padding:12px">No calls in this period.</p>';
 }
+function renderAbandoned(){
+  const d = CD.data, rows = agentRows().filter(r => r.abandoned).sort((a, b) => b.abandoned - a.abandoned || b.ab_rate - a.ab_rate);
+  const mx = Math.max(1, ...rows.map(r => r.abandoned));
+  $('#cd-ab-note').innerHTML = `<b>${n0(d.kpi.abandoned)}</b> abandoned of ${n0(d.kpi.total)} calls routed to agents (${ratio(d.kpi.abandoned, d.kpi.total)})`;
+  $('#cd-ab-agents').innerHTML = rows.length ? rows.map(r => `<div class="hbar click" data-agent="${r.agent_id}" title="Click to see the calls"><span class="t">${esc(r.agent)}</span><span class="b"><i style="width:${r.abandoned / mx * 100}%"></i></span><b>${n0(r.abandoned)}</b></div><div class="small muted" style="margin:-4px 0 8px">${(r.ab_rate * 100).toFixed(1)}% of their ${n0(r.total)} calls${r.ab_ring != null ? ` · rang ${r.ab_ring}s avg` : ''}</div>`).join('')
+    : '<p class="muted small">No abandoned calls in this period.</p>';
+  const days = []; for (let x = d.from; x <= d.to; x = addDays(x, 1)) days.push(x);
+  const by = {}; d.daily.forEach(([dd, , n, , a]) => { const o = by[dd] ||= { total: 0, abandoned: 0 }; o.total += n; o.abandoned += a || 0; });
+  const data = days.map(x => ({ abandoned: by[x]?.abandoned || 0, rate: by[x]?.total ? by[x].abandoned / by[x].total * 100 : null }));
+  const ser = [{ key: 'abandoned', label: 'Abandoned', color: C.red, type: 'bar' }, { key: 'rate', label: 'Abandon rate (right axis)', color: C.brand, type: 'line', axis: 'right' }];
+  $('#cd-ab-legend').innerHTML = legend(ser);
+  svgChart($('#cd-ab-daily'), days.map(dLabel), data, ser, { h: 220, rightMax: Math.max(10, ...data.map(x => x.rate || 0)), rightFmt: v => Math.round(v) + '%', onBar: i => cdDrill({ day: days[i], group: 'abandoned' }) });
+}
+$('#cd-ab-agents').onclick = e => { const r = e.target.closest('[data-agent]'); if (r) cdDrill({ agent: r.dataset.agent, group: 'abandoned' }); };
+$('#cd-kpis').onclick = e => { const k = e.target.closest('[data-drill]'); if (k) cdDrill({ group: k.dataset.drill }); };
 $('#cd-agents-t').onclick = e => {
   const th = e.target.closest('th[data-k]'); if (th) { const k = th.dataset.k; CD.sort = [k, CD.sort[0] === k ? -CD.sort[1] : (k === 'agent' ? 1 : -1)]; return renderAgentTable(); }
   const tr = e.target.closest('tr[data-agent]'); if (tr) cdDrill({ agent: tr.dataset.agent });
@@ -1490,7 +1512,7 @@ function renderHourly(){
     { key: 'rate', label: 'Connect rate', color: C.brand, type: 'line', axis: 'right' }], { stacked: true, rightMax: 100, rightFmt: v => Math.round(v) + '%', onBar: i => cdDrill({ hour: rows[i].h }) });
 }
 function renderHeat(){
-  const d = CD.data, byDay = CD.hmRows === 'day', m = CD.hmMetric, val = x => m === 'total' ? x[2] : m === 'connected' ? x[3] : x[4];
+  const d = CD.data, byDay = CD.hmRows === 'day', m = CD.hmMetric, val = x => m === 'total' ? x[2] : m === 'connected' ? x[3] : m === 'abandoned' ? (x[5] || 0) : x[4];
   const cells = byDay ? d.heat : d.heat_agent; if (!cells.length) { $('#cd-heat').innerHTML = '<p class="muted small" style="padding:12px">No calls.</p>'; $('#cd-heat-note').textContent = ''; return; }
   const hours = [...new Set(cells.map(x => x[1]))].sort((a, b) => a - b), hmin = hours[0], hmax = hours[hours.length - 1];
   const rowKeys = byDay ? (() => { const r = []; for (let x = d.from; x <= d.to; x = addDays(x, 1)) r.push(x); return r; })()
@@ -1509,15 +1531,15 @@ function renderHeat(){
 }
 $('#cd-heat').onclick = e => { const td = e.target.closest('td[data-h]'); if (!td) return; const o = { hour: +td.dataset.h, group: CD.hmMetric === 'total' ? null : CD.hmMetric };
   if (CD.hmRows === 'day') o.day = td.dataset.r; else o.agent = td.dataset.r; cdDrill(o); };
-const CDD_COLS = [['at','Time'],['agent','Agent'],['type','Type'],['state','State'],['phone','Customer'],['dur','Duration'],['hdl','Handling'],['agents','Agents on the call']];
+const CDD_COLS = [['at','Time'],['agent','Agent'],['type','Type'],['state','State'],['phone','Customer'],['dur','Duration'],['ring','Ringing'],['hdl','Handling'],['agents','Agents on the call']];
 async function cdDrill(o){
   const [f, t] = cdRange();
   $('#cd-drill').classList.remove('hide'); $('#cd-drill-out').innerHTML = '<p class="muted" style="padding:12px">Loading…</p>';
-  $('#cd-drill-t').textContent = ['Calls', o.agent ? nm(o.agent) : '', o.day ? dLabel(o.day) : (f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)), o.hour != null ? `${String(o.hour).padStart(2, '0')}:00–${String(o.hour + 1).padStart(2, '0')}:00` : '', o.group === 'connected' ? 'connected' : o.group === 'lost' ? 'not connected' : ''].filter(Boolean).join(' · ');
+  $('#cd-drill-t').textContent = ['Calls', o.agent ? nm(o.agent) : '', o.day ? dLabel(o.day) : (f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)), o.hour != null ? `${String(o.hour).padStart(2, '0')}:00–${String(o.hour + 1).padStart(2, '0')}:00` : '', o.group === 'connected' ? 'connected' : o.group === 'lost' ? 'not connected' : o.group === 'abandoned' ? 'abandoned by agent' : o.group === 'unrouted' ? 'abandoned, no agent' : ''].filter(Boolean).join(' · ');
   const { data, error } = await sb.rpc('calls_drill', { p_from: f, p_to: t, p_agent: o.agent || (CD.agents.size === 1 ? [...CD.agents][0] : null), p_day: o.day || null, p_hour: o.hour ?? null, p_group: o.group || null, p_limit: 2000 });
   if (error) return $('#cd-drill-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
   CD.drill = data;
-  $('#cd-drill-out').innerHTML = data.length ? `<table><thead><tr>${CDD_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${data.slice(0, 300).map(r => `<tr><td class="nowrap">${fmtDT(r.at)}</td><td>${esc(r.agent)}</td><td>${esc(r.type)}</td><td>${esc(r.state)}</td><td class="ltr nowrap">${esc(r.phone || '')}</td><td>${ms(r.dur)}</td><td>${r.hdl ? ms(r.hdl) : '—'}</td><td class="small">${esc(r.agents || '')}</td></tr>`).join('')}</tbody></table>${data.length > 300 ? `<p class="small muted" style="padding:8px 12px">Showing the latest 300 of ${n0(data.length)} — Export CSV has all of them.</p>` : ''}` : '<p class="muted" style="padding:12px">No calls.</p>';
+  $('#cd-drill-out').innerHTML = data.length ? `<table><thead><tr>${CDD_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${data.slice(0, 300).map(r => `<tr><td class="nowrap">${fmtDT(r.at)}</td><td>${esc(r.agent || '—')}</td><td>${esc(r.type)}</td><td>${esc(r.state)}</td><td class="ltr nowrap">${esc(r.phone || '')}</td><td>${ms(r.dur)}</td><td>${r.ring != null ? r.ring + 's' : '—'}</td><td>${r.hdl ? ms(r.hdl) : '—'}</td><td class="small">${esc(r.agents || '')}</td></tr>`).join('')}</tbody></table>${data.length > 300 ? `<p class="small muted" style="padding:8px 12px">Showing the latest 300 of ${n0(data.length)} — Export CSV has all of them.</p>` : ''}` : '<p class="muted" style="padding:12px">No calls.</p>';
   $('#cd-drill').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 $('#cd-drill-x').onclick = () => $('#cd-drill').classList.add('hide');
