@@ -339,7 +339,7 @@ tr.click:hover{background:var(--brand-soft)}
                   <div class="quick" id="l-quick"></div></div>
               </div>
               <div class="row mt">
-                <div class="f"><label>Car of interest</label><select id="l-car"></select></div>
+                <div class="f"><label>Car of interest</label><select id="l-car"></select><input id="l-car-other" class="hide" placeholder="Which car? e.g. Nissan Sunny 2026" style="margin-top:6px" autocomplete="off"></div>
                 <div class="f" id="l-name-w"><label>Customer name</label><input id="l-name" autocomplete="off"></div>
                 <div class="f hide" id="l-source-w"><label>Source</label><select id="l-source"></select></div>
               </div>
@@ -737,7 +737,7 @@ function friendly(m){
   return ({'set the next follow-up date and time':'Set the next follow-up date and time.','this outcome needs a reason':'Choose a reason.',
            'this reason needs a note':'This reason needs a short note.','this outcome needs a note':'Add a short note for this outcome.',
            'choose why the follow-up is moving':'Choose why the follow-up is moving.','a closed lead cannot have a follow-up':'A closed lead cannot have a follow-up.',
-           'phone is required':'Type the customer phone.','choose an outcome':'Choose an outcome.'})[m]
+           'phone is required':'Type the customer phone.','choose an outcome':'Choose an outcome.','type the car the customer wants':'Type the car the customer wants.'})[m]
          || (/between now and 60 days/.test(m) ? 'Pick a time between now and 60 days ahead.' : m);
 }
 
@@ -826,7 +826,7 @@ function renderSummary(){
       <dt>Last outcome</dt><dd>${esc(optLabel('call_outcome', L.last_outcome)) || '—'}${L.last_outcome_at ? ` <span class="small muted">· ${fmtWhen(L.last_outcome_at)}</span>` : ''}</dd>
       <dt>Last Maqsam call</dt><dd>${fmtWhen(L.last_call_at)}</dd>
       <dt>Booking</dt><dd>${b ? `#${b.id} ${pill(BKO[b.outcome] || [b.status,'p-gray'])} <span class="small muted">${esc(b.status)}${b.validity ? ' · ' + esc(BKV[b.validity] || b.validity) : ''}</span>` : '<span class="muted">No booking</span>'}</dd>
-      <dt>Car</dt><dd>${esc(optLabel('car_model', L.car)) || '—'}</dd>
+      <dt>Car</dt><dd>${L.car === 'other' && L.car_other ? 'Other: ' + esc(L.car_other) : (esc(optLabel('car_model', L.car)) || '—')}</dd>
       <dt>Source</dt><dd>${esc(optLabel('lead_source', L.source)) || '—'}</dd>
       ${L.lost_reason ? `<dt>Closed because</dt><dd>${esc(optLabel('lost_reason', L.lost_reason) || optLabel('disqualify_reason', L.lost_reason))}</dd>` : ''}
     </dl>
@@ -889,6 +889,7 @@ function resetForm(){
   fillSelect($('#l-car'), 'car_model', L?.car, '—'); fillSelect($('#l-source'), 'lead_source', L?.source, '—');
   $('#l-name').value = L?.name || ''; $('#l-note').value = ''; $('#l-next-at').value = ''; $('#l-err').textContent = '';
   $('#l-source-w').classList.toggle('hide', !!L?.source);
+  $('#l-car-other').value = L?.car_other || ''; $('#l-car-other').classList.toggle('hide', $('#l-car').value !== 'other');
   busy($('#l-save'));
   formRules();
 }
@@ -915,6 +916,7 @@ function formRules(){
 seg('#l-kind', v => { LV.kind = v; formRules(); });
 $('#l-outcome').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#l-outcome button').forEach(x => x.classList.toggle('on', x === b)); LV.outcome = b.dataset.v; formRules(); };
 $('#l-reason').onchange = formRules;
+$('#l-car').onchange = () => { const o = $('#l-car').value === 'other'; $('#l-car-other').classList.toggle('hide', !o); if (o) $('#l-car-other').focus(); };
 $('#l-quick').onclick = e => { const b = e.target.closest('[data-v]'); if (b) $('#l-next-at').value = b.dataset.v; };
 $('#l-load').onclick = () => loadLead({ phone: $('#l-phone').value.trim() });
 $('#l-phone').onkeydown = e => { if (e.key === 'Enter') $('#l-load').click(); };
@@ -930,7 +932,7 @@ $('#l-save').onclick = async () => {
   const { data, error } = await sb.rpc('log_contact', {
     p_lead: d.lead?.id || null, p_phone: d.lead ? null : d.phone, p_outcome: LV.outcome, p_kind: LV.kind, p_reason: reason,
     p_note: $('#l-note').value || null, p_next_at: nextAt, p_car: $('#l-car').value || null, p_name: $('#l-name').value || null,
-    p_source: $('#l-source').value || null, p_client_id: LV.clientId });     // same id on retry → saved once
+    p_source: $('#l-source').value || null, p_client_id: LV.clientId, p_car_other: $('#l-car').value === 'other' ? ($('#l-car-other').value.trim() || null) : null });     // same id on retry → saved once
   LV.saveMs = Math.round(performance.now() - t0);
   if (error) { busy(btn, 'bad'); return $('#l-err').textContent = friendly(error.message); }
   busy(btn, 'ok', data.duplicate ? 'Already saved ✓' : 'Saved ✓');
