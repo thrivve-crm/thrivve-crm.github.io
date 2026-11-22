@@ -1356,7 +1356,7 @@ const C = { brand: '#65278a', light: '#ac3eb5', accent: '#ff9800', green: '#0676
 const BD = { preset: 'yesterday', product: '', mode: 'activity', data: null, drill: null };
 const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected by Thrivve', C.gray], pending_supplier: ['Awaiting pickup — vehicle authorization', C.blue],
   supplier_failed: ['Rejected by supplier', C.red], awaiting_pickup: ['Awaiting pickup — authorization started', C.light], active: ['Active contract', C.green],
-  ended: ['Contract ended', '#475467'], pickup_failed: ['Failed at pickup', '#b42318'], other: ['Other', '#d0d5dd'] };
+  ended: ['Contract ended', '#475467'], pickup_failed: ['Cancelled / not picked up', '#b42318'], other: ['Other', '#d0d5dd'] };
 function bdRange(){
   if (BD.preset === 'custom') { let f = $('#bd-from').value, t = $('#bd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
   return periodOf(BD.preset);
@@ -1385,9 +1385,8 @@ function renderBookDash(){
       kcard('New bookings', n0(a.created), 'bookings created in the period', 'created') +
       kcard('Cars handed over', n0(a.pickups), 'new contracts started' + (BD.product ? '' : ` · Lease To Own ${n0(a.pickups_lto)}`), 'pickups', 'k-green') +
       kcard('Contracts ended', n0(a.ended), 'returned / terminated in the period', 'ended') +
-      kcard('Rejected by supplier', n0(a.supplier_failed), 'supplier said no to the car', 'supplier_failed', 'k-red') +
-      kcard('Rejected by Thrivve', n0(a.rejected), 'rejected at Thrivve review', 'rejected') +
-      kcard('Failed at pickup', n0(a.pickup_failed), 'car was not handed over', 'pickup_failed')}</div>
+      kcard('Rejected', n0(a.rejected + a.supplier_failed), `Thrivve ${n0(a.rejected)} · supplier ${n0(a.supplier_failed)}`, 'rejected+supplier_failed', 'k-red') +
+      kcard('Cancelled / not picked up', n0(a.pickup_failed), 'approved, but the car was never handed over', 'pickup_failed')}</div>
       <p class="small muted" style="margin:-8px 0 16px">Cars handed over can be more than new bookings, because some were booked earlier. Rejections are counted from the day the daily upload first showed them.</p>`;
   } else {
     const order = ['active', 'ended', 'awaiting_pickup', 'pending_supplier', 'review', 'supplier_failed', 'pickup_failed', 'rejected', 'other'];
@@ -1425,15 +1424,17 @@ function renderBookDash(){
     d.by_model.slice(0, 15).map(x => `<tr><td>${esc(x.model)}</td><td>${n0(x.created)}</td><td>${n0(x.pickups)}</td><td>${n0(x.active)}</td></tr>`).join('')}</tbody></table>` : '';
 }
 const BD_TITLES = { snap_active: 'Active bookings now', snap_total: 'Successfully booked (active + awaiting pickup + under review)', snap_awaiting_pickup: 'Awaiting pickup', snap_review: 'Under Thrivve review',
-  created: 'New bookings', pickups: 'Cars handed over (new contracts)', ended: 'Contracts ended', rejected: 'Rejected by Thrivve', supplier_failed: 'Rejected by supplier', pickup_failed: 'Failed at pickup',
+  created: 'New bookings', pickups: 'Cars handed over (new contracts)', ended: 'Contracts ended', rejected: 'Rejected by Thrivve', supplier_failed: 'Rejected by supplier', pickup_failed: 'Cancelled / not picked up', 'rejected+supplier_failed': 'Rejected (by Thrivve or by the supplier)',
   active_end: 'Active bookings at the end of the period', retention_lost: 'Returned within 30 days (handed over 30–120 days ago)' };
 const BD_COLS = [['booking_id','Booking'],['product','Product'],['status','Status'],['customer','Customer'],['phone','Phone'],['vehicle','Vehicle'],['supplier','Supplier'],['created','Created'],['pickup','Pickup'],['ended','Ended'],['decided','Decision seen'],['failure_reason','Failure reason'],['credited','Credited to']];
 async function bdDrill(metric){
   const [f, t] = bdRange();
   $('#bd-drill').classList.remove('hide'); $('#bd-drill-out').innerHTML = '<p class="muted" style="padding:12px">Loading…</p>';
   $('#bd-drill-t').textContent = (BD_TITLES[metric] || STG[metric.replace('cohort_', '')]?.[0] || metric) + (metric.startsWith('snap_') ? '' : ` · ${f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)}`);
-  const { data, error } = await sb.rpc('bookings_drill', { p_metric: metric, p_from: f, p_to: t, p_product: BD.product || null });
+  const res = await Promise.all(metric.split('+').map(m => sb.rpc('bookings_drill', { p_metric: m, p_from: f, p_to: t, p_product: BD.product || null })));
+  const error = res.find(x => x.error)?.error;
   if (error) return $('#bd-drill-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const data = res.flatMap(x => x.data || []).sort((a, b) => String(b.decided || b.pickup || b.created).localeCompare(String(a.decided || a.pickup || a.created)));
   BD.drill = { metric, rows: data, st: { page: 0, size: pgSize() } }; renderBdDrill();
   $('#bd-drill').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
