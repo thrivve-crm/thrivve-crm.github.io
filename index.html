@@ -6,18 +6,19 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Thrivve CRM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#667085; --line:#e4e7ec;
-  --brand:#0f6e56; --brand-ink:#fff; --brand-soft:#e6f3ef;
-  --red:#c0362c; --red-soft:#fdecea; --amber:#b25e09; --amber-soft:#fff4e5; --blue:#1d5fbf; --blue-soft:#eaf1fd;
-  --radius:10px;
+  --bg:#f8f7fb; --card:#fff; --ink:#1e1b4b; --muted:#6b6880; --line:#e7e4f0;
+  --brand:#4c1d95; --brand-ink:#fff; --brand-soft:#efe9fb; --accent:#f59e0b; --accent-soft:#fef3c7;
+  --green:#047857; --green-soft:#e7f6ef;
+  --red:#b42318; --red-soft:#fdecea; --amber:#b25e09; --amber-soft:#fff4e5; --blue:#1d5fbf; --blue-soft:#eaf1fd; --purple:#6d28d9; --purple-soft:#f1eafe;
+  --radius:12px;
 }
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif}
 button,input,select,textarea{font:inherit}
 .top{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;padding:10px 16px}
 .top b{font-weight:700;color:var(--brand)} .top nav{display:flex;gap:4px;flex-wrap:wrap} .top .sp{flex:1}
@@ -38,7 +39,7 @@ table{width:100%;border-collapse:collapse;font-size:14px} th,td{padding:8px 6px;
 th{color:var(--muted);font-weight:500;font-size:13px} tr.click{cursor:pointer} tr.click:hover{background:#fafbfc}
 .pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
 .p-red{background:var(--red-soft);color:var(--red)} .p-amber{background:var(--amber-soft);color:var(--amber)}
-.p-green{background:var(--brand-soft);color:var(--brand)} .p-blue{background:var(--blue-soft);color:var(--blue)} .p-gray{background:#eef0f3;color:#475467}
+.p-green{background:var(--green-soft);color:var(--green)} .p-purple{background:var(--purple-soft);color:var(--purple)} .p-blue{background:var(--blue-soft);color:var(--blue)} .p-gray{background:#eef0f3;color:#475467}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
 .kpi .n{font-size:24px;font-weight:700} .kpi .l{color:var(--muted);font-size:13px}
@@ -68,6 +69,43 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
 .cal .day.out{opacity:.45} .cal .day .wa{background:#e3f5ec;color:#0f6e56;border-radius:5px;padding:1px 5px;margin:3px 0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tline{position:relative;height:26px;background:#f7f8fa;border-radius:6px} .tline .sh{position:absolute;top:3px;bottom:3px;border-radius:5px;background:var(--blue-soft);border:1px solid #cfdcf6}
 .tline .sh.wa{background:#e3f5ec;border-color:#9fd9bd} .tline .br{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(45deg,#f6cfcb,#f6cfcb 4px,#fdecea 4px,#fdecea 8px);border-radius:3px}
+
+/* ---- v2 ---- */
+.top b{display:flex;align-items:center;gap:8px} .top b::before{content:"";width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--brand),#7c3aed);box-shadow:inset -6px -6px 0 var(--accent)}
+.tab:hover{background:#f4f1fb;color:var(--ink)}
+.bar{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.mt{margin-top:12px} .nowrap{white-space:nowrap} .tx-red{color:var(--red)}
+.btn{transition:background .15s,opacity .15s} .btn:hover:not(:disabled){filter:brightness(1.08)} .btn.sm{padding:5px 10px;font-size:13px}
+.btn.saving{opacity:.75;cursor:progress} .btn.saving::before{content:"";display:inline-block;width:11px;height:11px;margin-right:6px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
+.btn.ok{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important} .btn.bad{outline:2px solid var(--red)}
+@keyframes spin{to{transform:rotate(360deg)}}
+button.link{border:0;background:none;color:var(--brand);cursor:pointer;padding:2px 4px;font-size:13px;text-decoration:underline} button.link:disabled{color:#c9c4d8;cursor:default;text-decoration:none}
+.quick{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.filters .f{min-width:140px}
+.tbl{overflow-x:auto} .tbl table{min-width:640px}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:13px;color:var(--muted);margin-top:10px} .pager select{width:auto;padding:4px 6px}
+.kpi-link{text-decoration:none;color:inherit} .kpi-link:hover{border-color:var(--brand)}
+.grp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap} .grp-h h2{margin:0 0 8px} .cnt{color:var(--muted);font-weight:500;font-size:14px}
+.lead-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:start} @media(max-width:900px){.lead-grid{grid-template-columns:1fr}}
+.sum-h{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.facts{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;margin:12px 0 0;font-size:14px} .facts dt{color:var(--muted)} .facts dd{margin:0}
+.banner{border-radius:10px;padding:10px 12px;margin-top:10px;font-size:14px} .banner.purple{background:var(--purple-soft);color:var(--purple)}
+.next{border-left:4px solid var(--brand);background:#faf8ff;border-radius:8px;padding:10px 12px} .next.over{border-color:var(--red);background:#fff7f6} .next .big{font-size:20px;font-weight:700}
+.sub{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
+.tl .it.k-log{} .tl .hn{background:#f7f6fb;border-radius:6px;padding:4px 8px;margin-top:3px;font-size:14px;white-space:pre-wrap}
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px} .mp-grid .card{margin:0} .mp b{font-size:22px}
+tr.dim td{opacity:.55} tr.dim td:last-child,tr.dim td:nth-last-child(2){opacity:1}
+.switch{position:relative;display:inline-block;width:38px;height:22px} .switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#d6d2e3;border-radius:999px;transition:.2s;cursor:pointer} .switch span::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+span{background:var(--brand)} .switch input:checked+span::before{transform:translateX(16px)}
+.setrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.ml-l{padding:5px 8px}
+input:focus,select:focus,textarea:focus{outline:2px solid #c4b5fd;border-color:var(--brand)}
+@media(max-width:700px){
+  .top{flex-wrap:wrap;padding:8px 12px} .top nav{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch} .tab{white-space:nowrap}
+  main{padding:12px} .bar .row>.f{max-width:none!important} .facts{grid-template-columns:110px 1fr} .card{padding:12px}
+}
 </style>
 </head>
 <body>
@@ -94,13 +132,17 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
     <b>Thrivve CRM</b>
     <nav id="nav">
       <button class="tab on" data-v="queue">Today</button>
-      <button class="tab" data-v="lead">Customer / Log call</button>
+      <button class="tab" data-v="lead">Customer</button>
+      <button class="tab" data-v="myperf">My performance</button>
+      <button class="tab" data-v="reports">Reports</button>
       <button class="tab" data-v="schedule">Schedule</button>
       <button class="tab admin" data-v="perf">Performance</button>
       <button class="tab admin" data-v="quality">Quality</button>
       <button class="tab admin" data-v="review">Review list</button>
       <button class="tab admin" data-v="followups">Follow-ups</button>
       <button class="tab admin" data-v="bookings">Booking attribution</button>
+      <button class="tab admin" data-v="lists">Manage lists</button>
+      <button class="tab admin" data-v="settings">Settings</button>
       <button class="tab admin" data-v="imports">Uploads</button>
     </nav>
     <span class="sp"></span>
@@ -109,49 +151,58 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
   </div>
 
   <main>
-    <!-- QUEUE -->
+    <!-- TODAY -->
     <section id="v-queue">
-      <div class="row" style="margin-bottom:12px">
-        <div class="f admin" style="max-width:260px"><label>Agent</label><select id="q-agent"></select></div>
-        <div class="f" style="max-width:320px"><label>Customer phone</label><input id="q-phone" class="ltr" placeholder="05xxxxxxxx"></div>
-        <button class="btn" id="q-open">Open</button>
+      <div class="bar">
+        <div><h1>Today</h1><div class="small muted" id="q-sub">Who to call now, in order.</div></div>
+        <div class="row">
+          <div class="f admin" style="max-width:230px"><label>Agent</label><select id="q-agent"></select></div>
+          <div class="f" style="max-width:240px"><label>Open a customer</label><input id="q-phone" class="ltr" placeholder="05xxxxxxxx" inputmode="tel"></div>
+          <button class="btn" id="q-open">Open</button>
+          <button class="btn ghost" id="q-refresh" title="Refresh">↻</button>
+        </div>
       </div>
       <div class="kpis" id="q-kpis"></div>
-      <div class="card" style="margin-top:14px"><div id="q-list"></div></div>
+      <div id="q-groups"></div>
     </section>
 
-    <!-- LEAD -->
+    <!-- CUSTOMER -->
     <section id="v-lead" class="hide">
-      <div class="row" style="margin-bottom:12px">
-        <div class="f" style="max-width:320px"><label>Customer phone</label><input id="l-phone" class="ltr" placeholder="05xxxxxxxx"></div>
-        <button class="btn" id="l-load">Show</button>
-      </div>
-      <div class="grid2">
-        <div class="card">
-          <h2>Log a call</h2>
-          <div id="l-head" class="small muted" style="margin-bottom:10px">Type the phone number and press Show.</div>
-          <div class="f"><label>Contact type</label>
-            <div class="seg" id="l-kind"><button data-v="call" class="on">Call</button><button data-v="whatsapp">WhatsApp</button><button data-v="note">Note only</button></div></div>
-          <div class="f" style="margin-top:10px"><label>Outcome</label>
-            <div class="seg" id="l-outcome">
-              <button data-v="interested">Interested</button><button data-v="call_back">Call back later</button>
-              <button data-v="no_answer">No answer</button><button data-v="not_interested">Not interested</button>
-              <button data-v="disqualified">Disqualified</button><button data-v="booked">Booked</button>
-              <button data-v="wrong_number">Wrong number</button><button data-v="other">Other</button></div></div>
-          <div class="row" style="margin-top:10px">
-            <div class="f" id="l-reason-w"><label>Reason</label><select id="l-reason"></select></div>
-            <div class="f" id="l-next-w"><label>Next follow-up date</label><input id="l-next" type="date"></div>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <div class="f"><label>Car</label><select id="l-car"></select></div>
-            <div class="f"><label>Customer name</label><input id="l-name"></div>
-          </div>
-          <div class="f" style="margin-top:10px"><label>Notes</label><textarea id="l-note"></textarea></div>
-          <div class="row" style="margin-top:12px"><button class="btn" id="l-save">Save</button><span id="l-err" class="err small"></span></div>
+      <div class="bar">
+        <div><h1>Customer</h1><div class="small muted">Summary, next step and Log Call first — full history below.</div></div>
+        <div class="row">
+          <div class="f" style="max-width:260px"><label>Phone</label><input id="l-phone" class="ltr" placeholder="05xxxxxxxx" inputmode="tel"></div>
+          <button class="btn" id="l-load">Open</button>
         </div>
-        <div class="card">
-          <h2>Customer history</h2>
-          <div id="l-tl" class="small muted">—</div>
+      </div>
+      <div id="l-empty" class="card muted">Type a phone number and press Open, or pick a customer from Today.</div>
+      <div id="l-body" class="hide">
+        <div class="grid2 lead-grid">
+          <div>
+            <div class="card" id="l-summary"></div>
+            <div class="card" id="l-next"></div>
+            <div class="card" id="l-form">
+              <h2>Log contact</h2>
+              <div class="f"><label>Type</label>
+                <div class="seg" id="l-kind"><button data-v="call" class="on">Call</button><button data-v="whatsapp">WhatsApp</button><button data-v="note">Note only</button></div></div>
+              <div class="f mt"><label>Outcome *</label><div class="seg" id="l-outcome"></div></div>
+              <div class="row mt">
+                <div class="f hide" id="l-reason-w"><label id="l-reason-l">Reason *</label><select id="l-reason"></select></div>
+                <div class="f hide" id="l-next-w"><label id="l-next-l">Next follow-up</label>
+                  <input id="l-next-at" type="datetime-local" step="300">
+                  <div class="quick" id="l-quick"></div></div>
+              </div>
+              <div class="row mt">
+                <div class="f"><label>Car of interest</label><select id="l-car"></select></div>
+                <div class="f" id="l-name-w"><label>Customer name</label><input id="l-name" autocomplete="off"></div>
+                <div class="f hide" id="l-source-w"><label>Source</label><select id="l-source"></select></div>
+              </div>
+              <div class="f mt"><label id="l-note-l">Note</label><textarea id="l-note" placeholder="What was said, what was promised"></textarea></div>
+              <div class="row mt"><button class="btn" id="l-save">Save contact</button><span id="l-err" class="err small" role="alert"></span></div>
+            </div>
+          </div>
+          <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">History</h2><span class="small muted" id="l-hist-n"></span></div>
+            <div id="l-tl" class="mt"></div><div id="l-tl-pg"></div></div>
         </div>
       </div>
     </section>
@@ -222,7 +273,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
           <div class="f"><label>Show</label><select id="b-filter"><option value="un">Unattributed</option><option value="all">All</option></select></div>
           <button class="btn" id="b-go">Show</button></div>
         <div id="b-sum" class="kpis" style="margin-top:12px"></div>
-        <div id="b-list" style="margin-top:12px"></div>
+        <div class="tbl" id="b-list" style="margin-top:12px"></div><div id="b-pg"></div>
       </div>
       <div class="card hide" id="b-edit">
         <h2 id="b-title"></h2>
@@ -274,6 +325,71 @@ pre{white-space:pre-wrap;font-size:12px;background:#f2f4f7;padding:10px;border-r
       <div id="sc-pop" class="sc-pop hide"></div>
     </section>
 
+    <!-- MY PERFORMANCE (agent; admin can preview) -->
+    <section id="v-myperf" class="hide">
+      <div class="bar">
+        <div><h1>My performance</h1><div class="small muted">Your own results only — the same numbers your admin sees for the same period. No overall score.</div></div>
+        <div class="row">
+          <div class="f admin" style="max-width:220px"><label>Preview as</label><select id="mp-agent"></select></div>
+          <div class="f" style="max-width:170px"><label>From</label><input type="date" id="mp-from"></div>
+          <div class="f" style="max-width:170px"><label>To</label><input type="date" id="mp-to"></div>
+          <button class="btn" id="mp-go">Show</button>
+        </div>
+      </div>
+      <div id="mp-out" class="mp-grid"></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section id="v-reports" class="hide">
+      <div class="bar">
+        <div><h1>Reports</h1><div class="small muted" id="rp-scope"></div></div>
+        <div class="row"><button class="btn ghost" id="rp-csv">Export CSV</button></div>
+      </div>
+      <div class="card">
+        <div class="seg" id="rp-type">
+          <button data-v="leads" class="on">Leads</button><button data-v="followups">Follow-ups</button><button data-v="contacts">Logged contacts</button>
+          <button data-v="bookings">Bookings</button><button data-v="performance">Agent performance</button>
+        </div>
+        <div class="filters mt" id="rp-filters"></div>
+        <div class="small muted mt" id="rp-basis"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center"><div id="rp-count" class="small"></div><div id="rp-pg-top"></div></div>
+        <div class="tbl mt" id="rp-out"></div>
+        <div id="rp-pg"></div>
+      </div>
+    </section>
+
+    <!-- MANAGE LISTS (admin) -->
+    <section id="v-lists" class="hide">
+      <div class="bar"><div><h1>Manage lists</h1><div class="small muted">Rename, reorder or disable options. Each option keeps a fixed key, so renaming never splits report numbers. Disabled options disappear from new entries but stay in history and report filters.</div></div></div>
+      <div class="card">
+        <div class="seg" id="ml-list">
+          <button data-v="call_outcome" class="on">Call outcomes</button><button data-v="lost_reason">Lost reasons</button><button data-v="disqualify_reason">Disqualify reasons</button>
+          <button data-v="reschedule_reason">Reschedule reasons</button><button data-v="lead_source">Lead sources</button><button data-v="car_model">Car models</button>
+        </div>
+        <div class="tbl mt" id="ml-out"></div>
+        <h3>Add an option</h3>
+        <div class="row">
+          <div class="f"><label>Label</label><input id="ml-new"></div>
+          <div class="f hide" id="ml-beh-w"><label>Behaves like</label><select id="ml-beh"></select></div>
+          <div class="f" id="ml-note-w" style="max-width:220px"><label>Needs a note</label><select id="ml-note"><option value="">No</option><option value="required">Yes</option></select></div>
+          <button class="btn" id="ml-add">Add</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS (admin) -->
+    <section id="v-settings" class="hide">
+      <div class="bar"><div><h1>Settings</h1><div class="small muted">What agents see in My performance, and who can close leads.</div></div></div>
+      <div class="grid2">
+        <div class="card"><h2>Visible to agents in My performance</h2><div id="st-vis"></div>
+          <p class="small muted">Hidden metrics are removed on the server, so links and exports cannot show them either.</p></div>
+        <div class="card"><h2>Sales roles (Opener / Closer)</h2><div id="st-roles"></div>
+          <p class="small muted">An agent can hand off a lead to anyone marked Closer or Both. Admins can reassign any lead.</p></div>
+      </div>
+    </section>
+
     <!-- IMPORTS (admin) -->
     <section id="v-imports" class="hide">
       <div class="card">
@@ -318,7 +434,7 @@ const OUT = {interested:'Interested',call_back:'Call back later',no_answer:'No a
 const LST = {new:['New','p-blue'],contacted:['Contacted','p-gray'],no_answer:['No answer','p-gray'],follow_up:['Follow-up','p-amber'],won:['Won','p-green'],lost:['Lost','p-red'],disqualified:['Disqualified','p-red']};
 const FUS = {done_on_time:['On time','p-green'],missed:['Missed','p-red'],pending:['Pending','p-amber'],awaiting_data:['Awaiting data','p-gray'],covered_by_other:['Covered by another agent','p-blue'],cancelled_before_due:['Cancelled before due','p-gray']};
 const pill = ([t,c]) => `<span class="pill ${c}">${esc(t)}</span>`;
-let ME = null, AGENTS = [], LOOK = {};
+let ME = null, AGENTS = [], LOOK = {}, LOOKALL = {};
 
 // ---------------- auth ----------------
 async function boot(){
@@ -330,14 +446,16 @@ async function boot(){
   $('#v-login').classList.add('hide'); $('#app').classList.remove('hide');
   $$('.admin').forEach(e => e.classList.toggle('hide', ME.role !== 'admin'));
   const [ag, lk] = await Promise.all([
-    sb.from('agents').select('id,name,email,role,active,in_performance').order('name'),
-    sb.from('lookup_options').select('*').eq('active', true).order('sort')]);
+    sb.from('agents').select('id,name,email,role,active,in_performance,sales_role').order('name'),
+    sb.from('lookup_options').select('*').order('sort')]);
   AGENTS = ag.data || [];
-  (lk.data || []).forEach(o => (LOOK[o.list] ||= []).push(o));
+  LOOK = {}; LOOKALL = {};
+  (lk.data || []).forEach(o => { (LOOKALL[o.list] ||= []).push(o); if (o.active) (LOOK[o.list] ||= []).push(o); });
   $('#q-agent').innerHTML = AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
-  $('#l-car').innerHTML = '<option value="">—</option>' + (LOOK.car_model||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
   const t = todayRiyadh();
   $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#pf-from').value = addDays(t, -30); $('#pf-to').value = addDays(t, -1); $('#rv-from').value = addDays(t, -14); $('#rv-to').value = t; $('#qa-day').value = addDays(t, -1); $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
+  $('#mp-from').value = addDays(t, -30); $('#mp-to').value = addDays(t, -1);
+  $('#mp-agent').innerHTML = '<option value="">Me</option>' + AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
   show(location.hash === '#metabase-relay' ? 'imports' : (location.hash.slice(1) || 'queue'));
   if (location.hash === '#metabase-relay' && window.opener && ME.role === 'admin') window.opener.postMessage({ type: 'thrivve-ready' }, MB_ORIGIN);
 }
@@ -378,92 +496,477 @@ $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''
 
 // ---------------- nav ----------------
 function show(v){
-  if (!$('#v-' + v) || (ME.role !== 'admin' && ['perf','quality','review','followups','bookings','imports'].includes(v))) v = 'queue';
+  if (!$('#v-' + v) || (ME.role !== 'admin' && ['perf','quality','review','followups','bookings','imports','lists','settings'].includes(v))) v = 'queue';
   $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
   document.body.classList.toggle('wide', v === 'schedule');
   $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   location.hash = v;
-  ({queue: loadQueue, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
+  ({queue: loadQueue, myperf: loadMyPerf, reports: loadReports, lists: loadLists, settings: loadSettings, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
 }
 $('#nav').onclick = e => { if (e.target.dataset.v) show(e.target.dataset.v); };
 
-// ---------------- queue ----------------
-async function loadQueue(){
-  const agent = ME.role === 'admin' ? $('#q-agent').value : null;
-  const { data, error } = await sb.rpc('my_queue', { p_agent: agent });
-  if (error) return $('#q-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
-  const order = {overdue:0, today:1, new:2, upcoming:3};
-  data.sort((a,b) => order[a.bucket]-order[b.bucket] || String(a.due_date).localeCompare(String(b.due_date)));
-  const c = k => data.filter(r => r.bucket === k).length;
-  $('#q-kpis').innerHTML = [['overdue','Overdue','p-red'],['today','Due today','p-amber'],['new','New leads','p-blue'],['upcoming','Upcoming','p-gray']]
-    .map(([k,l]) => `<div class="kpi"><div class="n">${c(k)}</div><div class="l">${l}</div></div>`).join('');
-  const B = {overdue:['Overdue','p-red'], today:['Today','p-amber'], new:['New','p-blue'], upcoming:['Upcoming','p-gray']};
-  $('#q-list').innerHTML = data.length ? `<table><thead><tr><th></th><th>Phone</th><th>Customer</th><th>Follow-up</th><th>Car</th><th>Last call</th><th>Last note</th></tr></thead><tbody>${
-    data.map(r => `<tr class="click" data-p="${esc(r.phone)}"><td>${pill(B[r.bucket])}</td><td class="ltr">${esc(r.phone)}</td><td>${esc(r.customer_name||'')}</td>
-      <td>${fmtD(r.due_date)}</td><td>${esc(r.car_interested||'')}</td><td class="small">${fmtDT(r.last_call_at)}</td><td class="small muted">${esc((r.last_note||'').slice(0,60))}</td></tr>`).join('')
-  }</tbody></table>` : '<p class="muted">Nothing in the queue.</p>';
-}
-$('#q-agent').onchange = loadQueue;
-$('#q-list').onclick = e => { const tr = e.target.closest('tr[data-p]'); if (tr) openLead(tr.dataset.p); };
-$('#q-open').onclick = () => openLead($('#q-phone').value);
-function openLead(p){ show('lead'); $('#l-phone').value = p; loadLead(); }
-
-// ---------------- lead + log ----------------
-let KIND = 'call', OUTCOME = null;
+// ---------------- shared helpers (v2) ----------------
+const STAGE = {new:['New','p-blue'], attempting:['Attempting','p-gray'], contacted:['Contacted','p-gray'], interested:['Interested','p-amber'],
+               booked:['Booked','p-green'], lost:['Lost','p-red'], disqualified:['Disqualified','p-red']};
+const BKV = {valid:'Valid', invalid:'Rejected at review', pending:'Under review'};
+const BKO = {open:['Open','p-blue'], delivered:['Delivered','p-green'], failed:['Failed at supplier','p-red'], none:['—','p-gray']};
+const stagePill = s => pill(STAGE[s] || [s || '—', 'p-gray']);
+const optLabel = (list, key) => key == null || key === '' ? '' : ((LOOKALL[list] || []).find(o => o.value === key)?.label_en || key);
+const activeOpts = list => (LOOKALL[list] || []).filter(o => o.active);
 function seg(id, cb){ $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; $$(id + ' button').forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset.v); }; }
-seg('#l-kind', v => KIND = v);
-seg('#l-outcome', v => { OUTCOME = v; formRules(); });
+const nm = id => AGENTS.find(a => a.id === id)?.name || '—';
+const RIYADH = '+03:00';
+const toRiyadhInput = iso => { if (!iso) return ''; const d = new Date(new Date(iso).getTime() + 3 * 3600e3); return d.toISOString().slice(0, 16); };
+const fromRiyadhInput = v => v ? new Date(v + ':00' + RIYADH).toISOString() : null;
+const fmtWhen = t => { if (!t) return '—'; const d = new Date(t), now = new Date();
+  const day = d.toLocaleDateString('en-CA', {timeZone:'Asia/Riyadh'}), today = todayRiyadh();
+  const hm = d.toLocaleTimeString('en-GB', {timeZone:'Asia/Riyadh', hour:'2-digit', minute:'2-digit'});
+  return day === today ? 'Today ' + hm : day === addDays(today, 1) ? 'Tomorrow ' + hm : day === addDays(today, -1) ? 'Yesterday ' + hm : fmtDT(t); };
+const ago = t => { if (!t) return ''; const m = Math.round((Date.now() - new Date(t)) / 60000);
+  return m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+function busy(btn, state, label){
+  btn._label ??= btn.textContent;
+  btn.classList.remove('saving','ok','bad');
+  if (state === 'saving') { btn.disabled = true; btn.classList.add('saving'); btn.textContent = label || 'Saving…'; }
+  else if (state === 'ok') { btn.disabled = false; btn.classList.add('ok'); btn.textContent = label || 'Saved ✓'; setTimeout(() => { btn.classList.remove('ok'); btn.textContent = btn._label; }, 1600); }
+  else if (state === 'bad') { btn.disabled = false; btn.classList.add('bad'); btn.textContent = btn._label; }
+  else { btn.disabled = false; btn.textContent = btn._label; }
+}
+function friendly(m){
+  return ({'set the next follow-up date and time':'Set the next follow-up date and time.','this outcome needs a reason':'Choose a reason.',
+           'this reason needs a note':'This reason needs a short note.','this outcome needs a note':'Add a short note for this outcome.',
+           'choose why the follow-up is moving':'Choose why the follow-up is moving.','a closed lead cannot have a follow-up':'A closed lead cannot have a follow-up.',
+           'phone is required':'Type the customer phone.','choose an outcome':'Choose an outcome.'})[m]
+         || (/between now and 60 days/.test(m) ? 'Pick a time between now and 60 days ahead.' : m);
+}
+
+// pager: "1–20 of 137", 20/50/100 remembered per user (this browser)
+const PG_KEY = 'thrivve_page_size';
+const pgSize = () => { try { return [20,50,100].includes(+localStorage.getItem(PG_KEY)) ? +localStorage.getItem(PG_KEY) : 20; } catch { return 20; } };
+function pager(el, st, total, onChange){
+  const from = total ? st.page * st.size + 1 : 0, to = Math.min(total, (st.page + 1) * st.size), last = Math.max(0, Math.ceil(total / st.size) - 1);
+  el.innerHTML = `<div class="pager"><span>${from}–${to} of ${total.toLocaleString('en')}</span>
+    <select aria-label="Rows per page">${[20,50,100].map(n => `<option ${n === st.size ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <button class="btn ghost sm" data-p="prev" ${st.page <= 0 ? 'disabled' : ''}>‹ Prev</button><button class="btn ghost sm" data-p="next" ${st.page >= last ? 'disabled' : ''}>Next ›</button></div>`;
+  el.querySelector('select').onchange = e => { st.size = +e.target.value; st.page = 0; try { localStorage.setItem(PG_KEY, st.size); } catch {} onChange(); };
+  el.querySelectorAll('button').forEach(b => b.onclick = () => { st.page += b.dataset.p === 'next' ? 1 : -1; onChange(); });
+}
+
+// ---------------- Today ----------------
+const TQ = { data: null, pg: {} };
+const TGROUPS = [['overdue','Overdue','p-red','Oldest first'],['today','Due today','p-amber','By time'],['new','New — assigned to you','p-blue','Oldest assignment first'],
+                 ['offer','Needs a new car offer','p-purple','Supplier failed the booking — offer another car']];
+async function loadQueue(){
+  const agent = ME.role === 'admin' ? ($('#q-agent').value || null) : null;
+  const t0 = performance.now();
+  const { data, error } = await sb.rpc('today', { p_agent: agent });
+  if (error) return $('#q-groups').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  TQ.data = data; TQ.ms = Math.round(performance.now() - t0);
+  $('#q-sub').textContent = `${agent ? nm(agent) : 'You'} · updated ${fmtWhen(data.generated_at)}`;
+  $('#q-kpis').innerHTML = TGROUPS.map(([k,l,c]) => `<a class="kpi kpi-link" href="#grp-${k}"><div class="n ${k === 'overdue' && data[k].length ? 'tx-red' : ''}">${data[k].length}</div><div class="l">${l}</div></a>`).join('')
+    + `<div class="kpi"><div class="n">${data.upcoming_count}</div><div class="l">Later (scheduled)</div></div>`;
+  renderToday();
+}
+function renderToday(){
+  const d = TQ.data;
+  $('#q-groups').innerHTML = TGROUPS.map(([k,l,c,hint]) => `<div class="card grp" id="grp-${k}"><div class="grp-h"><h2>${pill([l,c])} <span class="cnt">${d[k].length}</span></h2><span class="small muted">${hint}</span></div>
+     <div id="tq-${k}"></div><div id="tq-pg-${k}"></div></div>`).join('');
+  TGROUPS.forEach(([k]) => renderGroup(k));
+}
+function renderGroup(k){
+  const rows = TQ.data[k], st = TQ.pg[k] ||= { page: 0, size: pgSize() };
+  const slice = rows.slice(st.page * st.size, (st.page + 1) * st.size);
+  const when = r => k === 'new' ? `Assigned ${fmtWhen(r.assigned_at)}` : k === 'offer' ? esc(r.booking_status) + ' · ' + fmtWhen(r.changed_at)
+      : `${fmtWhen(r.due_at)}${r.time_set === false ? ' <span class="pill p-gray" title="Imported without a time">time not set</span>' : ''}${k === 'overdue' ? ` <span class="small tx-red">${ago(r.due_at)}</span>` : ''}`;
+  $('#tq-' + k).innerHTML = rows.length ? `<div class="tbl"><table><thead><tr><th>${k === 'new' ? 'Assigned' : k === 'offer' ? 'Booking' : 'Due'}</th><th>Customer</th><th>Stage</th><th>Last outcome</th><th>Car</th></tr></thead><tbody>${
+    slice.map(r => `<tr class="click" data-lead="${r.lead_id}"><td class="nowrap">${when(r)}</td><td><b>${esc(r.name || '—')}</b><div class="small muted ltr">${esc(r.phone)}</div>${r.handed_off ? '<span class="pill p-purple">Handed to you</span>' : ''}</td>
+      <td>${stagePill(r.stage)}</td><td class="small">${esc(optLabel('call_outcome', r.last_outcome)) || '<span class="muted">—</span>'}${r.last_outcome_at ? `<div class="muted">${fmtWhen(r.last_outcome_at)}</div>` : ''}</td>
+      <td class="small">${esc(optLabel('car_model', r.car || r.vehicle) || '')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">Nothing here.</p>';
+  if (rows.length > 20) pager($('#tq-pg-' + k), st, rows.length, () => renderGroup(k)); else $('#tq-pg-' + k).innerHTML = '';
+}
+$('#q-agent').onchange = loadQueue; $('#q-refresh').onclick = loadQueue;
+$('#q-groups').onclick = e => { const tr = e.target.closest('tr[data-lead]'); if (tr) openLead({ lead: tr.dataset.lead }); };
+$('#q-open').onclick = () => openLead({ phone: $('#q-phone').value });
+$('#q-phone').onkeydown = e => { if (e.key === 'Enter') $('#q-open').click(); };
+
+// ---------------- Customer ----------------
+const LV = { data: null, kind: 'call', outcome: null, clientId: null, histPg: { page: 0, size: pgSize() } };
+function openLead(o){ show('lead'); LV.req = o; if (o.phone) $('#l-phone').value = o.phone; loadLead(o); }
+async function loadLead(o){
+  o ||= { phone: $('#l-phone').value.trim() };
+  if (!o.lead && !o.phone) return;
+  const t0 = performance.now();
+  const { data, error } = await sb.rpc('lead_view', o.lead ? { p_lead: o.lead } : { p_phone: o.phone });
+  LV.ms = Math.round(performance.now() - t0);
+  if (error) { $('#l-empty').classList.remove('hide'); $('#l-body').classList.add('hide'); return $('#l-empty').innerHTML = `<p class="err">${esc(error.message)}</p>`; }
+  LV.data = data; LV.histPg.page = 0;
+  $('#l-phone').value = data.phone || o.phone || '';
+  $('#l-empty').classList.add('hide'); $('#l-body').classList.remove('hide');
+  renderSummary(); renderNext(); resetForm(); renderHistory();
+}
+function renderSummary(){
+  const d = LV.data, L = d.lead, b = d.booking;
+  if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. ${ME.role === 'admin' ? 'Assign it to an agent, or log' : 'Saving'} a contact to create the lead${ME.role === 'admin' ? '' : ' and assign it to you'}.</p>
+    ${ME.role === 'admin' ? `<div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
+      <div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button></div>` : ''}`;
+    if (ME.role === 'admin') { fillSelect($('#l-new-src'), 'lead_source', null, '—');
+      $('#l-assign-go').onclick = async e => { busy(e.target, 'saving');
+        const { data: id, error } = await sb.rpc('assign_lead', { p_phone: d.phone, p_agent: $('#l-assign').value, p_name: $('#l-new-name').value || null, p_source: $('#l-new-src').value || null });
+        if (error) { busy(e.target, 'bad'); return toast(error.message); }
+        busy(e.target, 'ok', 'Assigned ✓'); loadLead({ phone: d.phone }); }; }
+    return; }
+  $('#l-summary').innerHTML = `<div class="sum-h"><div><h2 style="margin:0">${esc(L.name || 'No name yet')}</h2>
+      <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button></div></div>
+      <div>${stagePill(L.stage)}</div></div>
+    ${b?.needs_new_offer ? `<div class="banner purple">Supplier failed booking #${b.id} (${esc(b.status)}). Offer the customer another car and log the outcome.</div>` : ''}
+    <dl class="facts">
+      <dt>Owner</dt><dd>${esc(L.owner_name || '—')}${L.handed_off_from ? ` <span class="small muted">· handed off by ${esc(L.handed_off_from)}</span>` : ''}</dd>
+      <dt>Last outcome</dt><dd>${esc(optLabel('call_outcome', L.last_outcome)) || '—'}${L.last_outcome_at ? ` <span class="small muted">· ${fmtWhen(L.last_outcome_at)}</span>` : ''}</dd>
+      <dt>Last Maqsam call</dt><dd>${fmtWhen(L.last_call_at)}</dd>
+      <dt>Booking</dt><dd>${b ? `#${b.id} ${pill(BKO[b.outcome] || [b.status,'p-gray'])} <span class="small muted">${esc(b.status)}${b.validity ? ' · ' + esc(BKV[b.validity] || b.validity) : ''}</span>` : '<span class="muted">No booking</span>'}</dd>
+      <dt>Car</dt><dd>${esc(optLabel('car_model', L.car)) || '—'}</dd>
+      <dt>Source</dt><dd>${esc(optLabel('lead_source', L.source)) || '—'}</dd>
+      ${L.lost_reason ? `<dt>Closed because</dt><dd>${esc(optLabel('lost_reason', L.lost_reason) || optLabel('disqualify_reason', L.lost_reason))}</dd>` : ''}
+    </dl>
+    ${ME.role === 'admin' ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
+  $('#l-summary [data-copy]')?.addEventListener('click', e => { navigator.clipboard?.writeText(e.target.dataset.copy); toast('Phone copied'); });
+  $('#l-assign-go')?.addEventListener('click', async e => {
+    busy(e.target, 'saving');
+    const { error } = await sb.rpc('assign_lead', { p_phone: L.phone, p_agent: $('#l-assign').value });
+    if (error) { busy(e.target, 'bad'); return toast(error.message); }
+    busy(e.target, 'ok', 'Assigned ✓'); loadLead({ lead: L.id });
+  });
+}
+function renderNext(){
+  const d = LV.data, L = d.lead, n = d.next;
+  if (!L) { $('#l-next').classList.add('hide'); return; }
+  $('#l-next').classList.remove('hide');
+  const closed = ['lost','disqualified'].includes(L.stage);
+  const closers = AGENTS.filter(a => a.active && a.role === 'agent' && ['closer','both'].includes(a.sales_role) && a.id !== L.owner);
+  $('#l-next').innerHTML = `<h2>Next step</h2>
+    ${n ? `<div class="next ${n.overdue ? 'over' : ''}"><div class="big">${fmtWhen(n.due_at)}</div>
+            <div class="small">${n.overdue ? `<b class="tx-red">Overdue ${ago(n.due_at)}</b> · ` : ''}Follow-up by <b>${esc(n.owner_name)}</b>${n.time_set === false ? ' · <span class="pill p-gray">time not set</span>' : ''}${n.reason ? ' · moved: ' + esc(optLabel('reschedule_reason', n.reason)) : ''}</div></div>`
+         : `<p class="muted small">${closed ? 'Lead is closed — log a new contact to reopen it.' : L.stage === 'booked' ? (d.booking?.needs_new_offer ? 'Supplier failed the booking — offer another car and log the outcome below.' : 'Booked — no follow-up needed.') : 'No follow-up scheduled.'}</p>`}
+    ${L.can_edit && !closed ? `<div class="row mt">
+        <button class="btn ghost" id="nx-toggle">${n ? 'Change time' : 'Set a follow-up'}</button>
+        ${closers.length ? '<button class="btn ghost" id="ho-toggle">Hand off to closer</button>' : ''}</div>
+      <div id="nx-form" class="sub hide"><div class="row">
+        <div class="f"><label>New date and time (Riyadh)</label><input type="datetime-local" id="nx-at" step="300" value="${toRiyadhInput(n?.due_at)}"></div>
+        ${n ? `<div class="f"><label>Why is it moving? *</label><select id="nx-reason"><option value="">Choose…</option>${activeOpts('reschedule_reason').map(o => `<option value="${esc(o.value)}">${esc(o.label_en)}</option>`).join('')}</select></div>` : ''}
+        <div class="f"><label>Note</label><input id="nx-note"></div><button class="btn" id="nx-save">Save</button></div></div>
+      <div id="ho-form" class="sub hide"><div class="row">
+        <div class="f"><label>Hand off to</label><select id="ho-to">${closers.map(a => `<option value="${a.id}">${esc(a.name)} (${a.sales_role})</option>`).join('')}</select></div>
+        <div class="f"><label>Handoff note</label><input id="ho-note" placeholder="What the closer needs to know"></div><button class="btn" id="ho-save">Hand off</button></div>
+        <p class="small muted">The closer becomes responsible for the next step. Your earlier contacts stay credited to you.</p></div>` : ''}`;
+  $('#nx-toggle')?.addEventListener('click', () => $('#nx-form').classList.toggle('hide'));
+  $('#ho-toggle')?.addEventListener('click', () => $('#ho-form').classList.toggle('hide'));
+  $('#nx-save')?.addEventListener('click', async e => {
+    const at = fromRiyadhInput($('#nx-at').value); if (!at) return toast('Pick a date and time.');
+    busy(e.target, 'saving');
+    const { error } = await sb.rpc('set_next_step', { p_lead: L.id, p_due_at: at, p_reason: $('#nx-reason')?.value || null, p_note: $('#nx-note').value || null });
+    if (error) { busy(e.target, 'bad'); return toast(friendly(error.message)); }
+    busy(e.target, 'ok'); loadLead({ lead: L.id });
+  });
+  $('#ho-save')?.addEventListener('click', async e => {
+    busy(e.target, 'saving');
+    const { error } = await sb.rpc('handoff_lead', { p_lead: L.id, p_to: $('#ho-to').value, p_note: $('#ho-note').value || null });
+    if (error) { busy(e.target, 'bad'); return toast(error.message); }
+    busy(e.target, 'ok', 'Handed off ✓'); toast('Lead handed off to ' + nm($('#ho-to').value)); loadLead({ lead: L.id });
+  });
+}
+function fillSelect(sel, list, cur, blank = 'Choose…'){
+  const opts = activeOpts(list);
+  if (cur && !opts.some(o => o.value === cur)) opts.push((LOOKALL[list] || []).find(o => o.value === cur) || { value: cur, label_en: cur });
+  sel.innerHTML = `<option value="">${blank}</option>` + opts.map(o => `<option value="${esc(o.value)}" ${o.value === cur ? 'selected' : ''}>${esc(o.label_en)}${o.active === false ? ' (disabled)' : ''}</option>`).join('');
+}
+function resetForm(){
+  const L = LV.data.lead;
+  LV.outcome = null; LV.kind = 'call'; LV.clientId = crypto.randomUUID();
+  $$('#l-kind button').forEach(b => b.classList.toggle('on', b.dataset.v === 'call'));
+  $('#l-outcome').innerHTML = activeOpts('call_outcome').map(o => `<button data-v="${esc(o.value)}">${esc(o.label_en)}</button>`).join('');
+  fillSelect($('#l-car'), 'car_model', L?.car, '—'); fillSelect($('#l-source'), 'lead_source', L?.source, '—');
+  $('#l-name').value = L?.name || ''; $('#l-note').value = ''; $('#l-next-at').value = ''; $('#l-err').textContent = '';
+  $('#l-source-w').classList.toggle('hide', !!L?.source);
+  busy($('#l-save'));
+  formRules();
+}
 function formRules(){
-  const needR = ['not_interested','disqualified'].includes(OUTCOME), needN = ['interested','call_back'].includes(OUTCOME);
-  const closed = ['not_interested','disqualified','booked','wrong_number'].includes(OUTCOME);
-  $('#l-reason-w').classList.toggle('hide', !needR);
-  $('#l-next-w').classList.toggle('hide', closed);
-  $('#l-next-w label').textContent = needN ? 'Next follow-up date (required)' : 'Next follow-up date (optional)';
-  const list = OUTCOME === 'disqualified' ? LOOK.disqualify_reason : LOOK.lost_reason;
-  $('#l-reason').innerHTML = '<option value="">Choose…</option>' + (list||[]).map(o => `<option value="${esc(o.value)}">${esc(o.label_en || o.value)}</option>`).join('');
-  const t = todayRiyadh(); $('#l-next').min = t; $('#l-next').max = addDays(t, 60);
+  const r = (LOOKALL.call_outcome || []).find(o => o.value === LV.outcome)?.rule || {};
+  const reasonList = r.reason, rr = reasonList ? ((LOOKALL[reasonList] || []).find(o => o.value === $('#l-reason').value)?.rule || {}) : {};
+  const keepOpen = !!rr.keeps_open, isNote = LV.kind === 'note';
+  $('#l-reason-w').classList.toggle('hide', !reasonList);
+  if (reasonList && $('#l-reason').dataset.list !== reasonList) { fillSelect($('#l-reason'), reasonList, null); $('#l-reason').dataset.list = reasonList; }
+  $('#l-reason-l').textContent = reasonList === 'disqualify_reason' ? 'Disqualify reason *' : 'Lost reason *';
+  const fu = keepOpen ? 'required' : (r.closes ? 'none' : (r.follow_up || 'optional'));
+  $('#l-next-w').classList.toggle('hide', !LV.outcome || fu === 'none');
+  $('#l-next-l').innerHTML = fu === 'required' ? 'Next follow-up (date + time) *' : 'Next follow-up (optional)';
+  $('#l-note-l').textContent = (r.note === 'required' || rr.note === 'required') ? 'Note *' : 'Note';
+  $('#l-save').textContent = LV.outcome ? (r.closes === 'booked' ? 'Save — mark booked' : r.closes && !keepOpen ? 'Save — close lead' : 'Save contact') : 'Save contact';
+  $('#l-save')._label = $('#l-save').textContent;
+  if (keepOpen) $('#l-err').textContent = 'This reason keeps the lead open — set when to call back.'; else if ($('#l-err').textContent.startsWith('This reason keeps')) $('#l-err').textContent = '';
+  const now = new Date(Date.now() + 3 * 3600e3), min = now.toISOString().slice(0, 16);
+  $('#l-next-at').min = min; $('#l-next-at').max = new Date(Date.now() + 60 * 864e5 + 3 * 3600e3).toISOString().slice(0, 16);
+  const t = todayRiyadh(), q = [['In 2 hours', toRiyadhInput(new Date(Date.now() + 2 * 3600e3).toISOString()).slice(0, 14) + '00'],
+    ['Tomorrow 10:00', addDays(t, 1) + 'T10:00'], ['Tomorrow 16:00', addDays(t, 1) + 'T16:00'], ['In 3 days 10:00', addDays(t, 3) + 'T10:00']];
+  $('#l-quick').innerHTML = q.map(([l, v]) => `<button type="button" class="link" data-v="${v}">${l}</button>`).join('');
 }
-async function loadLead(){
-  const p = $('#l-phone').value.trim(); if (!p) return;
-  $('#l-tl').textContent = '...';
-  const { data, error } = await sb.rpc('lead_timeline', { p_phone: p });
-  if (error) return $('#l-tl').innerHTML = `<p class="err">${esc(error.message)}</p>`;
-  const L = data.lead;
-  $('#l-head').innerHTML = L ? `${pill(LST[L.status])} <span class="ltr">${esc(data.phone)}</span> · Owner: ${esc(L.assigned_name||'—')} ${L.lost_reason ? ' · ' + esc(L.lost_reason) : ''}`
-                            : `<span class="ltr">${esc(data.phone||p)}</span> — new customer, will be assigned to you.`;
-  $('#l-name').value = L?.customer_name || ''; $('#l-car').value = L?.car_interested || '';
-  const items = [
-    ...data.calls.map(c => ({t:c.started_at, h:`📞 Maqsam · ${esc((c.agents||[]).join(' + ')||'—')} · ${esc(c.state)}${c.talk_sec ? ' · ' + Math.round(c.talk_sec/60*10)/10 + ' min' : ''}`,
-                              b: (c.summary ? esc(c.summary) : '') + (c.recording ? ` <a href="${esc(c.recording)}" target="_blank" rel="noopener">Recording</a>` : '')})),
-    ...data.logs.map(g => ({t:g.at, h:`📝 ${esc(g.agent)} · ${g.kind === 'whatsapp' ? 'WhatsApp · ' : g.kind === 'note' ? 'Note · ' : ''}${esc(OUT[g.outcome]||g.outcome)}${g.reason ? ' · ' + esc(g.reason) : ''}${g.next ? ' · follow-up ' + fmtD(g.next) : ''}`, b: esc(g.note||'')})),
-    ...data.bookings.map(b => ({t:b.created, h:`🚗 Booking #${b.id} · ${esc(b.status)}`, b: esc(b.model||'') + ' · ' + esc(b.product||'')})),
-  ].sort((a,b) => String(b.t).localeCompare(String(a.t)));
-  const fus = data.follow_ups.map(f => `${fmtD(f.due)} ${pill(FUS[f.status]||[f.status,'p-gray'])}${f.flag ? ' <span class="pill p-amber">Rescheduled after missing</span>' : ''}`).join(' · ');
-  $('#l-tl').innerHTML = (fus ? `<p><b>Follow-ups:</b> ${fus}</p>` : '') +
-    (items.length ? `<div class="tl">${items.map(i => `<div class="it"><div class="h">${fmtDT(i.t)} · ${i.h}</div><div>${i.b}</div></div>`).join('')}</div>` : '<p class="muted">No history.</p>');
-}
-$('#l-load').onclick = loadLead;
+seg('#l-kind', v => { LV.kind = v; formRules(); });
+$('#l-outcome').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#l-outcome button').forEach(x => x.classList.toggle('on', x === b)); LV.outcome = b.dataset.v; formRules(); };
+$('#l-reason').onchange = formRules;
+$('#l-quick').onclick = e => { const b = e.target.closest('[data-v]'); if (b) $('#l-next-at').value = b.dataset.v; };
+$('#l-load').onclick = () => loadLead({ phone: $('#l-phone').value.trim() });
+$('#l-phone').onkeydown = e => { if (e.key === 'Enter') $('#l-load').click(); };
 $('#l-save').onclick = async () => {
+  const d = LV.data, btn = $('#l-save');
   $('#l-err').textContent = '';
-  if (!OUTCOME) return $('#l-err').textContent = 'Choose an outcome.';
-  const btn = $('#l-save'); btn.disabled = true;
-  const reasonSel = $('#l-reason'); const reason = $('#l-reason-w').classList.contains('hide') ? null : (reasonSel.value || null);
-  const { error } = await sb.rpc('log_call', {
-    p_phone: $('#l-phone').value, p_outcome: OUTCOME, p_kind: KIND, p_reason: reason,
-    p_next_follow_up: $('#l-next-w').classList.contains('hide') ? null : ($('#l-next').value || null),
-    p_note: $('#l-note').value || null, p_car: $('#l-car').value || null, p_customer_name: $('#l-name').value || null });
-  btn.disabled = false;
-  if (error) return $('#l-err').textContent = arErr(error.message);
-  toast('Saved ✓'); $('#l-note').value = ''; $('#l-next').value = ''; loadLead();
+  if (!LV.outcome) return $('#l-err').textContent = 'Choose an outcome.';
+  const r = (LOOKALL.call_outcome || []).find(o => o.value === LV.outcome)?.rule || {};
+  const reason = r.reason ? ($('#l-reason').value || null) : null;
+  const nextAt = $('#l-next-w').classList.contains('hide') ? null : fromRiyadhInput($('#l-next-at').value);
+  busy(btn, 'saving');
+  const t0 = performance.now();
+  const { data, error } = await sb.rpc('log_contact', {
+    p_lead: d.lead?.id || null, p_phone: d.lead ? null : d.phone, p_outcome: LV.outcome, p_kind: LV.kind, p_reason: reason,
+    p_note: $('#l-note').value || null, p_next_at: nextAt, p_car: $('#l-car').value || null, p_name: $('#l-name').value || null,
+    p_source: $('#l-source').value || null, p_client_id: LV.clientId });     // same id on retry → saved once
+  LV.saveMs = Math.round(performance.now() - t0);
+  if (error) { busy(btn, 'bad'); return $('#l-err').textContent = friendly(error.message); }
+  busy(btn, 'ok', data.duplicate ? 'Already saved ✓' : 'Saved ✓');
+  toast(data.duplicate ? 'This contact was already saved.' : 'Contact saved' + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
+  loadLead({ lead: data.lead_id });
 };
-function arErr(m){
-  if (/needs a next follow-up/.test(m)) return 'Set the next follow-up date.';
-  if (/needs a reason/.test(m)) return 'Choose a reason.';
-  if (/between today/.test(m)) return 'Follow-up date must be between today and 60 days ahead.';
-  if (/closed lead cannot/.test(m)) return 'A closed lead cannot have a follow-up.';
-  if (/phone is required/.test(m)) return 'Type the customer phone.';
-  return m;
+const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝'};
+function histLine(h){
+  switch (h.kind) {
+    case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'whatsapp' ? 'WhatsApp · ' : h.contact === 'note' ? 'Note · ' : 'Call · '}${esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'maqsam': return `Maqsam · ${esc(h.agents || '—')} · ${esc(h.state)}${h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}`;
+    case 'rescheduled': return `<b>${esc(h.agent)}</b> moved the follow-up <s>${fmtWhen(h.old_due)}</s> → <b>${fmtWhen(h.new_due)}</b>${h.reason ? ' · ' + esc(optLabel('reschedule_reason', h.reason)) : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'next_step': return `<b>${esc(h.agent)}</b> set a follow-up for <b>${fmtWhen(h.new_due)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'handoff': return `<b>${esc(h.agent)}</b> handed off ${h.agent === h.from ? '' : '<b>' + esc(h.from) + '</b>\'s lead '}to <b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'assigned': return `${h.agent ? '<b>' + esc(h.agent) + '</b> assigned' : 'Assigned'} ${h.from ? esc(h.from) + ' → ' : 'to '}<b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'booking': return `Booking #${esc(h.data?.booking_id)} → <b>${esc(h.data?.status)}</b>`;
+    case 'created': return `Lead created${h.to ? ' for <b>' + esc(h.to) + '</b>' : ''}`;
+    default: return esc(h.kind);
+  }
 }
+function renderHistory(){
+  const h = LV.data.history || LV.data.calls || [], st = LV.histPg;
+  $('#l-hist-n').textContent = h.length ? h.length + ' events' : '';
+  $('#l-tl').innerHTML = h.length ? `<div class="tl">${h.slice(st.page * st.size, (st.page + 1) * st.size).map(x =>
+    `<div class="it k-${x.kind}"><div class="h">${HK[x.kind] || '•'} ${fmtDT(x.at)}</div><div>${histLine(x)}</div></div>`).join('')}</div>` : '<p class="muted small">No history yet.</p>';
+  if (h.length > st.size || st.page) pager($('#l-tl-pg'), st, h.length, renderHistory); else $('#l-tl-pg').innerHTML = '';
+}
+
+// ---------------- My performance ----------------
+async function loadMyPerf(){
+  const p = { p_from: $('#mp-from').value, p_to: $('#mp-to').value, p_agent: ME.role === 'admin' ? ($('#mp-agent').value || null) : null };
+  $('#mp-out').innerHTML = '<p class="muted">Calculating…</p>';
+  const { data, error } = await sb.rpc('my_performance', p);
+  if (error) return $('#mp-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const card = (title, body, foot) => `<div class="card mp"><div class="small muted">${title}</div>${body}${foot ? `<div class="small muted mt">${foot}</div>` : ''}</div>`;
+  const out = [];
+  if ('shift' in data) out.push(card('Shift adherence', shiftCell(data.shift), 'Required time minus confirmed lost time. WhatsApp-duty days are not measured.'));
+  if ('conversion' in data) out.push(card('Conversion to valid booking', convCell(data.conversion), 'Customers you spoke to whose 30-day window has closed.'));
+  if ('followups' in data) out.push(card('Follow-up adherence', fuCell(data.followups), 'On time = you tried within the window, even if the customer did not answer.'));
+  if ('quality' in data) out.push(card('Call quality & CRM accuracy', qCell(data.quality), 'From reviewed sample calls. Pending reviews do not count as zero.'));
+  if ('credit' in data) out.push(card('Booking credit', (data.credit || []).length ? (data.credit || []).map(r => `<div>${esc(r.product || '')}: ${r.delivered_share ?? 0} delivered · ${r.open_share ?? 0} open</div>`).join('') : '<span class="muted">No credited bookings</span>'));
+  $('#mp-out').innerHTML = out.length ? out.join('') : '<p class="muted">Your admin has not made any metrics visible yet.</p>';
+}
+$('#mp-go').onclick = loadMyPerf;
+
+// ---------------- Reports ----------------
+const RP = { type: 'leads', st: { page: 0, size: pgSize() }, last: null };
+const RPF = {
+  leads:      { basis: 'Date = when the lead was created, assigned or last contacted (choose below).', f: ['basis','agent','stage','outcome','source','booking','q'], sorts: [['created_desc','Newest first'],['created_asc','Oldest first'],['next_asc','Next step soonest'],['last_contact_desc','Last contact newest']] },
+  followups:  { basis: 'Date = follow-up DUE date (what was due in the period), not when it was set.', f: ['agent','fustatus','reason'], sorts: [['due_asc','Due soonest'],['due_desc','Due latest'],['owner_asc','By owner']] },
+  contacts:   { basis: 'Date = when the contact was LOGGED (what agents did in the period).', f: ['agent','outcome','kind'], sorts: [['logged_desc','Newest first'],['logged_asc','Oldest first']] },
+  bookings:   { basis: 'Date = booking CREATION date in Metabase.', f: ['agent','bstatus','validity','boutcome'], sorts: [['created_desc','Newest first'],['created_asc','Oldest first']] },
+  performance:{ basis: 'Same four measures and definitions as the Performance screen, for the selected period.', f: ['agent'], sorts: [] },
+};
+function rpFilters(){
+  const cfg = RPF[RP.type], admin = ME.role === 'admin', t = todayRiyadh();
+  const opt = (list, all = 'All') => `<option value="">${all}</option>` + (LOOKALL[list] || []).map(o => `<option value="${esc(o.value)}">${esc(o.label_en)}${o.active ? '' : ' (disabled)'}</option>`).join('');
+  const F = {
+    basis: `<div class="f"><label>Date basis</label><select data-k="basis"><option value="created">Created</option><option value="assigned">Assigned</option><option value="last_contact">Last contact</option></select></div>`,
+    agent: admin ? `<div class="f"><label>${RP.type === 'followups' ? 'Owner' : 'Agent'}</label><select data-k="agent"><option value="">All agents</option>${AGENTS.filter(a => a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}${a.active ? '' : ' (inactive)'}</option>`).join('')}</select></div>` : '',
+    stage: `<div class="f"><label>Stage</label><select data-k="stage"><option value="">All</option>${Object.entries(STAGE).map(([k,[l]]) => `<option value="${k}">${l}</option>`).join('')}</select></div>`,
+    outcome: `<div class="f"><label>${RP.type === 'leads' ? 'Last outcome' : 'Outcome'}</label><select data-k="outcome">${opt('call_outcome')}</select></div>`,
+    source: `<div class="f"><label>Source</label><select data-k="source">${opt('lead_source')}</select></div>`,
+    booking: `<div class="f"><label>Booking status</label><select data-k="booking"><option value="">All</option><option value="none">No booking</option><option value="open">Open</option><option value="delivered">Delivered</option><option value="failed">Failed at supplier</option></select></div>`,
+    q: `<div class="f"><label>Search</label><input data-k="q" placeholder="Name or phone"></div>`,
+    fustatus: `<div class="f"><label>Result</label><select data-k="status"><option value="">All</option>${Object.entries(FUS).map(([k,[l]]) => `<option value="${k}">${l}</option>`).join('')}</select></div>`,
+    reason: `<div class="f"><label>Moved because</label><select data-k="reason">${opt('reschedule_reason')}</select></div>`,
+    kind: `<div class="f"><label>Type</label><select data-k="kind"><option value="">All</option><option value="call">Call</option><option value="whatsapp">WhatsApp</option><option value="note">Note</option></select></div>`,
+    bstatus: `<div class="f"><label>Status</label><select data-k="status"><option value="">All</option>${['Booking Pending Review','Pending Vehicle Authorization','Vehicle Authorization Started','Pending Vehicle Pickup','Vehicle Pickup Finished','Booking Terminated','Booking Rejected','Vehicle Authorization Failed','Vehicle Pickup Failed','Vehicle Addition Failed'].map(s => `<option>${s}</option>`).join('')}</select></div>`,
+    validity: `<div class="f"><label>Review</label><select data-k="validity"><option value="">All</option><option value="pending">Under review</option><option value="valid">Valid</option><option value="invalid">Rejected at review</option></select></div>`,
+    boutcome: `<div class="f"><label>Supplier outcome</label><select data-k="outcome"><option value="">All</option><option value="open">Open</option><option value="delivered">Delivered</option><option value="failed">Failed</option></select></div>`,
+  };
+  $('#rp-filters').innerHTML = `<div class="row">
+    <div class="f" style="max-width:160px"><label>From</label><input type="date" data-k="from" value="${addDays(t, -30)}"></div>
+    <div class="f" style="max-width:160px"><label>To</label><input type="date" data-k="to" value="${t}"></div>
+    ${cfg.f.map(k => F[k]).join('')}
+    ${cfg.sorts.length ? `<div class="f"><label>Sort</label><select data-k="_sort">${cfg.sorts.map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>` : ''}
+    <button class="btn" id="rp-go">Apply</button></div>`;
+  $('#rp-basis').textContent = cfg.basis;
+  $('#rp-go').onclick = () => { RP.st.page = 0; runReport(); };
+  $$('#rp-filters [data-k]').forEach(i => i.onchange = () => { RP.st.page = 0; runReport(); });     // back to page 1 on any filter change
+  $$('#rp-filters input[data-k="q"]').forEach(i => i.onkeydown = e => { if (e.key === 'Enter') { RP.st.page = 0; runReport(); } });
+}
+function rpParams(){
+  const f = {}; let sort = null;
+  $$('#rp-filters [data-k]').forEach(i => { if (i.dataset.k === '_sort') sort = i.value; else if (i.value) f[i.dataset.k] = i.value; });
+  return { f, sort };
+}
+async function runReport(){
+  const { f, sort } = rpParams(), st = RP.st;
+  $('#rp-out').innerHTML = '<p class="muted">Loading…</p>';
+  const t0 = performance.now();
+  if (RP.type === 'performance') {
+    const res = await perfRows(f);
+    RP.ms = Math.round(performance.now() - t0);
+    if (res.error) return $('#rp-out').innerHTML = `<p class="err">${esc(res.error)}</p>`;
+    RP.last = res; return renderReport(res, res.rows.slice(st.page * st.size, (st.page + 1) * st.size));
+  }
+  const { data, error } = await sb.rpc('report_rows', { p_report: RP.type, p_filters: f, p_sort: sort, p_limit: st.size, p_offset: st.page * st.size });
+  RP.ms = Math.round(performance.now() - t0);
+  if (error) return $('#rp-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  RP.last = data; renderReport(data, data.rows);
+}
+async function perfRows(f){
+  const cols = [['agent','Agent'],['shift_adherence','Shift adherence'],['shift_detail','Shift detail'],['conversion','Conversion'],['customers','Customers (window closed)'],
+                ['followups','Follow-up adherence'],['fu_detail','On time / due'],['quality','Quality (avg /5)'],['crm','CRM accuracy']];
+  const fmt = (v, p) => v == null ? 'Insufficient data' : p ? (v * 100).toFixed(1) + '%' : v;
+  const row = (id, s, c, fu, q) => ({ agent: nm(id), shift_adherence: s?.days_measured ? fmt(s.adherence, 1) : 'Insufficient data',
+      shift_detail: s?.days_measured ? `${s.lost_min ?? '—'} min lost / ${s.required_min} min, ${s.days_measured} day(s)` : '',
+      conversion: c?.customers ? fmt(c.conversion, 1) : (c?.display || 'Insufficient data'), customers: c?.customers ?? '',
+      followups: fu?.adherence == null ? 'N/A — none due' : fmt(fu.adherence, 1), fu_detail: fu?.display || '',
+      quality: q?.reviewed ? q.avg_quality : (q ? 'No reviewed calls' : ''), crm: q?.crm_checked ? fmt(q.crm_accuracy, 1) : '' });
+  if (ME.role !== 'admin') {
+    const { data, error } = await sb.rpc('my_performance', { p_from: f.from, p_to: f.to });
+    if (error) return { error: error.message };
+    const vis = cols.filter(([k]) => k === 'agent' || ({ shift_adherence: 'shift', shift_detail: 'shift', conversion: 'conversion', customers: 'conversion', followups: 'followups', fu_detail: 'followups', quality: 'quality', crm: 'quality' })[k] in data);
+    const r = row(data.agent_id, data.shift, data.conversion, data.followups, data.quality);
+    return { total: 1, rows: [r], columns: vis, scope: 'own' };
+  }
+  const { data, error } = await sb.rpc('performance', { p_from: f.from, p_to: f.to });
+  if (error) return { error: error.message };
+  const by = k => Object.fromEntries((data[k] || []).map(x => [x.agent_id, x]));
+  const S = by('shift'), C = by('conversion'), F = by('followups'), Q = by('quality');
+  const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active && (!f.agent || a.id === f.agent)).map(a => a.id);
+  const rows = ids.map(id => row(id, S[id], C[id], F[id], Q[id]));
+  return { total: rows.length, rows, columns: cols, scope: 'admin' };
+}
+const RPFMT = { last_contact_at: fmtDT, next_at: fmtDT, created_at: fmtDT, assigned_at: fmtDT, due_at: fmtDT, attempt_at: fmtDT, logged_at: fmtDT,
+  stage: v => stagePill(v), status: v => FUS[v] ? pill(FUS[v]) : esc(v), validity: v => esc(BKV[v] || v || ''), outcome: v => BKO[v] ? pill(BKO[v]) : esc(v) };
+function renderReport(data, rows){
+  const st = RP.st, cols = data.columns;
+  $('#rp-scope').textContent = data.scope === 'own' ? 'Showing your own records only.' : 'Showing all agents (admin).';
+  $('#rp-count').innerHTML = `<b>${data.total.toLocaleString('en')}</b> matching ${data.total === 1 ? 'row' : 'rows'}${RP.ms != null ? ` <span class="muted">· ${RP.ms} ms</span>` : ''}`;
+  $('#rp-out').innerHTML = rows.length ? `<table><thead><tr>${cols.map(([,l]) => `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r => `<tr ${r.phone ? `class="click" data-phone="${esc(r.phone)}"` : ''}>${cols.map(([k]) => `<td class="${['phone'].includes(k) ? 'ltr nowrap' : ''}">${RPFMT[k] ? (RPFMT[k](r[k]) ?? '') : esc(r[k] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : '<p class="muted">No rows match these filters.</p>';
+  pager($('#rp-pg'), st, data.total, runReport); pager($('#rp-pg-top'), st, data.total, runReport);
+}
+$('#rp-out').onclick = e => { const tr = e.target.closest('tr[data-phone]'); if (tr && RP.type !== 'bookings') openLead({ phone: tr.dataset.phone }); };
+$('#rp-type').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#rp-type button').forEach(x => x.classList.toggle('on', x === b)); RP.type = b.dataset.v; RP.st.page = 0; rpFilters(); runReport(); };
+function loadReports(){ if (!$('#rp-filters').innerHTML) rpFilters(); RP.st.size = pgSize(); runReport(); }
+// CSV: every matching row (not just the page), same order and scope as the screen; UTF-8 BOM so Excel shows Arabic correctly
+$('#rp-csv').onclick = async e => {
+  const btn = e.target, { f, sort } = rpParams();
+  busy(btn, 'saving', 'Preparing…');
+  let data;
+  if (RP.type === 'performance') { data = await perfRows(f); if (data.error) { busy(btn, 'bad'); return toast(data.error); } }
+  else { const res = await sb.rpc('report_rows', { p_report: RP.type, p_filters: f, p_sort: sort, p_limit: null, p_offset: 0 });
+         if (res.error) { busy(btn, 'bad'); return toast(res.error.message); } data = res.data; }
+  const cell = v => { const s = v == null ? '' : (typeof v === 'object' ? JSON.stringify(v) : String(v)); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const iso = v => v && /^\d{4}-\d\d-\d\dT/.test(v) ? new Date(v).toLocaleString('sv-SE', { timeZone: 'Asia/Riyadh' }).slice(0, 16) : v;
+  const lines = [data.columns.map(([,l]) => cell(l)).join(','), ...data.rows.map(r => data.columns.map(([k]) => cell(k === 'stage' ? (STAGE[r[k]]?.[0] || r[k]) : k === 'status' && FUS[r[k]] ? FUS[r[k]][0] : iso(r[k]))).join(','))];
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `thrivve_${RP.type}_${f.from || ''}_${f.to || ''}.csv` });
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  busy(btn, 'ok', `Exported ${data.rows.length} rows ✓`);
+};
+
+// ---------------- Manage lists (admin) ----------------
+const ML = { list: 'call_outcome' };
+const BEHAV = {
+  attempt:   ['Attempt, no conversation (like No answer)', {contact:'attempt', follow_up:'optional', stage:'attempting'}],
+  talked:    ['Talked, follow-up required (like Call back)', {contact:'connected', follow_up:'required', stage:'contacted'}],
+  interested:['Interested, follow-up required', {contact:'connected', follow_up:'required', stage:'interested'}],
+  talked_opt:['Talked, follow-up optional', {contact:'connected', follow_up:'optional', stage:'contacted'}],
+};
+const ruleText = (list, r) => {
+  const t = [];
+  if (r.closes) t.push('closes lead as ' + r.closes); if (r.reason) t.push('needs ' + r.reason.replace('_', ' '));
+  if (r.follow_up === 'required') t.push('follow-up required'); if (r.follow_up === 'optional') t.push('follow-up optional');
+  if (r.note === 'required') t.push('note required'); if (r.keeps_open) t.push('keeps lead open + follow-up'); if (r.contact === 'attempt') t.push('counts as attempt');
+  return t.map(x => `<span class="pill p-gray">${esc(x)}</span>`).join(' ');
+};
+async function loadLists(){
+  const [{ data: opts, error }, { data: use }] = await Promise.all([
+    sb.from('lookup_options').select('*').eq('list', ML.list).order('sort'), sb.rpc('option_usage', { p_list: ML.list })]);
+  if (error) return $('#ml-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  const U = Object.fromEntries((use || []).map(u => [u.value, u.uses]));
+  $('#ml-out').innerHTML = `<table><thead><tr><th></th><th>Label</th><th>Key (fixed)</th><th>Rule</th><th>Used</th><th>Active</th><th></th></tr></thead><tbody>${
+    opts.map((o, i) => `<tr data-v="${esc(o.value)}" class="${o.active ? '' : 'dim'}"><td class="nowrap"><button class="link" data-mv="-1" ${i ? '' : 'disabled'}>▲</button><button class="link" data-mv="1" ${i < opts.length - 1 ? '' : 'disabled'}>▼</button></td>
+      <td><input class="ml-l" value="${esc(o.label_en || o.value)}"></td><td class="small muted ltr">${esc(o.value)}${o.system ? ' <span class="pill p-purple" title="Workflow depends on this option — its rule is locked">system</span>' : ''}</td>
+      <td class="small">${ruleText(ML.list, o.rule || {})}</td><td>${U[o.value] ?? 0}</td>
+      <td><label class="switch"><input type="checkbox" class="ml-a" ${o.active ? 'checked' : ''}><span></span></label></td>
+      <td><button class="btn ghost sm ml-s">Save</button></td></tr>`).join('')}</tbody></table>`;
+  ML.opts = opts;
+  $('#ml-beh-w').classList.toggle('hide', ML.list !== 'call_outcome');
+  $('#ml-beh').innerHTML = Object.entries(BEHAV).map(([k,[l]]) => `<option value="${k}">${l}</option>`).join('');
+  $('#ml-note-w').classList.toggle('hide', !['lost_reason','disqualify_reason','reschedule_reason','lead_source','call_outcome'].includes(ML.list));
+}
+$('#ml-out').onclick = async e => {
+  const tr = e.target.closest('tr[data-v]'); if (!tr) return;
+  const v = tr.dataset.v;
+  if (e.target.dataset.mv) {
+    const keys = ML.opts.map(o => o.value), i = keys.indexOf(v), j = i + Number(e.target.dataset.mv);
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+    const { error } = await sb.rpc('reorder_options', { p_list: ML.list, p_values: keys });
+    if (error) return toast(error.message); await refreshLookups(); return loadLists();
+  }
+  if (e.target.classList.contains('ml-s') || e.target.classList.contains('ml-a')) {
+    const btn = tr.querySelector('.ml-s'); busy(btn, 'saving', '…');
+    const { error } = await sb.rpc('save_option', { p_list: ML.list, p_value: v, p_label: tr.querySelector('.ml-l').value, p_active: tr.querySelector('.ml-a').checked });
+    if (error) { busy(btn, 'bad'); toast(error.message); return loadLists(); }
+    busy(btn, 'ok', '✓'); await refreshLookups(); loadLists();
+  }
+};
+$('#ml-list').onclick = e => { const b = e.target.closest('button'); if (!b) return; $$('#ml-list button').forEach(x => x.classList.toggle('on', x === b)); ML.list = b.dataset.v; loadLists(); };
+$('#ml-add').onclick = async e => {
+  const label = $('#ml-new').value.trim(); if (!label) return toast('Type a label.');
+  let rule = ML.list === 'call_outcome' ? { ...BEHAV[$('#ml-beh').value][1] } : {};
+  if ($('#ml-note').value) rule.note = 'required';
+  busy(e.target, 'saving');
+  const { error } = await sb.rpc('save_option', { p_list: ML.list, p_value: null, p_label: label, p_active: true, p_rule: rule });
+  if (error) { busy(e.target, 'bad'); return toast(error.message); }
+  busy(e.target, 'ok', 'Added ✓'); $('#ml-new').value = ''; await refreshLookups(); loadLists();
+};
+async function refreshLookups(){
+  const { data } = await sb.from('lookup_options').select('*').order('sort');
+  LOOKALL = {}; (data || []).forEach(o => (LOOKALL[o.list] ||= []).push(o));
+  LOOK = {}; (data || []).filter(o => o.active).forEach(o => (LOOK[o.list] ||= []).push(o));
+}
+
+// ---------------- Settings (admin) ----------------
+async function loadSettings(){
+  const { data: vis } = await sb.from('metric_visibility').select('*').order('sort');
+  $('#st-vis').innerHTML = (vis || []).map(v => `<label class="setrow"><span>${esc(v.label)}</span><span class="switch"><input type="checkbox" data-key="${v.key}" ${v.visible ? 'checked' : ''}><span></span></span></label>`).join('');
+  $('#st-roles').innerHTML = `<table><tbody>${AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<tr><td>${esc(a.name)}</td><td style="width:170px"><select data-agent="${a.id}">${['opener','closer','both'].map(r => `<option value="${r}" ${a.sales_role === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
+}
+$('#st-vis').onchange = async e => {
+  const k = e.target.dataset.key; if (!k) return;
+  const { error } = await sb.rpc('set_metric_visibility', { p_key: k, p_visible: e.target.checked });
+  toast(error ? error.message : (e.target.checked ? 'Now visible to agents' : 'Hidden from agents'));
+};
+$('#st-roles').onchange = async e => {
+  const id = e.target.dataset.agent; if (!id) return;
+  const { error } = await sb.from('agents').update({ sales_role: e.target.value }).eq('id', id);
+  if (error) return toast(error.message);
+  AGENTS.find(a => a.id === id).sales_role = e.target.value; toast('Role saved');
+};
 
 // ---------------- adherence (admin) ----------------
 async function loadAdherence(){
@@ -478,26 +981,31 @@ async function loadAdherence(){
 $('#fa-go').onclick = loadAdherence;
 
 // ---------------- bookings attribution (admin) ----------------
-let BK = null;
+let BK = null; const BKP = { page: 0, size: pgSize() };
 async function loadBookings(){
-  let q = sb.from('v_bookings').select('booking_id,status_actual,validity,outcome,product,customer_phone,customer_name,vehicle_model,created_at,attributed_share,attribution')
-    .gte('created_at', $('#b-from').value).lt('created_at', addDays($('#b-to').value, 1)).order('created_at', {ascending:false}).limit(500);
-  const { data, error } = await q;
+  const from = $('#b-from').value, to = addDays($('#b-to').value, 1), un = $('#b-filter').value === 'un';
+  const base = (sel = 'booking_id', opt) => sb.from('v_bookings').select(sel, opt).gte('created_at', from).lt('created_at', to);
+  const cnt = q => q.then(r => r.count ?? 0);
+  let q = base('booking_id,status_actual,validity,outcome,product,customer_phone,customer_name,vehicle_model,created_at,attributed_share,attribution', { count: 'exact' });
+  if (un) q = q.eq('attributed_share', 0);
+  q = q.order('created_at', { ascending: false }).range(BKP.page * BKP.size, (BKP.page + 1) * BKP.size - 1);
+  const head = { count: 'exact', head: true };
+  const [{ data, error, count }, nAll, nUn, nOpen, nDel, nFail, nRej] = await Promise.all([q,
+    cnt(base('booking_id', head)), cnt(base('booking_id', head).eq('attributed_share', 0)), cnt(base('booking_id', head).eq('outcome', 'open')),
+    cnt(base('booking_id', head).eq('outcome', 'delivered')), cnt(base('booking_id', head).eq('outcome', 'failed')), cnt(base('booking_id', head).eq('validity', 'invalid'))]);
   if (error) return $('#b-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
-  const un = data.filter(b => Number(b.attributed_share) === 0);
-  const cnt = (f) => data.filter(f).length;
-  $('#b-sum').innerHTML = [['Bookings', data.length],['Unattributed', un.length],['Open', cnt(b=>b.outcome==='open')],['Delivered', cnt(b=>b.outcome==='delivered')],
-    ['Failed at supplier', cnt(b=>b.outcome==='failed')],['Rejected at review', cnt(b=>b.validity==='invalid')]]
+  $('#b-sum').innerHTML = [['Bookings', nAll],['Unattributed', nUn],['Open', nOpen],['Delivered', nDel],['Failed at supplier', nFail],['Rejected at review', nRej]]
     .map(([l,n]) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
-  const rows = $('#b-filter').value === 'un' ? un : data;
+  const rows = data;
   const V = {valid:['Valid','p-green'], invalid:['Rejected at review','p-red'], pending:['Under review','p-amber'], unmapped:['New status','p-gray']};
   const O = {open:['Open','p-blue'], delivered:['Delivered','p-green'], failed:['Failed at supplier','p-red'], none:['—','p-gray'], unmapped:['?','p-gray']};
   $('#b-list').innerHTML = `<table><thead><tr><th>#</th><th>Created</th><th>Customer</th><th>Product</th><th>Validity</th><th>Outcome</th><th>Attribution</th></tr></thead><tbody>${
     rows.map(b => `<tr class="click" data-id="${b.booking_id}"><td>${b.booking_id}</td><td class="small">${fmtDT(b.created_at)}</td><td>${esc(b.customer_name||'')}<div class="small muted ltr">${esc(b.customer_phone||'')}</div></td>
       <td class="small">${esc(b.product||'')}<div class="muted">${esc(b.vehicle_model||'')}</div></td><td>${pill(V[b.validity])}</td><td>${pill(O[b.outcome])}</td>
       <td class="small">${(b.attribution||[]).map(x => `${esc(AGENTS.find(a=>a.id===x.agent_id)?.name)} ${Math.round(x.share*100)}%${x.has_call_evidence ? '' : ' <span class="pill p-amber">No call on record</span>'}`).join('<br>') || '<span class="pill p-gray">Unattributed</span>'}</td></tr>`).join('')}</tbody></table>`;
+  pager($('#b-pg'), BKP, count ?? 0, loadBookings);
 }
-$('#b-go').onclick = loadBookings; $('#b-filter').onchange = loadBookings;
+$('#b-go').onclick = () => { BKP.page = 0; loadBookings(); }; $('#b-filter').onchange = () => { BKP.page = 0; loadBookings(); };
 $('#b-list').onclick = async e => {
   const tr = e.target.closest('tr[data-id]'); if (!tr) return;
   const id = Number(tr.dataset.id);
@@ -680,7 +1188,24 @@ async function loadImports(){
 
 // ---------------- performance (admin) ----------------
 const pct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
-const nm = id => AGENTS.find(a => a.id === id)?.name || '—';
+const notMeasured = s => [
+    s.days_in_progress ? s.days_in_progress + ' shift(s) still running' : '',
+    s.days_whatsapp ? s.days_whatsapp + ' WhatsApp duty day(s) — not measured' : '',
+    (s.days_insufficient - (s.days_in_progress || 0)) > 0 ? (s.days_insufficient - (s.days_in_progress || 0)) + ' day(s) without Maqsam states' : '',
+    s.days_off ? s.days_off + ' day(s) off' : ''].filter(Boolean).join(' · ');
+const shiftCell = s => !s ? '<span class="muted">No schedule in this period</span>'
+  : !s.days_scheduled ? `<span class="muted">Day off${s.days_off > 1 ? ' (' + s.days_off + ' days)' : ''} — nothing to measure</span>`
+  : !s.days_measured ? `<span class="muted">Not measured yet — ${esc(notMeasured(s))}</span>`
+  : s.lost_min == null ? `<b>${pct(s.adherence)}</b><div class="small muted">${s.days_measured} day(s) measured</div>` : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)${s.days_live ? ' · ' + s.days_live + ' from live checks (±1 min)' : ''}</div>
+     <div class="small">Lost ${s.lost_min} min · late ${s.late_min} · early leave ${s.early_min}</div>
+     <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${notMeasured(s) ? ' · ' + esc(notMeasured(s)) : ''}</div>`;
+const convCell = c => !c ? '—' : c.customers === 0 ? `<span class="muted">${esc(c.display)}</span>`
+  : `<b>${pct(c.conversion)}</b><div class="small muted">${esc(c.display)} customers</div>${c.customers_pending_window ? `<div class="small muted">${c.customers_pending_window} more still inside the window</div>` : ''}`;
+const fuCell = f => !f ? '—' : f.adherence == null ? '<span class="muted">N/A — no follow-ups due</span>'
+  : `<b>${pct(f.adherence)}</b><div class="small muted">${esc(f.display)} on time</div>${f.missed == null ? '' : `<div class="small">${f.missed} missed${f.pending ? ' · ' + f.pending + ' pending' : ''}${f.covered_by_other ? ' · ' + f.covered_by_other + ' covered by another' : ''}</div>`}`;
+const qCell = q => !q || !q.sampled ? '<span class="muted">No sample drawn</span>'
+  : `${'avg_quality' in q ? `<b>${q.avg_quality ?? '—'}</b><span class="small muted"> / 5 avg</span>` : ''}${'crm_accuracy' in q ? ` · CRM <b>${pct(q.crm_accuracy)}</b>` : ''}
+     <div class="small muted">${q.reviewed} reviewed of ${q.sampled}${q.pending ? ' · ' + q.pending + ' pending' : ''}${'crm_checked' in q ? ' · CRM ' + q.crm_correct + '/' + q.crm_checked : ''}</div>`;
 async function loadPerf(){
   $('#pf-out').innerHTML = 'Calculating…';
   const { data, error } = await sb.rpc('performance', { p_from: $('#pf-from').value, p_to: $('#pf-to').value });
@@ -690,24 +1215,6 @@ async function loadPerf(){
   const u = data.unattributed || {total:0, unattributed:0};
   $('#pf-banner').innerHTML = u.unattributed ? `<p class="small"><span class="pill p-amber">Partial</span> ${u.unattributed} of ${u.total} bookings in this period are not attributed yet — conversion and booking credit will rise as they are attributed.</p>` : '';
   const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active).map(a => a.id);
-  const notMeasured = s => [
-      s.days_in_progress ? s.days_in_progress + ' shift(s) still running' : '',
-      s.days_whatsapp ? s.days_whatsapp + ' WhatsApp duty day(s) — not measured' : '',
-      (s.days_insufficient - (s.days_in_progress || 0)) > 0 ? (s.days_insufficient - (s.days_in_progress || 0)) + ' day(s) without Maqsam states' : '',
-      s.days_off ? s.days_off + ' day(s) off' : ''].filter(Boolean).join(' · ');
-  const shiftCell = s => !s ? '<span class="muted">No schedule in this period</span>'
-    : !s.days_scheduled ? `<span class="muted">Day off${s.days_off > 1 ? ' (' + s.days_off + ' days)' : ''} — nothing to measure</span>`
-    : !s.days_measured ? `<span class="muted">Not measured yet — ${esc(notMeasured(s))}</span>`
-    : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)${s.days_live ? ' · ' + s.days_live + ' from live checks (±1 min)' : ''}</div>
-       <div class="small">Lost ${s.lost_min} min · late ${s.late_min} · early leave ${s.early_min}</div>
-       <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${notMeasured(s) ? ' · ' + esc(notMeasured(s)) : ''}</div>`;
-  const convCell = c => !c ? '—' : c.customers === 0 ? `<span class="muted">${esc(c.display)}</span>`
-    : `<b>${pct(c.conversion)}</b><div class="small muted">${esc(c.display)} customers</div>${c.customers_pending_window ? `<div class="small muted">${c.customers_pending_window} more still inside the window</div>` : ''}`;
-  const fuCell = f => !f ? '—' : f.adherence == null ? '<span class="muted">N/A — no follow-ups due</span>'
-    : `<b>${pct(f.adherence)}</b><div class="small muted">${esc(f.display)} on time</div><div class="small">${f.missed} missed${f.pending ? ' · ' + f.pending + ' pending' : ''}${f.covered_by_other ? ' · ' + f.covered_by_other + ' covered by another' : ''}</div>`;
-  const qCell = q => !q || !q.sampled ? '<span class="muted">No sample drawn</span>'
-    : `<b>${q.avg_quality ?? '—'}</b><span class="small muted"> / 5 avg</span> · CRM <b>${pct(q.crm_accuracy)}</b>
-       <div class="small muted">${q.reviewed} reviewed of ${q.sampled}${q.pending ? ' · ' + q.pending + ' pending' : ''} · CRM ${q.crm_correct}/${q.crm_checked}</div>`;
   $('#pf-out').innerHTML = `<table><thead><tr><th>Agent</th><th>1 · Shift adherence</th><th>2 · Conversion to valid booking</th><th>3 · Follow-up adherence</th><th>4 · Call quality & CRM accuracy</th></tr></thead><tbody>${
     ids.map(id => `<tr><td><b>${esc(nm(id))}</b></td><td>${shiftCell(S[id])}</td><td>${convCell(C[id])}</td><td>${fuCell(F[id])}</td><td>${qCell(Q[id])}</td></tr>`).join('')}</tbody></table>`;
   const cr = data.credit || [];
