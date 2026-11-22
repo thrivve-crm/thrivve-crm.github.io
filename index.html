@@ -217,6 +217,36 @@ tr.click:hover{background:var(--brand-soft)}
 .perm-matrix td:first-child{min-width:260px}
 .btn.accent-ring{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(255,152,0,.18)}
 #tm-people td{vertical-align:middle}
+
+/* dashboards */
+.dash-filter{padding:14px 16px}
+.sec-t{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#535862;margin:22px 0 10px;font-weight:600}
+.sec-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}.sec-row .sec-t{margin-bottom:10px}
+.seg.sm button{padding:5px 10px;font-size:12.5px}
+.kpi .l{font-size:12.5px;font-weight:500;color:#535862;margin:0 0 4px} .kpi .s{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+.kpi.k-green{border-top:3px solid var(--green)} .kpi.k-red{border-top:3px solid var(--red)} .kpi.k-blue{border-top:3px solid var(--blue)} .kpi.k-amber{border-top:3px solid var(--accent)}
+.kpi-link{cursor:pointer}
+.dl{font-weight:600;font-size:12px;white-space:nowrap}.dl.up{color:var(--green)}.dl.down{color:var(--red)}.dl.flat{color:var(--muted)}
+.frac{font-size:12px;color:var(--muted);white-space:nowrap}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid3 .card{margin:0 0 16px} @media(max-width:1000px){.grid3{grid-template-columns:1fr}}
+.flow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 10px}.flow>div{display:flex;flex-direction:column;align-items:center;font-size:20px;font-weight:600;color:var(--ink)}
+.flow .plus{color:var(--green)}.flow .minus{color:var(--red)}.flow b{font-size:24px}
+.net{display:inline-block;border-radius:999px;padding:3px 10px;font-weight:600;font-size:13px}.net.up{background:var(--green-soft);color:var(--green)}.net.down{background:var(--red-soft);color:var(--red)}
+.progress{height:10px;background:#f2f4f7;border-radius:999px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-light))}
+.tx-green{color:var(--green)}
+.stackbar{display:flex;height:14px;border-radius:999px;overflow:hidden;background:#f2f4f7}.stackbar span{display:block;height:100%}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:0}
+.chart{margin-top:10px;overflow:hidden}.chart svg .gl{stroke:#f0f0f2}.chart svg .ax{font-size:11px;fill:#717680}.chart svg rect{cursor:pointer}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:#535862}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hbar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px;margin:6px 0}.hbar .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .b{height:8px;background:#f2f4f7;border-radius:999px;overflow:hidden}.hbar .b i{display:block;height:100%;background:var(--red)}.hbar b{text-align:right}
+.mini{display:inline-block;width:46px;height:6px;background:#f2f4f7;border-radius:999px;overflow:hidden;margin-right:6px;vertical-align:1px}.mini i{display:block;height:100%;background:var(--green)}
+table.sortable th{cursor:pointer;user-select:none}table.sortable th.asc::after{content:" ▲";font-size:9px}table.sortable th.desc::after{content:" ▼";font-size:9px}
+tfoot td,tfoot th{background:#fafafa;border-top:1px solid var(--line)}
+table.heat{font-size:12px} table.heat td,table.heat th{padding:5px 6px;text-align:center} table.heat th.rk{text-align:left;white-space:nowrap;font-weight:500;text-transform:none;letter-spacing:0;background:#fff;color:var(--ink)}
+td.hm{cursor:pointer;min-width:30px;border:1px solid #fff} td.hm.l0{background:#fafafa;color:#c4c6cc} td.hm.l1{background:#f4ecfa} td.hm.l2{background:#e3cdf2} td.hm.l3{background:#c89ee6}
+td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} td.hm:hover{outline:2px solid var(--accent)}
+.grid2 .tbl table{min-width:0} .grid2 .card{min-width:0}
 </style>
 </head>
 <body>
@@ -267,6 +297,9 @@ tr.click:hover{background:var(--brand-soft)}
       <button class="tab" data-v="queue"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M8.5 15l2.5 2.5 4.5-5"/></svg><span>Today</span><span class="badge" id="nav-over"></span></button>
       <button class="tab" data-v="lead"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-3.6 4-5.5 8-5.5s7.2 1.9 8 5.5"/></svg><span>Customer</span></button>
       <button class="tab" data-v="myperf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>My performance</span></button>
+      <div class="nav-g" data-group>Dashboards</div>
+      <button class="tab" data-perm="bookings" data-v="bookdash"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Bookings &amp; contracts</span></button>
+      <button class="tab" data-v="calldash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span>Calls</span></button>
       <div class="nav-g">Team</div>
       <button class="tab" data-v="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Schedule</span></button>
       <button class="tab" data-v="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Reports</span></button>
@@ -541,6 +574,75 @@ tr.click:hover{background:var(--brand-soft)}
       </div>
     </section>
 
+    <!-- BOOKINGS & CONTRACTS DASHBOARD -->
+    <section id="v-bookdash" class="hide">
+      <div class="bar"><div><h1>Bookings &amp; contracts</h1><div class="small muted" id="bd-asof">Loading…</div></div>
+        <div class="row">
+          <div class="seg" id="bd-prod"><button data-v="" class="on">All</button><button data-v="Lease To Own">Lease To Own</button><button data-v="Rent Car">Rent Car</button></div>
+        </div></div>
+      <div class="card dash-filter">
+        <div class="seg" id="bd-preset">
+          <button data-v="yesterday" class="on">Yesterday</button><button data-v="today">Today</button><button data-v="7">Last 7 days</button>
+          <button data-v="month">This month</button><button data-v="lastmonth">Last month</button><button data-v="year">This year</button><button data-v="custom">Custom</button>
+        </div>
+        <div class="row hide" id="bd-custom"><div class="f" style="max-width:170px"><label>From</label><input type="date" id="bd-from"></div><div class="f" style="max-width:170px"><label>To</label><input type="date" id="bd-to"></div><button class="btn" id="bd-go">Show</button></div>
+      </div>
+
+      <h3 class="sec-t">Right now <span class="muted small" id="bd-now-note"></span></h3>
+      <div class="kpis" id="bd-snap"></div>
+
+      <div class="sec-row"><h3 class="sec-t" id="bd-period-t">In the period</h3>
+        <div class="seg sm" id="bd-mode"><button data-v="activity" class="on" title="What happened in the period">Period activity</button><button data-v="cohort" title="Where the bookings created in the period are now">Fate of the period's bookings</button></div></div>
+      <div id="bd-activity"></div>
+
+      <div class="grid3">
+        <div class="card" id="bd-contracts"></div>
+        <div class="card" id="bd-target"></div>
+        <div class="card" id="bd-retention"></div>
+      </div>
+      <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Day by day</h2><div class="legend" id="bd-legend"></div></div><div id="bd-daily" class="chart"></div></div>
+      <div class="grid2">
+        <div class="card"><h2>By supplier <span class="small muted">(bookings created in the period)</span></h2><div class="tbl" id="bd-supplier"></div></div>
+        <div class="card"><h2>Supplier rejection reasons</h2><div id="bd-reasons"></div><h2 class="mt">By car model</h2><div class="tbl" id="bd-model"></div></div>
+      </div>
+      <div class="card hide" id="bd-drill">
+        <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0" id="bd-drill-t"></h2><div class="row"><button class="btn ghost sm" id="bd-drill-csv">Export CSV</button><button class="btn ghost sm" id="bd-drill-x">Close</button></div></div>
+        <div class="tbl mt" id="bd-drill-out"></div><div id="bd-drill-pg"></div>
+      </div>
+    </section>
+
+    <!-- CALLS DASHBOARD -->
+    <section id="v-calldash" class="hide">
+      <div class="bar"><div><h1>Calls</h1><div class="small muted" id="cd-asof">Loading…</div></div></div>
+      <div class="card dash-filter">
+        <div class="row" style="align-items:center;gap:12px">
+          <div class="seg" id="cd-preset">
+            <button data-v="today" class="on">Today</button><button data-v="yesterday">Yesterday</button><button data-v="5">Last 5 days</button><button data-v="7">Last 7 days</button>
+            <button data-v="30">Last 30 days</button><button data-v="month">This month</button><button data-v="custom">Custom</button>
+          </div>
+          <div class="row hide" id="cd-custom"><input type="date" id="cd-from" style="width:150px"><input type="date" id="cd-to" style="width:150px"><button class="btn sm" id="cd-go">Show</button></div>
+        </div>
+        <div class="row mt" style="align-items:center;gap:12px">
+          <span class="small muted">Time of day</span>
+          <div class="seg sm" id="cd-win"><button data-v="0-1440" class="on">All day</button><button data-v="540-720">09–12</button><button data-v="660-780">11–13</button><button data-v="780-1020">13–17</button><button data-v="1020-1260">17–21</button></div>
+          <span class="small muted" data-perm="performance">Agents</span>
+          <div class="seg sm" id="cd-agents" data-perm="performance"></div>
+        </div>
+      </div>
+      <div class="kpis" id="cd-kpis"></div>
+      <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Agents</h2><span class="small muted">Click a column to sort. A call with several agents counts for the one who started it.</span></div>
+        <div class="tbl mt" id="cd-agents-t"></div></div>
+      <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">By hour</h2><span class="small" id="cd-peak"></span></div><div id="cd-hourly" class="chart"></div></div>
+      <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Heatmap</h2>
+          <div class="row" style="align-items:center"><div class="seg sm" id="cd-hm-rows"><button data-v="day" class="on">By day</button><button data-v="agent">By agent</button></div>
+          <div class="seg sm" id="cd-hm-metric"><button data-v="total" class="on">All calls</button><button data-v="connected">Connected</button><button data-v="lost">Not connected</button></div></div></div>
+        <div class="tbl mt" id="cd-heat"></div><div class="small muted mt" id="cd-heat-note"></div></div>
+      <div class="card hide" id="cd-drill">
+        <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0" id="cd-drill-t"></h2><div class="row"><button class="btn ghost sm" id="cd-drill-csv">Export CSV</button><button class="btn ghost sm" id="cd-drill-x">Close</button></div></div>
+        <div class="tbl mt" id="cd-drill-out"></div>
+      </div>
+    </section>
+
     <!-- TEAM & ACCESS (admin) -->
     <section id="v-team" class="hide">
       <div class="bar"><div><h1>Team &amp; access</h1><div class="small muted">Add people, make someone an admin, and decide what each role can see and do. People sign in with the Google account of the e-mail you enter.</div></div>
@@ -684,7 +786,7 @@ sb.auth.onAuthStateChange(async (ev) => {
 $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''; showLogin(); };
 
 // ---------------- nav + permissions ----------------
-const VIEW_PERM = { perf: 'performance', quality: 'quality', review: 'review', followups: 'followups', bookings: 'bookings', lists: 'lists', settings: 'settings', imports: 'imports', team: 'team' };
+const VIEW_PERM = { bookdash: 'bookings', perf: 'performance', quality: 'quality', review: 'review', followups: 'followups', bookings: 'bookings', lists: 'lists', settings: 'settings', imports: 'imports', team: 'team' };
 function applyPerms(){
   $$('[data-perm]').forEach(e => e.classList.toggle('hide', !can(e.dataset.perm)));
   $$('#nav [data-group]').forEach(g => { let n = g.nextElementSibling, any = false;
@@ -694,12 +796,12 @@ function applyPerms(){
 function show(v){
   if (!$('#v-' + v) || (VIEW_PERM[v] && !can(VIEW_PERM[v]))) v = 'queue';
   $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
-  document.body.classList.toggle('wide', v === 'schedule');
+  document.body.classList.toggle('wide', ['schedule','calldash','bookdash'].includes(v));
   $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('#mtop-t').textContent = $('#nav .tab.on span')?.textContent || '';
   window.scrollTo(0, 0);
   location.hash = v;
-  ({team: loadTeam, queue: loadQueue, myperf: loadMyPerf, reports: loadReports, lists: loadLists, settings: loadSettings, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
+  ({bookdash: loadBookDash, calldash: loadCallDash, team: loadTeam, queue: loadQueue, myperf: loadMyPerf, reports: loadReports, lists: loadLists, settings: loadSettings, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
 }
 $('#nav').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { show(b.dataset.v); document.body.classList.remove('nav-open'); } };
 $('#nav-toggle').onclick = () => document.body.classList.toggle('nav-open');
@@ -1154,6 +1256,278 @@ async function refreshLookups(){
   LOOK = {}; (data || []).filter(o => o.active).forEach(o => (LOOK[o.list] ||= []).push(o));
 }
 
+
+// ---------------- dashboards: shared ----------------
+const n0 = v => (v ?? 0).toLocaleString('en');
+const hms = s => { s = Math.round(s || 0); return `${Math.floor(s / 3600)}:${String(Math.floor(s % 3600 / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const ms = s => { s = Math.round(s || 0); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const ratio = (a, b, d = 1) => b ? `${(a / b * 100).toFixed(d)}%` : 'N/A';
+const frac = (a, b) => `<span class="frac">${n0(a)} / ${n0(b)}</span>`;
+const delta = (cur, prev, kind = 'num', goodUp = true) => {
+  if (prev == null) return '';
+  const d = cur - prev; if (!d) return '<span class="dl flat">no change</span>';
+  const up = d > 0, good = up === goodUp, txt = kind === 'pts' ? `${up ? '+' : ''}${d.toFixed(1)} pts` : kind === 'ms' ? `${up ? '+' : '−'}${ms(Math.abs(d))}` : `${up ? '+' : ''}${n0(d)}`;
+  return `<span class="dl ${good ? 'up' : 'down'}">${up ? '▲' : '▼'} ${txt}</span>`;
+};
+function periodOf(p){
+  const t = todayRiyadh(), y = addDays(t, -1);
+  if (p === 'today') return [t, t]; if (p === 'yesterday') return [y, y];
+  if (/^\d+$/.test(p)) return [addDays(t, 1 - +p), t];
+  if (p === 'month') return [t.slice(0, 8) + '01', t];
+  if (p === 'lastmonth') { const f = addDays(t.slice(0, 8) + '01', -1); return [f.slice(0, 8) + '01', f]; }
+  if (p === 'year') return [t.slice(0, 5) + '01-01', t];
+  return null;
+}
+const dLabel = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' });
+const dayName = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', timeZone: 'UTC' });
+function csvDownload(name, cols, rows){
+  const cell = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const blob = new Blob(['﻿' + [cols.map(([, l]) => cell(l)).join(','), ...rows.map(r => cols.map(([k]) => cell(r[k])).join(','))].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+// simple SVG bar/line chart: series = [{key,label,color,type:'bar'|'line',axis:'left'|'right'}]
+function svgChart(el, labels, data, series, opt = {}){
+  const W = Math.max(el.clientWidth || 800, 320), H = opt.h || 240, pl = 44, pr = series.some(s => s.axis === 'right') ? 44 : 12, pt = 12, pb = 34;
+  const iw = W - pl - pr, ih = H - pt - pb, n = labels.length || 1, bw = iw / n;
+  const bars = series.filter(s => s.type === 'bar'), stacked = opt.stacked;
+  const leftMax = Math.max(1, ...data.map(r => stacked ? bars.reduce((a, s) => a + (r[s.key] || 0), 0) : Math.max(0, ...series.filter(s => s.axis !== 'right').map(s => r[s.key] || 0))));
+  const rightMax = opt.rightMax || Math.max(1, ...data.map(r => Math.max(0, ...series.filter(s => s.axis === 'right').map(s => r[s.key] || 0))));
+  const nice = m => { const p = Math.pow(10, Math.floor(Math.log10(m))); return Math.ceil(m / p / (m / p > 5 ? 2 : 1)) * p * (m / p > 5 ? 2 : 1); };
+  const lm = nice(leftMax), yl = v => pt + ih - v / lm * ih, yr = v => pt + ih - v / rightMax * ih;
+  let g = '';
+  for (let i = 0; i <= 4; i++) { const v = lm * i / 4, y = yl(v); g += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" class="gl"/><text x="${pl - 6}" y="${y + 4}" class="ax" text-anchor="end">${n0(Math.round(v))}</text>`;
+    if (pr > 12) g += `<text x="${W - pr + 6}" y="${y + 4}" class="ax">${opt.rightFmt ? opt.rightFmt(rightMax * i / 4) : n0(Math.round(rightMax * i / 4))}</text>`; }
+  const step = Math.ceil(n / Math.floor(iw / 46));
+  labels.forEach((l, i) => { if (i % step === 0) g += `<text x="${pl + bw * i + bw / 2}" y="${H - 12}" class="ax" text-anchor="middle">${esc(l)}</text>`; });
+  data.forEach((r, i) => {
+    let base = 0; const gw = stacked ? bw * .7 : bw * .8 / Math.max(bars.length, 1);
+    bars.forEach((s, j) => {
+      const v = r[s.key] || 0; if (!v) return;
+      const x = stacked ? pl + bw * i + bw * .15 : pl + bw * i + bw * .1 + gw * j;
+      const y0 = yl(base + (stacked ? v : 0)), hgt = yl(stacked ? base : 0) - yl(stacked ? base + v : v);
+      g += `<rect x="${x}" y="${stacked ? y0 : yl(v)}" width="${Math.max(gw - 1, 1)}" height="${Math.max(hgt, 0)}" fill="${s.color}" rx="2" data-i="${i}"><title>${esc(labels[i])} · ${esc(s.label)}: ${n0(v)}</title></rect>`;
+      if (stacked) base += v;
+    });
+  });
+  series.filter(s => s.type === 'line').forEach(s => {
+    const pts = data.map((r, i) => r[s.key] == null ? null : [pl + bw * i + bw / 2, s.axis === 'right' ? yr(r[s.key]) : yl(r[s.key])]);
+    let d = '', pen = false;
+    pts.forEach(p => { if (!p) { pen = false; return; } d += (pen ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' '; pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    pts.forEach((p, i) => { if (p && n <= 40) g += `<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="${s.color}"><title>${esc(labels[i])} · ${esc(s.label)}: ${opt.rightFmt && s.axis === 'right' ? opt.rightFmt(data[i][s.key]) : n0(data[i][s.key])}</title></circle>`; });
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">${g}</svg>`;
+  if (opt.onBar) el.querySelectorAll('rect[data-i]').forEach(r => r.addEventListener('click', () => opt.onBar(+r.dataset.i)));
+}
+const legend = series => series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.label)}</span>`).join('');
+const C = { brand: '#65278a', light: '#ac3eb5', accent: '#ff9800', green: '#067647', red: '#d92d20', gray: '#98a2b3', blue: '#175cd3', amber: '#f79009' };
+
+// ---------------- Bookings & contracts ----------------
+const BD = { preset: 'yesterday', product: '', mode: 'activity', data: null, drill: null };
+const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected at review', C.gray], pending_supplier: ['Waiting for supplier', C.blue],
+  supplier_failed: ['Supplier rejected', C.red], awaiting_pickup: ['Approved — awaiting pickup', C.light], active: ['Active contract', C.green],
+  ended: ['Contract ended', '#475467'], pickup_failed: ['Failed at pickup', '#b42318'], other: ['Other', '#d0d5dd'] };
+function bdRange(){
+  if (BD.preset === 'custom') { let f = $('#bd-from').value, t = $('#bd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
+  return periodOf(BD.preset);
+}
+async function loadBookDash(){
+  const [f, t] = bdRange();
+  $('#bd-period-t').textContent = f === t ? `On ${dLabel(f)}` : `${dLabel(f)} – ${dLabel(t)}`;
+  const { data, error } = await sb.rpc('bookings_dashboard', { p_from: f, p_to: t, p_product: BD.product || null });
+  if (error) return $('#bd-snap').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  BD.data = data; renderBookDash();
+}
+const kcard = (label, val, sub, metric, tone = '') => `<div class="kpi ${metric ? 'kpi-link' : ''} ${tone}" ${metric ? `data-drill="${metric}" tabindex="0" role="button"` : ''}><div class="l">${label}</div><div class="n">${val}</div>${sub ? `<div class="s">${sub}</div>` : ''}</div>`;
+function renderBookDash(){
+  const d = BD.data, s = d.snapshot, a = d.activity, k = d.contracts, c = d.cohort;
+  $('#bd-asof').innerHTML = `Data as of the last Metabase upload: <b>${fmtDT(d.as_of)}</b> · newest booking ${d.latest_booking ? dLabel(d.latest_booking) : '—'}${BD.product ? ` · ${esc(BD.product)} only` : ''}`;
+  $('#bd-now-note').textContent = s.pending_oldest_days != null ? `· oldest open booking is ${s.pending_oldest_days} days old` : '';
+  $('#bd-snap').innerHTML =
+    kcard('Active contracts', n0(s.active), BD.product ? '' : `LTO ${n0(s.active_lto)} · Rent ${n0(s.active_rent)}`, 'snap_active', 'k-green') +
+    kcard('Waiting for supplier decision', n0(s.pending_supplier), 'Pending Vehicle Authorization', 'snap_pending_supplier', 'k-blue') +
+    kcard('Approved — awaiting pickup', n0(s.awaiting_pickup), 'Authorization started / pending pickup', 'snap_awaiting_pickup') +
+    kcard('Under Thrivve review', n0(s.review), 'Booking Pending Review', 'snap_review', 'k-amber');
+  if (BD.mode === 'activity') {
+    $('#bd-activity').innerHTML = `<div class="kpis">${
+      kcard('New bookings', n0(a.created), 'by booking creation date', 'created') +
+      kcard('Pickups = new contracts', n0(a.pickups), BD.product ? 'by pickup date' : `LTO ${n0(a.pickups_lto)} · by pickup date`, 'pickups', 'k-green') +
+      kcard('Contracts ended', n0(a.ended), 'by termination date', 'ended') +
+      kcard('Supplier rejected', n0(a.supplier_failed), 'by the day it was first seen', 'supplier_failed', 'k-red') +
+      kcard('Rejected at review', n0(a.rejected), 'by the day it was first seen', 'rejected') +
+      kcard('Failed at pickup', n0(a.pickup_failed), 'by the day it was first seen', 'pickup_failed')}</div>
+      <p class="small muted" style="margin:-8px 0 16px">Pickups can be higher than new bookings: some customers booked earlier. Rejections are dated by the daily upload that first showed them${d.unknown_decision_dates ? ` — ${n0(d.unknown_decision_dates)} older rejections came in the history upload without a date and are not counted here` : ''}.</p>`;
+  } else {
+    const order = ['active', 'ended', 'awaiting_pickup', 'pending_supplier', 'review', 'supplier_failed', 'pickup_failed', 'rejected', 'other'];
+    const rows = order.filter(x => c.by_stage[x]).map(x => [x, c.by_stage[x]]);
+    const decided = c.approved + c.supplier_failed;
+    $('#bd-activity').innerHTML = `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-end">
+        <div><div class="small muted">Bookings created in the period</div><div style="font-size:28px;font-weight:600;color:var(--ink)">${n0(c.total)}</div></div>
+        <div style="text-align:right"><div class="small muted">Supplier approval rate</div><div style="font-size:22px;font-weight:600;color:var(--ink)">${ratio(c.approved, decided)}</div><div class="small muted">${frac(c.approved, decided)} decided · ${n0(c.by_stage.pending_supplier || 0)} still waiting</div></div></div>
+      <div class="stackbar mt">${rows.map(([x, v]) => `<span style="flex:${v};background:${STG[x][1]}" title="${STG[x][0]}: ${v}"></span>`).join('')}</div>
+      <div class="tbl mt"><table><thead><tr><th>Where they are now</th><th>Bookings</th><th>Share</th></tr></thead><tbody>${
+        rows.map(([x, v]) => `<tr class="click" data-drill="cohort_${x}"><td><i class="dot" style="background:${STG[x][1]}"></i>${STG[x][0]}</td><td>${n0(v)}</td><td>${frac(v, c.total)} = ${ratio(v, c.total)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No bookings in this period.</td></tr>'}</tbody></table></div></div>`;
+  }
+  $('#bd-contracts').innerHTML = `<h2>Active contracts</h2><div class="flow"><div><span class="small muted">Start</span><b>${n0(k.active_start)}</b></div><div class="plus">+${n0(k.new)}<span class="small muted">new</span></div><div class="minus">−${n0(k.ended)}<span class="small muted">ended</span></div><div><span class="small muted">End</span><b class="kpi-link" data-drill="active_end">${n0(k.active_end)}</b></div></div>
+    <div class="net ${k.active_end - k.active_start >= 0 ? 'up' : 'down'}">Net growth ${k.active_end - k.active_start >= 0 ? '+' : ''}${n0(k.active_end - k.active_start)}</div>
+    <p class="small muted">Active = picked up on or before the day and not terminated yet.</p>`;
+  const tg = d.target, left = Math.max(tg.target - tg.done, 0), perWeek = tg.weeks_left ? left / tg.weeks_left : null;
+  $('#bd-target').innerHTML = `<h2>${tg.year} target — new LTO contracts</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${n0(tg.done)} <span class="small muted">of ${n0(tg.target)}</span></div>
+    <div class="progress"><span style="width:${Math.min(100, tg.done / tg.target * 100)}%"></span></div>
+    <div class="small">${ratio(tg.done, tg.target)} done · ${n0(left)} to go</div>
+    <div class="small mt">Needed per week: <b>${perWeek == null ? '—' : perWeek.toFixed(1)}</b> · last 4 weeks averaged <b class="${perWeek != null && tg.avg_week_last4 >= perWeek ? 'tx-green' : 'tx-red'}">${tg.avg_week_last4}</b></div>
+    <p class="small muted">Counted by pickup date, Lease To Own only, ${tg.year} to the end of the selected period.</p>`;
+  const rt = d.retention30;
+  $('#bd-retention').innerHTML = `<h2>Still active after 30 days</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${ratio(rt.kept, rt.cohort)}</div>
+    <div class="small">${frac(rt.kept, rt.cohort)} contracts picked up in the period${rt.cohort - rt.kept ? ` · <a href="#" data-drill="retention_lost">${n0(rt.cohort - rt.kept)} returned</a>` : ''}</div>
+    <p class="small muted">${rt.waiting ? `${n0(rt.waiting)} newer contracts haven't reached 30 days yet and are not counted.` : 'Contracts picked up in the period that have reached 30 days.'}</p>`;
+  const ser = [{ key: 'created', label: 'New bookings', color: C.light, type: 'bar' }, { key: 'pickups', label: 'Pickups', color: C.green, type: 'bar' },
+               { key: 'ended', label: 'Ended', color: C.gray, type: 'bar' }, { key: 'active', label: 'Active contracts (right axis)', color: C.accent, type: 'line', axis: 'right' }];
+  $('#bd-legend').innerHTML = legend(ser);
+  svgChart($('#bd-daily'), d.daily.map(x => dLabel(x.d)), d.daily, ser, { rightMax: Math.max(...d.daily.map(x => x.active), 1) });
+  $('#bd-supplier').innerHTML = d.by_supplier.length ? `<table><thead><tr><th>Supplier</th><th>Bookings</th><th>Approved</th><th>Rejected</th><th>Approval rate</th><th>Waiting</th></tr></thead><tbody>${
+    d.by_supplier.map(x => `<tr><td>${esc(x.supplier)}</td><td>${n0(x.created)}</td><td>${n0(x.approved)}</td><td>${n0(x.failed)}</td><td>${ratio(x.approved, x.approved + x.failed)} <span class="frac">${x.approved}/${x.approved + x.failed}</span></td><td>${n0(x.pending)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted small" style="padding:12px">No bookings in this period.</p>';
+  const rs = d.failure_reasons, rmax = Math.max(1, ...rs.map(x => x.n));
+  $('#bd-reasons').innerHTML = rs.length ? rs.slice(0, 8).map(x => `<div class="hbar"><span class="t">${esc(x.reason)}</span><span class="b"><i style="width:${x.n / rmax * 100}%"></i></span><b>${x.n}</b></div>`).join('') : '<p class="muted small">No supplier rejections for bookings created in this period.</p>';
+  $('#bd-model').innerHTML = d.by_model.length ? `<table><thead><tr><th>Model</th><th>New bookings</th><th>Pickups</th><th>Active now</th></tr></thead><tbody>${
+    d.by_model.slice(0, 15).map(x => `<tr><td>${esc(x.model)}</td><td>${n0(x.created)}</td><td>${n0(x.pickups)}</td><td>${n0(x.active)}</td></tr>`).join('')}</tbody></table>` : '';
+}
+const BD_TITLES = { snap_active: 'Active contracts now', snap_pending_supplier: 'Waiting for supplier decision', snap_awaiting_pickup: 'Approved — awaiting pickup', snap_review: 'Under Thrivve review',
+  created: 'New bookings', pickups: 'Pickups (new contracts)', ended: 'Contracts ended', rejected: 'Rejected at review', supplier_failed: 'Supplier rejected', pickup_failed: 'Failed at pickup',
+  active_end: 'Active contracts at the end of the period', retention_lost: 'Returned within 30 days' };
+const BD_COLS = [['booking_id','Booking'],['product','Product'],['status','Status'],['customer','Customer'],['phone','Phone'],['vehicle','Vehicle'],['supplier','Supplier'],['created','Created'],['pickup','Pickup'],['ended','Ended'],['decided','Decision seen'],['failure_reason','Failure reason'],['credited','Credited to']];
+async function bdDrill(metric){
+  const [f, t] = bdRange();
+  $('#bd-drill').classList.remove('hide'); $('#bd-drill-out').innerHTML = '<p class="muted" style="padding:12px">Loading…</p>';
+  $('#bd-drill-t').textContent = (BD_TITLES[metric] || STG[metric.replace('cohort_', '')]?.[0] || metric) + (metric.startsWith('snap_') ? '' : ` · ${f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)}`);
+  const { data, error } = await sb.rpc('bookings_drill', { p_metric: metric, p_from: f, p_to: t, p_product: BD.product || null });
+  if (error) return $('#bd-drill-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  BD.drill = { metric, rows: data, st: { page: 0, size: pgSize() } }; renderBdDrill();
+  $('#bd-drill').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function renderBdDrill(){
+  const { rows, st } = BD.drill, slice = rows.slice(st.page * st.size, (st.page + 1) * st.size);
+  $('#bd-drill-out').innerHTML = rows.length ? `<table><thead><tr>${BD_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${
+    slice.map(r => `<tr>${BD_COLS.map(([k]) => `<td class="${k === 'phone' ? 'ltr nowrap' : ['created','pickup','ended','decided'].includes(k) ? 'nowrap' : ''}">${['created','pickup','ended','decided'].includes(k) && r[k] ? dLabel(r[k]) : esc(r[k] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '<p class="muted" style="padding:12px">No bookings.</p>';
+  pager($('#bd-drill-pg'), st, rows.length, renderBdDrill);
+}
+$('#v-bookdash').addEventListener('click', e => { const t = e.target.closest('[data-drill]'); if (t) { e.preventDefault(); bdDrill(t.dataset.drill); } });
+$('#v-bookdash').addEventListener('keydown', e => { const t = e.target.closest('[data-drill]'); if (t && e.key === 'Enter') bdDrill(t.dataset.drill); });
+$('#bd-drill-x').onclick = () => $('#bd-drill').classList.add('hide');
+$('#bd-drill-csv').onclick = () => { if (BD.drill) csvDownload(`thrivve_bookings_${BD.drill.metric}_${bdRange().join('_')}.csv`, BD_COLS, BD.drill.rows); };
+seg('#bd-preset', v => { BD.preset = v; $('#bd-custom').classList.toggle('hide', v !== 'custom'); if (v !== 'custom') loadBookDash(); else { const [f, t] = periodOf('7'); $('#bd-from').value ||= f; $('#bd-to').value ||= t; } });
+seg('#bd-prod', v => { BD.product = v; loadBookDash(); });
+seg('#bd-mode', v => { BD.mode = v; if (BD.data) renderBookDash(); });
+$('#bd-go').onclick = loadBookDash;
+
+// ---------------- Calls ----------------
+const CD = { preset: 'today', win: [0, 1440], agents: new Set(), data: null, sort: ['total', -1], hmRows: 'day', hmMetric: 'total' };
+function cdRange(){
+  if (CD.preset === 'custom') { let f = $('#cd-from').value, t = $('#cd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
+  return periodOf(CD.preset);
+}
+async function loadCallDash(){
+  if (!$('#cd-agents').innerHTML && can('performance'))
+    $('#cd-agents').innerHTML = AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<button data-v="${a.id}">${esc(a.name.split(' ')[0] + ' ' + (a.name.split(' ')[1] || '')[0] + '.')}</button>`).join('');
+  const [f, t] = cdRange();
+  $('#cd-kpis').innerHTML = '<p class="muted">Loading…</p>';
+  const { data, error } = await sb.rpc('calls_dashboard', { p_from: f, p_to: t, p_agents: CD.agents.size ? [...CD.agents] : null, p_min_from: CD.win[0], p_min_to: CD.win[1] });
+  if (error) return $('#cd-kpis').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  CD.data = data; renderCallDash();
+}
+function renderCallDash(){
+  const d = CD.data, k = d.kpi, p = d.prev, cmp = p.total > 0;
+  $('#cd-asof').innerHTML = `${d.from === d.to ? dLabel(d.from) : dLabel(d.from) + ' – ' + dLabel(d.to)} · compared with ${dLabel(d.prev_from)} – ${dLabel(d.prev_to)} · Maqsam synced to <b>${fmtDT(d.last_call)}</b>${d.scope === 'own' ? ' · your calls only' : ''}`;
+  const rate = k.total ? k.connected / k.total * 100 : 0, prate = p.total ? p.connected / p.total * 100 : 0;
+  const aht = k.connected ? k.talk_sec / k.connected : 0, paht = p.connected ? p.talk_sec / p.connected : 0;
+  const avgd = k.total ? k.dur_sec / k.total : 0, pavgd = p.total ? p.dur_sec / p.total : 0;
+  const bs = k.by_state || {};
+  $('#cd-kpis').innerHTML =
+    kcard('Total calls', n0(k.total), `${cmp ? delta(k.total, p.total) + ' · ' : ''}${k.days > 1 ? n0(Math.round(k.total / k.days)) + ' per day' : ''}`) +
+    kcard('Connected', n0(k.connected), `${ratio(k.connected, k.total)} connect rate ${cmp ? delta(rate, prate, 'pts') : ''}`, null, 'k-green') +
+    kcard('Not connected', n0(k.lost), `${ratio(k.lost, k.total)} · abandoned ${n0(bs.Abandoned)} · no answer ${n0(bs['No Answer'])} · busy ${n0(bs.Busy)} · dropped ${n0(bs.Dropped)}`, null, 'k-red') +
+    kcard('Talk time', hms(k.talk_sec), `${(k.talk_sec / 3600).toFixed(1)} h on connected calls`) +
+    kcard('Avg handling (AHT)', ms(aht), `talk time ÷ connected ${cmp ? delta(aht, paht, 'ms') : ''}`) +
+    kcard('Avg call duration', ms(avgd), `all ${n0(k.total)} calls ${cmp ? delta(avgd, pavgd, 'ms') : ''}`) +
+    kcard('Customers reached', n0(k.customers_reached), `of ${n0(k.customers)} different customers dialled`) +
+    kcard('Transferred calls', n0(k.transferred), 'more than one agent on the call');
+  renderAgentTable(); renderHourly(); renderHeat();
+}
+const CD_COLS = [['agent','Agent'],['total','Calls'],['connected','Connected'],['rate','Connect rate'],['lost','Not connected'],['talk_sec','Talk time'],['aht','AHT'],['avgdur','Avg duration'],
+  ['reached','Customers reached'],['sched_h','Scheduled hours'],['per_h','Calls / sched. hour'],['talk_share','Talk / sched. time'],['first_late','First call vs shift start'],['transferred','Transferred']];
+function agentRows(){
+  return CD.data.agents.map(a => ({ ...a, agent: nm(a.agent_id), rate: a.total ? a.connected / a.total : 0, aht: a.connected ? a.talk_sec / a.connected : 0, avgdur: a.total ? a.dur_sec / a.total : 0,
+    sched_h: a.sched_min ? a.sched_min / 60 : null, per_h: a.sched_min ? a.total / (a.sched_min / 60) : null, talk_share: a.sched_min ? a.talk_sec / (a.sched_min * 60) : null, first_late: a.first_call_late_avg }));
+}
+function renderAgentTable(){
+  const rows = agentRows(), [sk, sd] = CD.sort;
+  rows.sort((x, y) => { const a = x[sk], b = y[sk]; if (a == null) return 1; if (b == null) return -1; return (typeof a === 'string' ? a.localeCompare(b) : a - b) * sd; });
+  const most = rows.reduce((m, r) => !m || r.connected > m.connected || (r.connected === m.connected && r.talk_sec > m.talk_sec) ? r : m, null);
+  const T = rows.reduce((t, r) => { ['total','connected','lost','talk_sec','dur_sec','reached','transferred','sched_min'].forEach(k => t[k] = (t[k] || 0) + (r[k] || 0)); return t; }, {});
+  const cell = (r, k) => ({ agent: `<b>${esc(r.agent)}</b>${r === most && rows.length > 1 ? ' <span class="pill p-green" title="Most connected calls in the period">most connected</span>' : ''}`,
+    rate: `<div class="mini"><i style="width:${r.rate * 100}%"></i></div>${(r.rate * 100).toFixed(1)}%`, talk_sec: hms(r.talk_sec), aht: ms(r.aht), avgdur: ms(r.avgdur),
+    sched_h: r.sched_h == null ? '<span class="muted">no schedule</span>' : r.sched_h.toFixed(1), per_h: r.per_h == null ? '—' : r.per_h.toFixed(1),
+    talk_share: r.talk_share == null ? '—' : (r.talk_share * 100).toFixed(0) + '%',
+    first_late: r.first_late == null ? '—' : (r.first_late > 0 ? `<span class="${r.first_late > 15 ? 'tx-red' : ''}">${r.first_late} min after</span>` : `${-r.first_late} min before`) + `<div class="small muted">${r.first_call_days} day(s)</div>` })[k] ?? n0(r[k]);
+  $('#cd-agents-t').innerHTML = rows.length ? `<table class="sortable"><thead><tr>${CD_COLS.map(([k, l]) => `<th data-k="${k}" class="${sk === k ? (sd > 0 ? 'asc' : 'desc') : ''}">${l}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r => `<tr class="click" data-agent="${r.agent_id}">${CD_COLS.map(([k]) => `<td class="nowrap">${cell(r, k)}</td>`).join('')}</tr>`).join('')}</tbody>${rows.length > 1 ? `<tfoot><tr><td><b>Total</b></td><td>${n0(T.total)}</td><td>${n0(T.connected)}</td><td>${ratio(T.connected, T.total)}</td><td>${n0(T.lost)}</td><td>${hms(T.talk_sec)}</td><td>${ms(T.connected ? T.talk_sec / T.connected : 0)}</td><td>${ms(T.total ? T.dur_sec / T.total : 0)}</td><td>${n0(T.reached)}</td><td>${T.sched_min ? (T.sched_min / 60).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.total / (T.sched_min / 60)).toFixed(1) : '—'}</td><td>${T.sched_min ? (T.talk_sec / (T.sched_min * 60) * 100).toFixed(0) + '%' : '—'}</td><td></td><td>${n0(T.transferred)}</td></tr></tfoot>` : ''}</table>`
+    : '<p class="muted" style="padding:12px">No calls in this period.</p>';
+}
+$('#cd-agents-t').onclick = e => {
+  const th = e.target.closest('th[data-k]'); if (th) { const k = th.dataset.k; CD.sort = [k, CD.sort[0] === k ? -CD.sort[1] : (k === 'agent' ? 1 : -1)]; return renderAgentTable(); }
+  const tr = e.target.closest('tr[data-agent]'); if (tr) cdDrill({ agent: tr.dataset.agent });
+};
+function renderHourly(){
+  const hs = CD.data.hourly; if (!hs.length) { $('#cd-hourly').innerHTML = '<p class="muted small">No calls.</p>'; $('#cd-peak').textContent = ''; return; }
+  const h0 = hs[0].h, h1 = hs[hs.length - 1].h, by = Object.fromEntries(hs.map(x => [x.h, x]));
+  const rows = []; for (let h = h0; h <= h1; h++) { const x = by[h] || { h, total: 0, connected: 0, lost: 0 }; rows.push({ ...x, other: x.total - x.connected - x.lost, rate: x.total ? x.connected / x.total * 100 : null }); }
+  const peak = rows.reduce((m, r) => r.total > m.total ? r : m, rows[0]), minN = Math.max(20, peak.total * .15);
+  const best = rows.filter(r => r.total >= minN).reduce((m, r) => !m || r.rate > m.rate ? r : m, null);
+  const hl = h => `${String(h).padStart(2, '0')}:00`;
+  $('#cd-peak').innerHTML = `Peak <b>${hl(peak.h)}</b> (${n0(peak.total)} calls)${best ? ` · best connect rate <b>${hl(best.h)}</b> (${best.rate.toFixed(1)}%)` : ''}`;
+  svgChart($('#cd-hourly'), rows.map(r => hl(r.h)), rows, [{ key: 'connected', label: 'Connected', color: C.green, type: 'bar' }, { key: 'lost', label: 'Not connected', color: '#fda29b', type: 'bar' },
+    { key: 'rate', label: 'Connect rate', color: C.brand, type: 'line', axis: 'right' }], { stacked: true, rightMax: 100, rightFmt: v => Math.round(v) + '%', onBar: i => cdDrill({ hour: rows[i].h }) });
+}
+function renderHeat(){
+  const d = CD.data, byDay = CD.hmRows === 'day', m = CD.hmMetric, val = x => m === 'total' ? x[2] : m === 'connected' ? x[3] : x[4];
+  const cells = byDay ? d.heat : d.heat_agent; if (!cells.length) { $('#cd-heat').innerHTML = '<p class="muted small" style="padding:12px">No calls.</p>'; $('#cd-heat-note').textContent = ''; return; }
+  const hours = [...new Set(cells.map(x => x[1]))].sort((a, b) => a - b), hmin = hours[0], hmax = hours[hours.length - 1];
+  const rowKeys = byDay ? (() => { const r = []; for (let x = d.from; x <= d.to; x = addDays(x, 1)) r.push(x); return r; })()
+                        : [...new Set(cells.map(x => x[0]))].sort((a, b) => cells.filter(c => c[0] === b).reduce((s, c) => s + c[2], 0) - cells.filter(c => c[0] === a).reduce((s, c) => s + c[2], 0));
+  const map = {}; cells.forEach(x => map[x[0] + '|' + x[1]] = x);
+  const max = Math.max(1, ...cells.map(val)), lvl = v => v ? Math.min(5, Math.ceil(5 * v / max)) : 0;
+  let colT = {}, html = `<table class="heat"><thead><tr><th>${byDay ? 'Day' : 'Agent'}</th>${hours.length ? Array.from({ length: hmax - hmin + 1 }, (_, i) => `<th>${String(hmin + i).padStart(2, '0')}</th>`).join('') : ''}<th>Total</th><th>Connect</th></tr></thead><tbody>`;
+  rowKeys.forEach(rk => { let tot = 0, all = 0, con = 0;
+    const tds = Array.from({ length: hmax - hmin + 1 }, (_, i) => { const h = hmin + i, x = map[rk + '|' + h], v = x ? val(x) : 0; tot += v; all += x ? x[2] : 0; con += x ? x[3] : 0; colT[h] = (colT[h] || 0) + v;
+      return `<td class="hm l${lvl(v)}" data-r="${rk}" data-h="${h}" title="${x ? `${x[2]} calls · ${x[3]} connected (${ratio(x[3], x[2])})` : 'no calls'}">${v || ''}</td>`; }).join('');
+    html += `<tr><th class="rk">${byDay ? `${dayName(rk)} ${dLabel(rk)}` : esc(nm(rk))}</th>${tds}<td><b>${n0(tot)}</b></td><td class="small">${ratio(con, all)}</td></tr>`; });
+  html += `</tbody><tfoot><tr><th>Total</th>${Array.from({ length: hmax - hmin + 1 }, (_, i) => `<td><b>${colT[hmin + i] || ''}</b></td>`).join('')}<td></td><td></td></tr></tfoot></table>`;
+  $('#cd-heat').innerHTML = html;
+  const busiest = cells.reduce((mx, x) => val(x) > val(mx) ? x : mx, cells[0]);
+  $('#cd-heat-note').innerHTML = `Busiest cell: <b>${byDay ? dayName(busiest[0]) + ' ' + dLabel(busiest[0]) : esc(nm(busiest[0]))} ${String(busiest[1]).padStart(2, '0')}:00</b> = ${n0(val(busiest))}. Colour is relative to the busiest cell. Click a cell to see its calls.`;
+}
+$('#cd-heat').onclick = e => { const td = e.target.closest('td[data-h]'); if (!td) return; const o = { hour: +td.dataset.h, group: CD.hmMetric === 'total' ? null : CD.hmMetric };
+  if (CD.hmRows === 'day') o.day = td.dataset.r; else o.agent = td.dataset.r; cdDrill(o); };
+const CDD_COLS = [['at','Time'],['agent','Agent'],['type','Type'],['state','State'],['phone','Customer'],['dur','Duration'],['hdl','Handling'],['agents','Agents on the call']];
+async function cdDrill(o){
+  const [f, t] = cdRange();
+  $('#cd-drill').classList.remove('hide'); $('#cd-drill-out').innerHTML = '<p class="muted" style="padding:12px">Loading…</p>';
+  $('#cd-drill-t').textContent = ['Calls', o.agent ? nm(o.agent) : '', o.day ? dLabel(o.day) : (f === t ? dLabel(f) : dLabel(f) + ' – ' + dLabel(t)), o.hour != null ? `${String(o.hour).padStart(2, '0')}:00–${String(o.hour + 1).padStart(2, '0')}:00` : '', o.group === 'connected' ? 'connected' : o.group === 'lost' ? 'not connected' : ''].filter(Boolean).join(' · ');
+  const { data, error } = await sb.rpc('calls_drill', { p_from: f, p_to: t, p_agent: o.agent || (CD.agents.size === 1 ? [...CD.agents][0] : null), p_day: o.day || null, p_hour: o.hour ?? null, p_group: o.group || null, p_limit: 2000 });
+  if (error) return $('#cd-drill-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  CD.drill = data;
+  $('#cd-drill-out').innerHTML = data.length ? `<table><thead><tr>${CDD_COLS.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>${data.slice(0, 300).map(r => `<tr><td class="nowrap">${fmtDT(r.at)}</td><td>${esc(r.agent)}</td><td>${esc(r.type)}</td><td>${esc(r.state)}</td><td class="ltr nowrap">${esc(r.phone || '')}</td><td>${ms(r.dur)}</td><td>${r.hdl ? ms(r.hdl) : '—'}</td><td class="small">${esc(r.agents || '')}</td></tr>`).join('')}</tbody></table>${data.length > 300 ? `<p class="small muted" style="padding:8px 12px">Showing the latest 300 of ${n0(data.length)} — Export CSV has all of them.</p>` : ''}` : '<p class="muted" style="padding:12px">No calls.</p>';
+  $('#cd-drill').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('#cd-drill-x').onclick = () => $('#cd-drill').classList.add('hide');
+$('#cd-drill-csv').onclick = () => { if (CD.drill) csvDownload(`thrivve_calls_${cdRange().join('_')}.csv`, CDD_COLS, CD.drill.map(r => ({ ...r, at: new Date(r.at).toLocaleString('sv-SE', { timeZone: 'Asia/Riyadh' }) }))); };
+seg('#cd-preset', v => { CD.preset = v; $('#cd-custom').classList.toggle('hide', v !== 'custom'); if (v !== 'custom') loadCallDash(); else { const [f, t] = periodOf('7'); $('#cd-from').value ||= f; $('#cd-to').value ||= t; } });
+seg('#cd-win', v => { CD.win = v.split('-').map(Number); loadCallDash(); });
+$('#cd-agents').onclick = e => { const b = e.target.closest('button'); if (!b) return; b.classList.toggle('on'); CD.agents.has(b.dataset.v) ? CD.agents.delete(b.dataset.v) : CD.agents.add(b.dataset.v); loadCallDash(); };
+seg('#cd-hm-rows', v => { CD.hmRows = v; renderHeat(); });
+seg('#cd-hm-metric', v => { CD.hmMetric = v; renderHeat(); });
+$('#cd-go').onclick = loadCallDash;
 
 // ---------------- Team & access (admin) ----------------
 const PERMS = [
