@@ -368,7 +368,7 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
               <div class="row mt">
                 <div class="f hide" id="l-reason-w"><label id="l-reason-l">Reason *</label><select id="l-reason"></select></div>
                 <div class="f hide" id="l-next-w"><label id="l-next-l">Next follow-up</label>
-                  <input id="l-next-at" type="datetime-local" step="300">
+                  <input id="l-next-at" type="date">
                   <div class="quick" id="l-quick"></div></div>
               </div>
               <div class="row mt">
@@ -824,6 +824,12 @@ const nm = id => AGENTS.find(a => a.id === id)?.name || '—';
 const RIYADH = '+03:00';
 const toRiyadhInput = iso => { if (!iso) return ''; const d = new Date(new Date(iso).getTime() + 3 * 3600e3); return d.toISOString().slice(0, 16); };
 const fromRiyadhInput = v => v ? new Date(v + ':00' + RIYADH).toISOString() : null;
+// follow-ups are planned by day only: due by the end of that day (Riyadh)
+const fromRiyadhDay = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? new Date(v + 'T23:59:00' + RIYADH).toISOString() : null;
+const toRiyadhDay = iso => iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Riyadh' }) : '';
+const fmtDay = t => { if (!t) return '—'; const day = toRiyadhDay(t), today = todayRiyadh();
+  return day === today ? 'Today' : day === addDays(today, 1) ? 'Tomorrow' : day === addDays(today, -1) ? 'Yesterday'
+    : new Date(day + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' }); };
 const fmtWhen = t => { if (!t) return '—'; const d = new Date(t), now = new Date();
   const day = d.toLocaleDateString('en-CA', {timeZone:'Asia/Riyadh'}), today = todayRiyadh();
   const hm = d.toLocaleTimeString('en-GB', {timeZone:'Asia/Riyadh', hour:'2-digit', minute:'2-digit'});
@@ -839,7 +845,7 @@ function busy(btn, state, label){
   else { btn.disabled = false; btn.textContent = btn._label; }
 }
 function friendly(m){
-  return ({'set the next follow-up date and time':'Set the next follow-up date and time.','this outcome needs a reason':'Choose a reason.',
+  return ({'set the next follow-up date and time':'Pick the next follow-up day.','this outcome needs a reason':'Choose a reason.',
            'this reason needs a note':'This reason needs a short note.','this outcome needs a note':'Add a short note for this outcome.',
            'choose why the follow-up is moving':'Choose why the follow-up is moving.','a closed lead cannot have a follow-up':'A closed lead cannot have a follow-up.',
            'phone is required':'Type the customer phone.','choose an outcome':'Choose an outcome.','type the car the customer wants':'Type the car the customer wants.'})[m]
@@ -884,7 +890,7 @@ function renderGroup(k){
   const rows = TQ.data[k], st = TQ.pg[k] ||= { page: 0, size: pgSize() };
   const slice = rows.slice(st.page * st.size, (st.page + 1) * st.size);
   const when = r => k === 'new' ? `Assigned ${fmtWhen(r.assigned_at)}` : k === 'offer' ? esc(r.booking_status) + ' · ' + fmtWhen(r.changed_at)
-      : `${fmtWhen(r.due_at)}${r.time_set === false ? ' <span class="pill p-gray" title="Imported without a time">time not set</span>' : ''}${k === 'overdue' ? ` <span class="small tx-red">${ago(r.due_at)}</span>` : ''}`;
+      : `${fmtDay(r.due_at)}${k === 'overdue' ? ` <span class="small tx-red">${ago(r.due_at)}</span>` : ''}`;
   $('#tq-' + k).innerHTML = rows.length ? `<div class="tbl"><table><thead><tr><th>${k === 'new' ? 'Assigned' : k === 'offer' ? 'Booking' : 'Due'}</th><th>Customer</th><th>Stage</th><th>Last outcome</th><th>Car</th></tr></thead><tbody>${
     slice.map(r => `<tr class="click" data-lead="${r.lead_id}"><td class="nowrap">${when(r)}</td><td><b>${esc(r.name || '—')}</b><div class="small muted ltr">${esc(r.phone)}</div>${r.handed_off ? '<span class="pill p-purple">Handed to you</span>' : ''}</td>
       <td>${stagePill(r.stage)}</td><td class="small">${esc(optLabel('call_outcome', r.last_outcome)) || '<span class="muted">—</span>'}${r.last_outcome_at ? `<div class="muted">${fmtWhen(r.last_outcome_at)}</div>` : ''}</td>
@@ -951,14 +957,14 @@ function renderNext(){
   const closed = ['lost','disqualified'].includes(L.stage);
   const closers = AGENTS.filter(a => a.active && a.role === 'agent' && ['closer','both'].includes(a.sales_role) && a.id !== L.owner);
   $('#l-next').innerHTML = `<h2>Next step</h2>
-    ${n ? `<div class="next ${n.overdue ? 'over' : ''}"><div class="big">${fmtWhen(n.due_at)}</div>
-            <div class="small">${n.overdue ? `<b class="tx-red">Overdue ${ago(n.due_at)}</b> · ` : ''}Follow-up by <b>${esc(n.owner_name)}</b>${n.time_set === false ? ' · <span class="pill p-gray">time not set</span>' : ''}${n.reason ? ' · moved: ' + esc(optLabel('reschedule_reason', n.reason)) : ''}</div></div>`
+    ${n ? `<div class="next ${n.overdue ? 'over' : ''}"><div class="big">${fmtDay(n.due_at)}</div>
+            <div class="small">${n.overdue ? `<b class="tx-red">Overdue ${ago(n.due_at)}</b> · ` : ''}Follow-up by <b>${esc(n.owner_name)}</b>${n.reason ? ' · moved: ' + esc(optLabel('reschedule_reason', n.reason)) : ''}</div></div>`
          : `<p class="muted small">${closed ? 'Lead is closed — log a new contact to reopen it.' : L.stage === 'booked' ? (d.booking?.needs_new_offer ? 'Supplier failed the booking — offer another car and log the outcome below.' : 'Booked — no follow-up needed.') : 'No follow-up scheduled.'}</p>`}
     ${L.can_edit && !closed ? `<div class="row mt">
         <button class="btn ghost" id="nx-toggle">${n ? 'Change time' : 'Set a follow-up'}</button>
         ${closers.length ? '<button class="btn ghost" id="ho-toggle">Hand off to closer</button>' : ''}</div>
       <div id="nx-form" class="sub hide"><div class="row">
-        <div class="f"><label>New date and time (Riyadh)</label><input type="datetime-local" id="nx-at" step="300" value="${toRiyadhInput(n?.due_at)}"></div>
+        <div class="f"><label>New day</label><input type="date" id="nx-at" min="${todayRiyadh()}" max="${addDays(todayRiyadh(), 59)}" value="${toRiyadhDay(n?.due_at)}"></div>
         ${n ? `<div class="f"><label>Why is it moving? *</label><select id="nx-reason"><option value="">Choose…</option>${activeOpts('reschedule_reason').map(o => `<option value="${esc(o.value)}">${esc(o.label_en)}</option>`).join('')}</select></div>` : ''}
         <div class="f"><label>Note</label><input id="nx-note"></div><button class="btn" id="nx-save">Save</button></div></div>
       <div id="ho-form" class="sub hide"><div class="row">
@@ -968,7 +974,7 @@ function renderNext(){
   $('#nx-toggle')?.addEventListener('click', () => $('#nx-form').classList.toggle('hide'));
   $('#ho-toggle')?.addEventListener('click', () => $('#ho-form').classList.toggle('hide'));
   $('#nx-save')?.addEventListener('click', async e => {
-    const at = fromRiyadhInput($('#nx-at').value); if (!at) return toast('Pick a date and time.');
+    const at = fromRiyadhDay($('#nx-at').value); if (!at) return toast('Pick a day.');
     busy(e.target, 'saving');
     const { error } = await sb.rpc('set_next_step', { p_lead: L.id, p_due_at: at, p_reason: $('#nx-reason')?.value || null, p_note: $('#nx-note').value || null });
     if (error) { busy(e.target, 'bad'); return toast(friendly(error.message)); }
@@ -1007,15 +1013,14 @@ function formRules(){
   $('#l-reason-l').textContent = reasonList === 'disqualify_reason' ? 'Disqualify reason *' : 'Lost reason *';
   const fu = keepOpen ? 'required' : (r.closes ? 'none' : (r.follow_up || 'optional'));
   $('#l-next-w').classList.toggle('hide', !LV.outcome || fu === 'none');
-  $('#l-next-l').innerHTML = fu === 'required' ? 'Next follow-up (date + time) *' : 'Next follow-up (optional)';
+  $('#l-next-l').innerHTML = fu === 'required' ? 'Next follow-up day *' : 'Next follow-up (optional)';
   $('#l-note-l').textContent = (r.note === 'required' || rr.note === 'required') ? 'Note *' : 'Note';
   $('#l-save').textContent = LV.outcome ? (r.closes === 'booked' ? 'Save — mark booked' : r.closes && !keepOpen ? 'Save — close lead' : 'Save contact') : 'Save contact';
   $('#l-save')._label = $('#l-save').textContent;
   if (keepOpen) $('#l-err').textContent = 'This reason keeps the lead open — set when to call back.'; else if ($('#l-err').textContent.startsWith('This reason keeps')) $('#l-err').textContent = '';
-  const now = new Date(Date.now() + 3 * 3600e3), min = now.toISOString().slice(0, 16);
-  $('#l-next-at').min = min; $('#l-next-at').max = new Date(Date.now() + 60 * 864e5 + 3 * 3600e3).toISOString().slice(0, 16);
-  const t = todayRiyadh(), q = [['In 2 hours', toRiyadhInput(new Date(Date.now() + 2 * 3600e3).toISOString()).slice(0, 14) + '00'],
-    ['Tomorrow 10:00', addDays(t, 1) + 'T10:00'], ['Tomorrow 16:00', addDays(t, 1) + 'T16:00'], ['In 3 days 10:00', addDays(t, 3) + 'T10:00']];
+  const t = todayRiyadh();
+  $('#l-next-at').min = t; $('#l-next-at').max = addDays(t, 59);
+  const q = [['Today', t], ['Tomorrow', addDays(t, 1)], ['In 3 days', addDays(t, 3)], ['Next week', addDays(t, 7)]];
   $('#l-quick').innerHTML = q.map(([l, v]) => `<button type="button" class="link" data-v="${v}">${l}</button>`).join('');
 }
 seg('#l-kind', v => { LV.kind = v; formRules(); });
@@ -1031,7 +1036,7 @@ $('#l-save').onclick = async () => {
   if (!LV.outcome) return $('#l-err').textContent = 'Choose an outcome.';
   const r = (LOOKALL.call_outcome || []).find(o => o.value === LV.outcome)?.rule || {};
   const reason = r.reason ? ($('#l-reason').value || null) : null;
-  const nextAt = $('#l-next-w').classList.contains('hide') ? null : fromRiyadhInput($('#l-next-at').value);
+  const nextAt = $('#l-next-w').classList.contains('hide') ? null : fromRiyadhDay($('#l-next-at').value);
   busy(btn, 'saving');
   const t0 = performance.now();
   const { data, error } = await sb.rpc('log_contact', {
