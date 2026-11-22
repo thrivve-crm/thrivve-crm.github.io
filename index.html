@@ -257,6 +257,7 @@ td.hm.l4{background:#9b5cc9;color:#fff} td.hm.l5{background:#65278a;color:#fff} 
 .toprow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.toprow input[type=search]{max-width:240px}
 table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th.rk.click:hover,table.heat tfoot td[data-ht]:hover{color:var(--brand);text-decoration:underline}
 .busy{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.busy span{background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px}
+.pill.p-brand{background:#f4ecfa;color:var(--brand);font-weight:600;text-transform:none;letter-spacing:0;vertical-align:1px}
 .kpi.kpi-top .n{font-size:20px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
@@ -599,11 +600,11 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
         <div class="row hide" id="bd-custom"><div class="f" style="max-width:170px"><label>From</label><input type="date" id="bd-from"></div><div class="f" style="max-width:170px"><label>To</label><input type="date" id="bd-to"></div><button class="btn" id="bd-go">Show</button></div>
       </div>
 
-      <h3 class="sec-t">Right now <span class="muted small" id="bd-now-note"></span></h3>
+      <h3 class="sec-t">Right now <span class="pill p-brand" id="bd-prod-pill"></span> <span class="muted small" id="bd-now-note"></span></h3>
       <div class="kpis" id="bd-snap"></div>
 
       <div class="sec-row"><h3 class="sec-t" id="bd-period-t">In the period</h3>
-        <div class="seg sm" id="bd-mode"><button data-v="activity" class="on" title="What happened in the period">Period activity</button><button data-v="cohort" title="Where the bookings created in the period are now">Fate of the period's bookings</button></div></div>
+        <div class="seg sm" id="bd-mode"><button data-v="activity" class="on" title="Bookings, handovers, endings and rejections that happened in the period">What happened</button><button data-v="cohort" title="Bookings created in the period, and the status each one has today">Where these bookings are now</button></div></div>
       <div id="bd-activity"></div>
 
       <div class="grid3">
@@ -1353,8 +1354,8 @@ const C = { brand: '#65278a', light: '#ac3eb5', accent: '#ff9800', green: '#0676
 
 // ---------------- Bookings & contracts ----------------
 const BD = { preset: 'yesterday', product: '', mode: 'activity', data: null, drill: null };
-const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected at review', C.gray], pending_supplier: ['Awaiting pickup — vehicle authorization', C.blue],
-  supplier_failed: ['Supplier rejected', C.red], awaiting_pickup: ['Awaiting pickup — authorization started', C.light], active: ['Active contract', C.green],
+const STG = { review: ['Under Thrivve review', C.amber], rejected: ['Rejected by Thrivve', C.gray], pending_supplier: ['Awaiting pickup — vehicle authorization', C.blue],
+  supplier_failed: ['Rejected by supplier', C.red], awaiting_pickup: ['Awaiting pickup — authorization started', C.light], active: ['Active contract', C.green],
   ended: ['Contract ended', '#475467'], pickup_failed: ['Failed at pickup', '#b42318'], other: ['Other', '#d0d5dd'] };
 function bdRange(){
   if (BD.preset === 'custom') { let f = $('#bd-from').value, t = $('#bd-to').value; if (f > t) [f, t] = [t, f]; return [f, t]; }
@@ -1362,7 +1363,7 @@ function bdRange(){
 }
 async function loadBookDash(){
   const [f, t] = bdRange();
-  $('#bd-period-t').textContent = f === t ? `On ${dLabel(f)}` : `${dLabel(f)} – ${dLabel(t)}`;
+  $('#bd-period-t').textContent = (f === t ? `On ${dLabel(f)}` : `${dLabel(f)} – ${dLabel(t)}`) + (BD.product ? ` · ${BD.product}` : ' · all products');
   const { data, error } = await sb.rpc('bookings_dashboard', { p_from: f, p_to: t, p_product: BD.product || null });
   if (error) return $('#bd-snap').innerHTML = `<p class="err">${esc(error.message)}</p>`;
   BD.data = data; renderBookDash();
@@ -1371,48 +1372,49 @@ const kcard = (label, val, sub, metric, tone = '') => `<div class="kpi ${metric 
 function renderBookDash(){
   const d = BD.data, s = d.snapshot, a = d.activity, k = d.contracts, c = d.cohort;
   $('#bd-asof').innerHTML = `Data as of the last Metabase upload: <b>${fmtDT(d.as_of)}</b> · newest booking ${d.latest_booking ? dLabel(d.latest_booking) : '—'}${BD.product ? ` · ${esc(BD.product)} only` : ''}`;
-  $('#bd-now-note').textContent = s.pending_oldest_days != null ? `· oldest open booking is ${s.pending_oldest_days} days old` : '';
+  $('#bd-prod-pill').textContent = BD.product ? `${BD.product} only` : 'All products (Lease To Own + Rent Car)';
+  $('#bd-now-note').textContent = s.pending_oldest_days != null ? `· the oldest booking still waiting is ${s.pending_oldest_days} days old` : '';
   const waitPick = s.pending_supplier + s.awaiting_pickup;
   $('#bd-snap').innerHTML =
-    kcard('Total open bookings', n0(s.active + waitPick + s.review), `active ${n0(s.active)} · awaiting pickup ${n0(waitPick)} · under review ${n0(s.review)} — ended and rejected are left out`, 'snap_total') +
-    kcard('Active contracts', n0(s.active), (BD.product ? '' : `LTO ${n0(s.active_lto)} · Rent ${n0(s.active_rent)} · `) + 'picked up, contract running', 'snap_active', 'k-green') +
-    kcard('Awaiting pickup', n0(waitPick), 'passed Thrivve review, car not picked up yet', 'snap_awaiting_pickup', 'k-blue') +
-    kcard('Under Thrivve review', n0(s.review), 'Booking Pending Review', 'snap_review', 'k-amber');
+    kcard('Successfully booked', n0(s.active + waitPick + s.review), `every booking still alive = ${n0(s.active)} active + ${n0(waitPick)} awaiting pickup + ${n0(s.review)} under review`, 'snap_total') +
+    kcard('Active bookings', n0(s.active), 'car picked up, contract running' + (BD.product ? '' : ` · Lease To Own ${n0(s.active_lto)} · Rent Car ${n0(s.active_rent)}`), 'snap_active', 'k-green') +
+    kcard('Awaiting pickup', n0(waitPick), 'approved by Thrivve, waiting for the car to be handed over', 'snap_awaiting_pickup', 'k-blue') +
+    kcard('Under Thrivve review', n0(s.review), 'new booking, not reviewed yet', 'snap_review', 'k-amber');
   if (BD.mode === 'activity') {
     $('#bd-activity').innerHTML = `<div class="kpis">${
-      kcard('New bookings', n0(a.created), 'by booking creation date', 'created') +
-      kcard('Pickups = new contracts', n0(a.pickups), BD.product ? 'by pickup date' : `LTO ${n0(a.pickups_lto)} · by pickup date`, 'pickups', 'k-green') +
-      kcard('Contracts ended', n0(a.ended), 'by termination date', 'ended') +
-      kcard('Supplier rejected', n0(a.supplier_failed), 'by the day it was first seen', 'supplier_failed', 'k-red') +
-      kcard('Rejected at review', n0(a.rejected), 'by the day it was first seen', 'rejected') +
-      kcard('Failed at pickup', n0(a.pickup_failed), 'by the day it was first seen', 'pickup_failed')}</div>
-      <p class="small muted" style="margin:-8px 0 16px">Pickups can be higher than new bookings: some customers booked earlier. Rejections are dated by the daily upload that first showed them${d.unknown_decision_dates ? ` — ${n0(d.unknown_decision_dates)} older rejections came in the history upload without a date and are not counted here` : ''}.</p>`;
+      kcard('New bookings', n0(a.created), 'bookings created in the period', 'created') +
+      kcard('Cars handed over', n0(a.pickups), 'new contracts started' + (BD.product ? '' : ` · Lease To Own ${n0(a.pickups_lto)}`), 'pickups', 'k-green') +
+      kcard('Contracts ended', n0(a.ended), 'returned / terminated in the period', 'ended') +
+      kcard('Rejected by supplier', n0(a.supplier_failed), 'supplier said no to the car', 'supplier_failed', 'k-red') +
+      kcard('Rejected by Thrivve', n0(a.rejected), 'rejected at Thrivve review', 'rejected') +
+      kcard('Failed at pickup', n0(a.pickup_failed), 'car was not handed over', 'pickup_failed')}</div>
+      <p class="small muted" style="margin:-8px 0 16px">Cars handed over can be more than new bookings, because some were booked earlier. Rejections are counted from the day the daily upload first showed them.</p>`;
   } else {
     const order = ['active', 'ended', 'awaiting_pickup', 'pending_supplier', 'review', 'supplier_failed', 'pickup_failed', 'rejected', 'other'];
     const rows = order.filter(x => c.by_stage[x]).map(x => [x, c.by_stage[x]]);
     const decided = c.approved + c.supplier_failed;
     $('#bd-activity').innerHTML = `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-end">
-        <div><div class="small muted">Bookings created in the period</div><div style="font-size:28px;font-weight:600;color:var(--ink)">${n0(c.total)}</div></div>
+        <div><div class="small muted">Bookings created in the period — status today</div><div style="font-size:28px;font-weight:600;color:var(--ink)">${n0(c.total)}</div></div>
         <div style="text-align:right"><div class="small muted">Supplier approval rate</div><div style="font-size:22px;font-weight:600;color:var(--ink)">${ratio(c.approved, decided)}</div><div class="small muted">${frac(c.approved, decided)} decided · ${n0(c.by_stage.pending_supplier || 0)} still waiting</div></div></div>
       <div class="stackbar mt">${rows.map(([x, v]) => `<span style="flex:${v};background:${STG[x][1]}" title="${STG[x][0]}: ${v}"></span>`).join('')}</div>
       <div class="tbl mt"><table><thead><tr><th>Where they are now</th><th>Bookings</th><th>Share</th></tr></thead><tbody>${
         rows.map(([x, v]) => `<tr class="click" data-drill="cohort_${x}"><td><i class="dot" style="background:${STG[x][1]}"></i>${STG[x][0]}</td><td>${n0(v)}</td><td>${frac(v, c.total)} = ${ratio(v, c.total)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No bookings in this period.</td></tr>'}</tbody></table></div></div>`;
   }
-  $('#bd-contracts').innerHTML = `<h2>Active contracts</h2><div class="flow"><div><span class="small muted">Start</span><b>${n0(k.active_start)}</b></div><div class="plus">+${n0(k.new)}<span class="small muted">new</span></div><div class="minus">−${n0(k.ended)}<span class="small muted">ended</span></div><div><span class="small muted">End</span><b class="kpi-link" data-drill="active_end">${n0(k.active_end)}</b></div></div>
-    <div class="net ${k.active_end - k.active_start >= 0 ? 'up' : 'down'}">Net growth ${k.active_end - k.active_start >= 0 ? '+' : ''}${n0(k.active_end - k.active_start)}</div>
-    <p class="small muted">Active = picked up on or before the day and not terminated yet.</p>`;
+  $('#bd-contracts').innerHTML = `<h2>Active bookings over the period</h2><div class="flow"><div><span class="small muted">At the start</span><b>${n0(k.active_start)}</b></div><div class="plus">+${n0(k.new)}<span class="small muted">handed over</span></div><div class="minus">−${n0(k.ended)}<span class="small muted">ended</span></div><div><span class="small muted">At the end</span><b class="kpi-link" data-drill="active_end">${n0(k.active_end)}</b></div></div>
+    <div class="net ${k.active_end - k.active_start >= 0 ? 'up' : 'down'}">${k.active_end - k.active_start >= 0 ? 'Grew by' : 'Shrank by'} ${n0(Math.abs(k.active_end - k.active_start))}</div>
+    <p class="small muted">Contracts running at the start of the period, plus cars handed over, minus contracts that ended.</p>`;
   const tg = d.target, left = Math.max(tg.target - tg.done, 0), perWeek = tg.weeks_left ? left / tg.weeks_left : null;
-  $('#bd-target').innerHTML = `<h2>${tg.year} target — new LTO contracts</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${n0(tg.done)} <span class="small muted">of ${n0(tg.target)}</span></div>
+  $('#bd-target').innerHTML = `<h2>${tg.year} target — Lease To Own cars handed over</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${n0(tg.done)} <span class="small muted">of ${n0(tg.target)}</span></div>
     <div class="progress"><span style="width:${Math.min(100, tg.done / tg.target * 100)}%"></span></div>
     <div class="small">${ratio(tg.done, tg.target)} done · ${n0(left)} to go</div>
     <div class="small mt">Needed per week: <b>${perWeek == null ? '—' : perWeek.toFixed(1)}</b> · last 4 weeks averaged <b class="${perWeek != null && tg.avg_week_last4 >= perWeek ? 'tx-green' : 'tx-red'}">${tg.avg_week_last4}</b></div>
-    <p class="small muted">Counted by pickup date, Lease To Own only, ${tg.year} to the end of the selected period.</p>`;
+    <p class="small muted">Lease To Own handovers from 1 Jan to the end of the selected period (always Lease To Own, whatever product is picked above).</p>`;
   const rt = d.retention30;
-  $('#bd-retention').innerHTML = `<h2>Still active after 30 days</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${ratio(rt.kept, rt.cohort)}</div>
-    <div class="small">${frac(rt.kept, rt.cohort)} contracts picked up in the period${rt.cohort - rt.kept ? ` · <a href="#" data-drill="retention_lost">${n0(rt.cohort - rt.kept)} returned</a>` : ''}</div>
-    <p class="small muted">${rt.waiting ? `${n0(rt.waiting)} newer contracts haven't reached 30 days yet and are not counted.` : 'Contracts picked up in the period that have reached 30 days.'}</p>`;
-  const ser = [{ key: 'created', label: 'New bookings', color: C.light, type: 'bar' }, { key: 'pickups', label: 'Pickups', color: C.green, type: 'bar' },
-               { key: 'ended', label: 'Ended', color: C.gray, type: 'bar' }, { key: 'active', label: 'Active contracts (right axis)', color: C.accent, type: 'line', axis: 'right' }];
+  $('#bd-retention').innerHTML = `<h2>Still running 30 days after pickup</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${ratio(rt.kept, rt.cohort)}</div>
+    <div class="small">${frac(rt.kept, rt.cohort)} contracts${rt.cohort - rt.kept ? ` · <a href="#" data-drill="retention_lost">${n0(rt.cohort - rt.kept)} returned within 30 days</a>` : ''}</div>
+    <p class="small muted">Cars handed over ${dLabel(rt.from)} – ${dLabel(rt.to)} (30 to 120 days ago), so every contract counted has had its 30 days. Doesn't change with the period above.</p>`;
+  const ser = [{ key: 'created', label: 'New bookings', color: C.light, type: 'bar' }, { key: 'pickups', label: 'Cars handed over', color: C.green, type: 'bar' },
+               { key: 'ended', label: 'Ended', color: C.gray, type: 'bar' }, { key: 'active', label: 'Active bookings (right axis)', color: C.accent, type: 'line', axis: 'right' }];
   $('#bd-legend').innerHTML = legend(ser);
   svgChart($('#bd-daily'), d.daily.map(x => dLabel(x.d)), d.daily, ser, { rightMax: Math.max(...d.daily.map(x => x.active), 1) });
   $('#bd-supplier').innerHTML = d.by_supplier.length ? `<table><thead><tr><th>Supplier</th><th>Bookings</th><th>Approved</th><th>Rejected</th><th>Approval rate</th><th>Waiting</th></tr></thead><tbody>${
@@ -1422,9 +1424,9 @@ function renderBookDash(){
   $('#bd-model').innerHTML = d.by_model.length ? `<table><thead><tr><th>Model</th><th>New bookings</th><th>Pickups</th><th>Active now</th></tr></thead><tbody>${
     d.by_model.slice(0, 15).map(x => `<tr><td>${esc(x.model)}</td><td>${n0(x.created)}</td><td>${n0(x.pickups)}</td><td>${n0(x.active)}</td></tr>`).join('')}</tbody></table>` : '';
 }
-const BD_TITLES = { snap_active: 'Active contracts now', snap_total: 'All open bookings (active + awaiting pickup + under review)', snap_awaiting_pickup: 'Awaiting pickup', snap_review: 'Under Thrivve review',
-  created: 'New bookings', pickups: 'Pickups (new contracts)', ended: 'Contracts ended', rejected: 'Rejected at review', supplier_failed: 'Supplier rejected', pickup_failed: 'Failed at pickup',
-  active_end: 'Active contracts at the end of the period', retention_lost: 'Returned within 30 days' };
+const BD_TITLES = { snap_active: 'Active bookings now', snap_total: 'Successfully booked (active + awaiting pickup + under review)', snap_awaiting_pickup: 'Awaiting pickup', snap_review: 'Under Thrivve review',
+  created: 'New bookings', pickups: 'Cars handed over (new contracts)', ended: 'Contracts ended', rejected: 'Rejected by Thrivve', supplier_failed: 'Rejected by supplier', pickup_failed: 'Failed at pickup',
+  active_end: 'Active bookings at the end of the period', retention_lost: 'Returned within 30 days (handed over 30–120 days ago)' };
 const BD_COLS = [['booking_id','Booking'],['product','Product'],['status','Status'],['customer','Customer'],['phone','Phone'],['vehicle','Vehicle'],['supplier','Supplier'],['created','Created'],['pickup','Pickup'],['ended','Ended'],['decided','Decision seen'],['failure_reason','Failure reason'],['credited','Credited to']];
 async function bdDrill(metric){
   const [f, t] = bdRange();
