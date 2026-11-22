@@ -213,6 +213,10 @@ tr.click:hover{background:var(--brand-soft)}
   .login{grid-template-columns:1fr}.login .brandpane{padding:28px 20px;min-height:auto}.login .brandpane .big{display:none}
 }
 @media(max-width:700px){ .bar .row>.f{max-width:none!important;flex:1 1 100%} .bar .row>.btn{flex:1} .card{padding:16px} .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.perm-matrix th.c,.perm-matrix td.c{text-align:center;vertical-align:middle}
+.perm-matrix td:first-child{min-width:260px}
+.btn.accent-ring{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(255,152,0,.18)}
+#tm-people td{vertical-align:middle}
 </style>
 </head>
 <body>
@@ -266,16 +270,17 @@ tr.click:hover{background:var(--brand-soft)}
       <div class="nav-g">Team</div>
       <button class="tab" data-v="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Schedule</span></button>
       <button class="tab" data-v="reports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Reports</span></button>
-      <div class="nav-g admin">Management</div>
-      <button class="tab admin" data-v="perf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20v-5M12 20V10M18 20V4"/></svg><span>Performance</span></button>
-      <button class="tab admin" data-v="quality"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span>Quality</span></button>
-      <button class="tab admin" data-v="review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></svg><span>Review list</span></button>
-      <button class="tab admin" data-v="followups"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg><span>Follow-ups</span></button>
-      <button class="tab admin" data-v="bookings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14M6.5 17l1.6-5.2A2 2 0 0 1 10 10.5h4a2 2 0 0 1 1.9 1.3L17.5 17M5 17v3M19 17v3"/><circle cx="8" cy="17" r="0.6"/><circle cx="16" cy="17" r="0.6"/></svg><span>Booking attribution</span></button>
-      <div class="nav-g admin">Setup</div>
-      <button class="tab admin" data-v="lists"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg><span>Manage lists</span></button>
-      <button class="tab admin" data-v="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Settings</span></button>
-      <button class="tab admin" data-v="imports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Uploads & sync</span></button>
+      <div class="nav-g" data-group>Management</div>
+      <button class="tab" data-perm="performance" data-v="perf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20v-5M12 20V10M18 20V4"/></svg><span>Performance</span></button>
+      <button class="tab" data-perm="quality" data-v="quality"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span>Quality</span></button>
+      <button class="tab" data-perm="review" data-v="review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></svg><span>Review list</span></button>
+      <button class="tab" data-perm="followups" data-v="followups"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg><span>Follow-ups</span></button>
+      <button class="tab" data-perm="bookings" data-v="bookings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14M6.5 17l1.6-5.2A2 2 0 0 1 10 10.5h4a2 2 0 0 1 1.9 1.3L17.5 17M5 17v3M19 17v3"/><circle cx="8" cy="17" r="0.6"/><circle cx="16" cy="17" r="0.6"/></svg><span>Booking attribution</span></button>
+      <div class="nav-g" data-group>Setup</div>
+      <button class="tab" data-perm="lists" data-v="lists"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg><span>Manage lists</span></button>
+      <button class="tab" data-perm="settings" data-v="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>Settings</span></button>
+      <button class="tab" data-perm="imports" data-v="imports"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Uploads & sync</span></button>
+      <button class="tab" data-perm="team" data-v="team"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c2.6-.3 4.9 1.2 5.5 4.3"/></svg><span>Team & access</span></button>
     </nav>
     <div class="side-foot">
       <div class="av" id="me-av">·</div>
@@ -297,7 +302,7 @@ tr.click:hover{background:var(--brand-soft)}
       <div class="bar">
         <div><h1>Today</h1><div class="small muted" id="q-sub">Who to call now, in order.</div></div>
         <div class="row">
-          <div class="f admin" style="max-width:230px"><label>Agent</label><select id="q-agent"></select></div>
+          <div class="f" data-perm="all_leads" style="max-width:230px"><label>Agent</label><select id="q-agent"><option value="">Me</option></select></div>
           <div class="f" style="max-width:240px"><label>Open a customer</label><input id="q-phone" class="ltr" placeholder="05xxxxxxxx" inputmode="tel"></div>
           <button class="btn" id="q-open">Open</button>
           <button class="btn ghost" id="q-refresh" title="Refresh">↻</button>
@@ -441,7 +446,7 @@ tr.click:hover{background:var(--brand-soft)}
         <div class="row" style="margin-top:12px;align-items:center">
           <div class="seg" id="sc-view">
             <button data-v="matrix" class="on">Matrix</button><button data-v="calendar">Calendar</button><button data-v="timeline">Day timeline &amp; breaks</button>
-            <button data-v="fair">Fairness</button><button data-v="breaks">Break sets</button><button data-v="history" class="admin">Change history</button>
+            <button data-v="fair">Fairness</button><button data-v="breaks">Break sets</button><button data-v="history" data-perm="schedule">Change history</button>
           </div>
         </div>
         <div class="row" style="margin-top:10px;align-items:center" id="sc-range">
@@ -454,7 +459,7 @@ tr.click:hover{background:var(--brand-soft)}
           <input id="sc-search" placeholder="Search employee…" style="max-width:200px">
           <div class="seg" id="sc-loc"><button data-l="" class="on">All</button><button data-l="WFH">WFH</button><button data-l="WFO">WFO</button></div>
         </div>
-        <div class="row admin" style="margin-top:10px;align-items:center" id="sc-tools">
+        <div class="row" data-perm="schedule" style="margin-top:10px;align-items:center" id="sc-tools">
           <span class="small muted">Click mode:</span>
           <div class="seg" id="sc-brush">
             <button data-b="edit" class="on">✎ Edit cell</button><button data-b="09:00">09:00</button><button data-b="10:00">10:00</button><button data-b="11:00">11:00</button><button data-b="12:00">12:00</button>
@@ -477,7 +482,7 @@ tr.click:hover{background:var(--brand-soft)}
       <div class="bar">
         <div><h1>My performance</h1><div class="small muted">Your own results only — the same numbers your admin sees for the same period. No overall score.</div></div>
         <div class="row">
-          <div class="f admin" style="max-width:220px"><label>Preview as</label><select id="mp-agent"></select></div>
+          <div class="f" data-perm="performance" style="max-width:220px"><label>Preview as</label><select id="mp-agent"></select></div>
           <div class="f" style="max-width:170px"><label>From</label><input type="date" id="mp-from"></div>
           <div class="f" style="max-width:170px"><label>To</label><input type="date" id="mp-to"></div>
           <button class="btn" id="mp-go">Show</button>
@@ -532,8 +537,40 @@ tr.click:hover{background:var(--brand-soft)}
       <div class="grid2">
         <div class="card"><h2>Visible to agents in My performance</h2><div id="st-vis"></div>
           <p class="small muted">Hidden metrics are removed on the server, so links and exports cannot show them either.</p></div>
-        <div class="card"><h2>Sales roles (Opener / Closer)</h2><div id="st-roles"></div>
-          <p class="small muted">An agent can hand off a lead to anyone marked Closer or Both. Admins can reassign any lead.</p></div>
+        <div class="card"><h2>Sales roles &amp; access</h2><p class="small muted">Opener / Closer roles, admins and what each person can see are managed in <a href="#team" onclick="show('team');return false">Team &amp; access</a>.</p><div id="st-roles" class="hide"></div></div>
+      </div>
+    </section>
+
+    <!-- TEAM & ACCESS (admin) -->
+    <section id="v-team" class="hide">
+      <div class="bar"><div><h1>Team &amp; access</h1><div class="small muted">Add people, make someone an admin, and decide what each role can see and do. People sign in with the Google account of the e-mail you enter.</div></div>
+        <div class="row"><button class="btn" id="tm-new-btn">+ Add person</button></div></div>
+      <div class="card hide" id="tm-new">
+        <h2>Add a person</h2>
+        <div class="row">
+          <div class="f"><label>Full name</label><input id="tm-n-name" autocomplete="off"></div>
+          <div class="f"><label>Work e-mail</label><input id="tm-n-email" class="ltr" placeholder="name@thrivve.me" autocomplete="off"></div>
+          <div class="f" style="max-width:200px"><label>Access</label><select id="tm-n-access"></select></div>
+          <div class="f" style="max-width:150px"><label>Sales role</label><select id="tm-n-sales"><option value="both">Both</option><option value="opener">Opener</option><option value="closer">Closer</option></select></div>
+          <button class="btn" id="tm-n-save">Add</button><button class="btn ghost" id="tm-n-cancel">Cancel</button>
+        </div>
+        <p class="small muted" style="margin:10px 0 0">Admins see and change everything, including this page. New sales people are added to performance and the schedule; admins are not (you can change that below).</p>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h2 style="margin:0">People <span class="cnt" id="tm-count"></span></h2>
+          <div class="row" style="align-items:center"><input id="tm-q" placeholder="Search name or e-mail" style="max-width:240px">
+            <label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="tm-inactive" style="width:auto"> Show inactive</label></div>
+        </div>
+        <div class="tbl" id="tm-people"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+          <h2 style="margin:0">Access roles</h2>
+          <div class="row"><input id="tm-r-name" placeholder="New role name, e.g. Quality reviewer" style="max-width:260px"><button class="btn ghost" id="tm-r-add">+ New role</button></div>
+        </div>
+        <p class="small muted" style="margin:0 0 12px">Tick what each role can see and do. Changes apply on the server, so a hidden page cannot be opened another way. Everyone always has their own Today, customers, My performance, Reports (own rows) and the Schedule.</p>
+        <div class="tbl" id="tm-roles"></div>
       </div>
     </section>
 
@@ -584,6 +621,7 @@ const LST = {new:['New','p-blue'],contacted:['Contacted','p-gray'],no_answer:['N
 const FUS = {done_on_time:['On time','p-green'],missed:['Missed','p-red'],pending:['Pending','p-amber'],awaiting_data:['Awaiting data','p-gray'],covered_by_other:['Covered by another agent','p-blue'],cancelled_before_due:['Cancelled before due','p-gray']};
 const pill = ([t,c]) => `<span class="pill ${c}">${esc(t)}</span>`;
 let ME = null, AGENTS = [], LOOK = {}, LOOKALL = {};
+const can = p => !!ME && (ME.role === 'admin' || (ME.perms || []).includes(p));
 
 // ---------------- auth ----------------
 async function boot(){
@@ -591,17 +629,18 @@ async function boot(){
   if (!session) return showLogin();
   const { data, error } = await sb.rpc('whoami');
   if (error || !data) { await sb.auth.signOut(); return showLogin('This email is not registered as an agent. Contact your admin.'); }
-  ME = data; $('#me').textContent = ME.name; $('#me-role').textContent = ME.role === 'admin' ? 'Admin' : 'Sales agent';
+  ME = data; $('#me').textContent = ME.name; $('#me-role').textContent = ME.access_label || (ME.role === 'admin' ? 'Admin' : 'Sales agent');
   $('#me-av').textContent = (ME.name || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
   $('#v-login').classList.add('hide'); $('#app').classList.remove('hide');
   $$('.admin').forEach(e => e.classList.toggle('hide', ME.role !== 'admin'));
+  applyPerms();
   const [ag, lk] = await Promise.all([
-    sb.from('agents').select('id,name,email,role,active,in_performance,sales_role').order('name'),
+    sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role').order('name'),
     sb.from('lookup_options').select('*').order('sort')]);
   AGENTS = ag.data || [];
   LOOK = {}; LOOKALL = {};
   (lk.data || []).forEach(o => { (LOOKALL[o.list] ||= []).push(o); if (o.active) (LOOK[o.list] ||= []).push(o); });
-  $('#q-agent').innerHTML = AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  $('#q-agent').innerHTML = (ME.role === 'admin' ? '' : '<option value="">Me</option>') + AGENTS.filter(a => a.role === 'agent' && a.active && a.id !== ME.id).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
   const t = todayRiyadh();
   $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#pf-from').value = addDays(t, -30); $('#pf-to').value = addDays(t, -1); $('#rv-from').value = addDays(t, -14); $('#rv-to').value = t; $('#qa-day').value = addDays(t, -1); $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
   $('#mp-from').value = addDays(t, -30); $('#mp-to').value = addDays(t, -1);
@@ -644,16 +683,23 @@ sb.auth.onAuthStateChange(async (ev) => {
 });
 $('#logout').onclick = async () => { await sb.auth.signOut(); location.hash = ''; showLogin(); };
 
-// ---------------- nav ----------------
+// ---------------- nav + permissions ----------------
+const VIEW_PERM = { perf: 'performance', quality: 'quality', review: 'review', followups: 'followups', bookings: 'bookings', lists: 'lists', settings: 'settings', imports: 'imports', team: 'team' };
+function applyPerms(){
+  $$('[data-perm]').forEach(e => e.classList.toggle('hide', !can(e.dataset.perm)));
+  $$('#nav [data-group]').forEach(g => { let n = g.nextElementSibling, any = false;
+    while (n && !n.matches('.nav-g')) { if (!n.classList.contains('hide')) any = true; n = n.nextElementSibling; }
+    g.classList.toggle('hide', !any); });
+}
 function show(v){
-  if (!$('#v-' + v) || (ME.role !== 'admin' && ['perf','quality','review','followups','bookings','imports','lists','settings'].includes(v))) v = 'queue';
+  if (!$('#v-' + v) || (VIEW_PERM[v] && !can(VIEW_PERM[v]))) v = 'queue';
   $$('main > section').forEach(s => s.classList.toggle('hide', s.id !== 'v-' + v));
   document.body.classList.toggle('wide', v === 'schedule');
   $$('#nav .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
   $('#mtop-t').textContent = $('#nav .tab.on span')?.textContent || '';
   window.scrollTo(0, 0);
   location.hash = v;
-  ({queue: loadQueue, myperf: loadMyPerf, reports: loadReports, lists: loadLists, settings: loadSettings, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
+  ({team: loadTeam, queue: loadQueue, myperf: loadMyPerf, reports: loadReports, lists: loadLists, settings: loadSettings, perf: loadPerf, quality: loadQuality, review: loadReview, followups: loadAdherence, bookings: loadBookings, imports: loadImports, schedule: loadSchedule})[v]?.();
 }
 $('#nav').onclick = e => { const b = e.target.closest('[data-v]'); if (b) { show(b.dataset.v); document.body.classList.remove('nav-open'); } };
 $('#nav-toggle').onclick = () => document.body.classList.toggle('nav-open');
@@ -712,7 +758,7 @@ const TQ = { data: null, pg: {} };
 const TGROUPS = [['overdue','Overdue','p-red','Oldest first'],['today','Due today','p-amber','By time'],['new','New — assigned to you','p-blue','Oldest assignment first'],
                  ['offer','Needs a new car offer','p-purple','Supplier failed the booking — offer another car']];
 async function loadQueue(){
-  const agent = ME.role === 'admin' ? ($('#q-agent').value || null) : null;
+  const agent = can('all_leads') ? ($('#q-agent').value || null) : null;
   const t0 = performance.now();
   const { data, error } = await sb.rpc('today', { p_agent: agent });
   if (error) return $('#q-groups').innerHTML = `<p class="err">${esc(error.message)}</p>`;
@@ -762,10 +808,10 @@ async function loadLead(o){
 }
 function renderSummary(){
   const d = LV.data, L = d.lead, b = d.booking;
-  if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. ${ME.role === 'admin' ? 'Assign it to an agent, or log' : 'Saving'} a contact to create the lead${ME.role === 'admin' ? '' : ' and assign it to you'}.</p>
-    ${ME.role === 'admin' ? `<div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
+  if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. ${can('assign') ? 'Assign it to an agent, or log' : 'Saving'} a contact to create the lead${can('assign') ? '' : ' and assign it to you'}.</p>
+    ${can('assign') ? `<div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
       <div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button></div>` : ''}`;
-    if (ME.role === 'admin') { fillSelect($('#l-new-src'), 'lead_source', null, '—');
+    if (can('assign')) { fillSelect($('#l-new-src'), 'lead_source', null, '—');
       $('#l-assign-go').onclick = async e => { busy(e.target, 'saving');
         const { data: id, error } = await sb.rpc('assign_lead', { p_phone: d.phone, p_agent: $('#l-assign').value, p_name: $('#l-new-name').value || null, p_source: $('#l-new-src').value || null });
         if (error) { busy(e.target, 'bad'); return toast(error.message); }
@@ -784,7 +830,7 @@ function renderSummary(){
       <dt>Source</dt><dd>${esc(optLabel('lead_source', L.source)) || '—'}</dd>
       ${L.lost_reason ? `<dt>Closed because</dt><dd>${esc(optLabel('lost_reason', L.lost_reason) || optLabel('disqualify_reason', L.lost_reason))}</dd>` : ''}
     </dl>
-    ${ME.role === 'admin' ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
+    ${can('assign') ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
   $('#l-summary [data-copy]')?.addEventListener('click', e => { navigator.clipboard?.writeText(e.target.dataset.copy); toast('Phone copied'); });
   $('#l-assign-go')?.addEventListener('click', async e => {
     busy(e.target, 'saving');
@@ -915,7 +961,7 @@ function renderHistory(){
 
 // ---------------- My performance ----------------
 async function loadMyPerf(){
-  const p = { p_from: $('#mp-from').value, p_to: $('#mp-to').value, p_agent: ME.role === 'admin' ? ($('#mp-agent').value || null) : null };
+  const p = { p_from: $('#mp-from').value, p_to: $('#mp-to').value, p_agent: can('performance') ? ($('#mp-agent').value || null) : null };
   $('#mp-out').innerHTML = '<p class="muted">Calculating…</p>';
   const { data, error } = await sb.rpc('my_performance', p);
   if (error) return $('#mp-out').innerHTML = `<p class="err">${esc(error.message)}</p>`;
@@ -940,7 +986,7 @@ const RPF = {
   performance:{ basis: 'Same four measures and definitions as the Performance screen, for the selected period.', f: ['agent'], sorts: [] },
 };
 function rpFilters(){
-  const cfg = RPF[RP.type], admin = ME.role === 'admin', t = todayRiyadh();
+  const cfg = RPF[RP.type], admin = can('all_leads'), t = todayRiyadh();
   const opt = (list, all = 'All') => `<option value="">${all}</option>` + (LOOKALL[list] || []).map(o => `<option value="${esc(o.value)}">${esc(o.label_en)}${o.active ? '' : ' (disabled)'}</option>`).join('');
   const F = {
     basis: `<div class="f"><label>Date basis</label><select data-k="basis"><option value="created">Created</option><option value="assigned">Assigned</option><option value="last_contact">Last contact</option></select></div>`,
@@ -997,7 +1043,7 @@ async function perfRows(f){
       conversion: c?.customers ? fmt(c.conversion, 1) : (c?.display || 'Insufficient data'), customers: c?.customers ?? '',
       followups: fu?.adherence == null ? 'N/A — none due' : fmt(fu.adherence, 1), fu_detail: fu?.display || '',
       quality: q?.reviewed ? q.avg_quality : (q ? 'No reviewed calls' : ''), crm: q?.crm_checked ? fmt(q.crm_accuracy, 1) : '' });
-  if (ME.role !== 'admin') {
+  if (!can('performance')) {
     const { data, error } = await sb.rpc('my_performance', { p_from: f.from, p_to: f.to });
     if (error) return { error: error.message };
     const vis = cols.filter(([k]) => k === 'agent' || ({ shift_adherence: 'shift', shift_detail: 'shift', conversion: 'conversion', customers: 'conversion', followups: 'followups', fu_detail: 'followups', quality: 'quality', crm: 'quality' })[k] in data);
@@ -1016,7 +1062,7 @@ const RPFMT = { last_contact_at: fmtDT, next_at: fmtDT, created_at: fmtDT, assig
   stage: v => stagePill(v), status: v => FUS[v] ? pill(FUS[v]) : esc(v), validity: v => esc(BKV[v] || v || ''), outcome: v => BKO[v] ? pill(BKO[v]) : esc(v) };
 function renderReport(data, rows){
   const st = RP.st, cols = data.columns;
-  $('#rp-scope').textContent = data.scope === 'own' ? 'Showing your own records only.' : 'Showing all agents (admin).';
+  $('#rp-scope').textContent = data.scope === 'own' ? 'Showing your own records only.' : 'Showing the whole team.';
   $('#rp-count').innerHTML = `<b>${data.total.toLocaleString('en')}</b> matching ${data.total === 1 ? 'row' : 'rows'}${RP.ms != null ? ` <span class="muted">· ${RP.ms} ms</span>` : ''}`;
   $('#rp-out').innerHTML = rows.length ? `<table><thead><tr>${cols.map(([,l]) => `<th>${esc(l)}</th>`).join('')}</tr></thead><tbody>${
     rows.map(r => `<tr ${r.phone ? `class="click" data-phone="${esc(r.phone)}"` : ''}>${cols.map(([k]) => `<td class="${k === 'phone' ? 'ltr nowrap' : /_at$/.test(k) ? 'nowrap' : ''}">${RPFMT[k] ? (RPFMT[k](r[k]) ?? '') : esc(r[k] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`
@@ -1104,6 +1150,101 @@ async function refreshLookups(){
   const { data } = await sb.from('lookup_options').select('*').order('sort');
   LOOKALL = {}; (data || []).forEach(o => (LOOKALL[o.list] ||= []).push(o));
   LOOK = {}; (data || []).filter(o => o.active).forEach(o => (LOOK[o.list] ||= []).push(o));
+}
+
+
+// ---------------- Team & access (admin) ----------------
+const PERMS = [
+  ['all_leads','Whole team\'s customers','See any agent\'s Today, edit their customers, team-wide reports'],
+  ['assign','Assign customers','Assign new or existing customers to agents'],
+  ['performance','Team performance','Performance screen and preview anyone\'s My performance'],
+  ['followups','Follow-ups (team)','Follow-up adherence for every agent'],
+  ['quality','Call quality','Draw and score the daily call sample'],
+  ['review','Review list','See and decide flags'],
+  ['bookings','Booking attribution','See bookings and credit them to agents'],
+  ['schedule','Edit schedule','Change shifts, breaks, WhatsApp duty; add people to the roster'],
+  ['lists','Manage lists','Outcomes, reasons, sources, car models'],
+  ['settings','Settings','Which metrics agents see'],
+  ['imports','Uploads & sync','Upload reports, Maqsam sync'],
+];
+const TM = { data: null };
+async function loadTeam(){
+  const { data, error } = await sb.rpc('team_list');
+  if (error) return $('#tm-people').innerHTML = `<p class="err" style="padding:12px">${esc(error.message)}</p>`;
+  TM.data = data; renderPeople(); renderRoles();
+  $('#tm-n-access').innerHTML = accessOptions('agent');
+}
+const accessOptions = cur => `<option value="admin" ${cur === 'admin' ? 'selected' : ''}>Admin — everything</option>` +
+  TM.data.roles.map(r => `<option value="${esc(r.key)}" ${cur === r.key ? 'selected' : ''}>${esc(r.label)}</option>`).join('');
+function renderPeople(){
+  const q = $('#tm-q').value.trim().toLowerCase(), all = $('#tm-inactive').checked;
+  const ppl = TM.data.people.filter(p => (all || p.active) && (!q || (p.name + ' ' + p.email).toLowerCase().includes(q)));
+  $('#tm-count').textContent = `${TM.data.people.filter(p => p.active).length} active`;
+  $('#tm-people').innerHTML = `<table><thead><tr><th>Person</th><th style="width:210px">Access</th><th style="width:130px">Sales role</th><th>Performance</th><th>Schedule</th><th>Active</th><th>Sign-in</th><th></th></tr></thead><tbody>${
+    ppl.map(p => `<tr data-id="${p.id}" class="${p.active ? '' : 'dim'}">
+      <td><input class="tm-name" value="${esc(p.name)}" style="font-weight:600;padding:5px 8px"><input class="tm-email ltr small" value="${esc(p.email)}" style="margin-top:4px;padding:4px 8px;font-size:12.5px;color:var(--muted)"></td>
+      <td><select class="tm-access">${accessOptions(p.access)}</select></td>
+      <td><select class="tm-sales">${['both','opener','closer'].map(r => `<option value="${r}" ${p.sales_role === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></td>
+      <td><label class="switch" title="Counted in Performance"><input type="checkbox" class="tm-perf" ${p.in_performance ? 'checked' : ''}><span></span></label></td>
+      <td><label class="switch" title="On the team schedule"><input type="checkbox" class="tm-sched" ${p.on_schedule ? 'checked' : ''}><span></span></label></td>
+      <td><label class="switch"><input type="checkbox" class="tm-active" ${p.active ? 'checked' : ''}><span></span></label></td>
+      <td class="small">${p.signed_in ? '<span class="pill p-green">Signed in</span>' : '<span class="pill p-gray" title="Has not signed in yet">Invited</span>'}</td>
+      <td><button class="btn ghost sm tm-save">Save</button></td></tr>`).join('') || '<tr><td colspan="8" class="muted">No one matches.</td></tr>'}</tbody></table>`;
+}
+function renderRoles(){
+  const roles = TM.data.roles;
+  $('#tm-roles').innerHTML = `<table class="perm-matrix"><thead><tr><th>Can see / do</th><th class="c">Admin</th>${roles.map(r => `<th class="c"><input class="tm-rl" data-key="${esc(r.key)}" value="${esc(r.label)}" style="padding:4px 6px;font-weight:600;text-align:center;min-width:110px"><div class="small muted" style="text-transform:none;letter-spacing:0;font-weight:400">${r.members} ${r.members === 1 ? 'person' : 'people'}</div></th>`).join('')}</tr></thead><tbody>${
+    PERMS.map(([k, l, d]) => `<tr><td><b style="font-weight:600">${esc(l)}</b><div class="small muted">${esc(d)}</div></td><td class="c"><input type="checkbox" checked disabled style="width:auto"></td>${
+      roles.map(r => `<td class="c"><input type="checkbox" class="tm-perm" data-key="${esc(r.key)}" data-p="${k}" ${r.perms.includes(k) ? 'checked' : ''} style="width:auto;transform:scale(1.15)"></td>`).join('')}</tr>`).join('')
+    }<tr><td><b style="font-weight:600">Team &amp; access</b><div class="small muted">This page — admins only</div></td><td class="c"><input type="checkbox" checked disabled style="width:auto"></td>${roles.map(() => '<td class="c muted">—</td>').join('')}</tr>
+    <tr><td></td><td></td>${roles.map(r => `<td class="c"><button class="btn sm tm-r-save" data-key="${esc(r.key)}">Save</button>${r.system ? '' : ` <button class="link tm-r-del" data-key="${esc(r.key)}" title="Delete role">Delete</button>`}</td>`).join('')}</tr></tbody></table>`;
+}
+$('#tm-q').oninput = () => TM.data && renderPeople();
+$('#tm-inactive').onchange = () => TM.data && renderPeople();
+$('#tm-new-btn').onclick = () => { $('#tm-new').classList.remove('hide'); $('#tm-n-name').focus(); };
+$('#tm-n-cancel').onclick = () => $('#tm-new').classList.add('hide');
+$('#tm-n-save').onclick = async e => {
+  busy(e.target, 'saving');
+  const { error } = await sb.rpc('save_member', { p_id: null, p_name: $('#tm-n-name').value, p_email: $('#tm-n-email').value, p_access: $('#tm-n-access').value, p_sales_role: $('#tm-n-sales').value });
+  if (error) { busy(e.target, 'bad'); return toast(error.message); }
+  busy(e.target, 'ok', 'Added ✓'); toast($('#tm-n-name').value + ' added — they can sign in with Google now.');
+  $('#tm-n-name').value = ''; $('#tm-n-email').value = ''; $('#tm-new').classList.add('hide'); await refreshAgents(); loadTeam();
+};
+$('#tm-people').onclick = async e => {
+  if (!e.target.classList.contains('tm-save')) return;
+  const tr = e.target.closest('tr'), btn = e.target;
+  busy(btn, 'saving', '…');
+  const { error } = await sb.rpc('save_member', { p_id: tr.dataset.id, p_name: tr.querySelector('.tm-name').value, p_email: tr.querySelector('.tm-email').value,
+    p_access: tr.querySelector('.tm-access').value, p_sales_role: tr.querySelector('.tm-sales').value, p_active: tr.querySelector('.tm-active').checked,
+    p_in_performance: tr.querySelector('.tm-perf').checked, p_on_schedule: tr.querySelector('.tm-sched').checked });
+  if (error) { busy(btn, 'bad'); return toast(error.message); }
+  busy(btn, 'ok', 'Saved ✓'); await refreshAgents(); loadTeam();
+};
+$('#tm-people').onchange = e => { const b = e.target.closest('tr')?.querySelector('.tm-save'); if (b) b.classList.add('accent-ring'); };
+$('#tm-roles').onclick = async e => {
+  const key = e.target.dataset.key; if (!key) return;
+  if (e.target.classList.contains('tm-r-save')) {
+    const perms = $$(`#tm-roles .tm-perm[data-key="${key}"]`).filter(i => i.checked).map(i => i.dataset.p);
+    const role = TM.data.roles.find(r => r.key === key);
+    busy(e.target, 'saving', '…');
+    const { error } = await sb.rpc('save_access_role', { p_key: key, p_label: $(`#tm-roles .tm-rl[data-key="${key}"]`).value, p_description: role.description, p_perms: perms });
+    if (error) { busy(e.target, 'bad'); return toast(error.message); }
+    busy(e.target, 'ok', '✓'); toast('Role saved — applies the next time those people open a page.'); loadTeam();
+  } else if (e.target.classList.contains('tm-r-del')) {
+    const { error } = await sb.rpc('delete_access_role', { p_key: key });
+    if (error) return toast(error.message); toast('Role deleted'); loadTeam();
+  }
+};
+$('#tm-r-add').onclick = async e => {
+  const label = $('#tm-r-name').value.trim(); if (!label) return toast('Type a name for the role.');
+  busy(e.target, 'saving');
+  const { error } = await sb.rpc('save_access_role', { p_key: null, p_label: label, p_description: null, p_perms: [] });
+  if (error) { busy(e.target, 'bad'); return toast(error.message); }
+  busy(e.target, 'ok', 'Added ✓'); $('#tm-r-name').value = ''; loadTeam();
+};
+async function refreshAgents(){
+  const { data } = await sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role').order('name');
+  if (data) AGENTS = data;
 }
 
 // ---------------- Settings (admin) ----------------
@@ -1481,7 +1622,7 @@ const dowOf = d => new Date(d + 'T00:00:00Z').getUTCDay();
 const hm = t => t ? String(t).slice(0, 5) : '';
 const toMin = t => { const [h, m] = hm(t).split(':').map(Number); return h * 60 + m; };
 const fmtMin = m => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
-const scEdit = () => ME?.role === 'admin';
+const scEdit = () => can('schedule');
 const scKey = (d, a) => d + '|' + a;
 
 async function loadSchedule(){
