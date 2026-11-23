@@ -366,7 +366,7 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
           <button class="btn" id="l-load">Open</button>
         </div>
       </div>
-      <div id="l-empty" class="card muted">Type a phone number and press Open, or pick a customer from Today.</div>
+      <div id="l-empty" class="card muted">Type a phone number — the customer opens by itself — or pick a customer from Today.</div>
       <div id="l-body" class="hide">
         <div class="grid2 lead-grid">
           <div>
@@ -941,8 +941,9 @@ function openLead(o){ show('lead'); LV.req = o; if (o.phone) $('#l-phone').value
 async function loadLead(o){
   o ||= { phone: $('#l-phone').value.trim() };
   if (!o.lead && !o.phone) return;
-  const t0 = performance.now();
+  const t0 = performance.now(), seq = LV.seq = (LV.seq || 0) + 1;
   const { data, error } = await sb.rpc('lead_view', o.lead ? { p_lead: o.lead } : { p_phone: o.phone });
+  if (seq !== LV.seq) return;                       // a newer number was typed meanwhile
   LV.ms = Math.round(performance.now() - t0);
   if (error) { $('#l-empty').classList.remove('hide'); $('#l-body').classList.add('hide'); return $('#l-empty').innerHTML = `<p class="err">${esc(error.message)}</p>`; }
   LV.data = data; LV.histPg.page = 0;
@@ -1061,8 +1062,29 @@ $('#l-outcome').onclick = e => { const b = e.target.closest('button'); if (!b) r
 $('#l-reason').onchange = formRules;
 $('#l-car').onchange = () => { const o = $('#l-car').value === 'other'; $('#l-car-other').classList.toggle('hide', !o); if (o) $('#l-car-other').focus(); };
 $('#l-quick').onclick = e => { const b = e.target.closest('[data-v]'); if (b) $('#l-next-at').value = b.dataset.v; };
-$('#l-load').onclick = () => loadLead({ phone: $('#l-phone').value.trim() });
+$('#l-load').onclick = () => { clearTimeout(LV.autoT); loadLead({ phone: $('#l-phone').value.trim() }); };
 $('#l-phone').onkeydown = e => { if (e.key === 'Enter') $('#l-load').click(); };
+// open the customer as soon as a full Saudi mobile is typed or pasted; never leave another customer's page under a different number
+function normPhone(p){
+  let x = String(p || '').replace(/\D/g, '');
+  if (x.startsWith('00')) x = x.slice(2);
+  if (/^96605\d{8}$/.test(x)) x = '966' + x.slice(4);
+  else if (/^05\d{8}$/.test(x)) x = '966' + x.slice(1);
+  else if (/^5\d{8}$/.test(x)) x = '966' + x;
+  return x;
+}
+$('#l-phone').addEventListener('input', () => {
+  clearTimeout(LV.autoT); LV.seq = (LV.seq || 0) + 1;
+  const n = normPhone($('#l-phone').value);
+  if (LV.data && n === LV.data.phone) { $('#l-body').classList.remove('hide'); $('#l-empty').classList.add('hide'); return; }
+  $('#l-body').classList.add('hide'); $('#l-empty').classList.remove('hide');
+  if (/^9665\d{8}$/.test(n)) { $('#l-empty').innerHTML = '<p class="muted">Opening…</p>'; LV.autoT = setTimeout(() => loadLead({ phone: n }), 350); }
+  else $('#l-empty').innerHTML = '<p class="muted">Type the full number — the customer opens by itself (or press Open / Enter for other numbers).</p>';
+});
+$('#q-phone').addEventListener('input', () => {
+  clearTimeout(LV.qT); const n = normPhone($('#q-phone').value);
+  if (/^9665\d{8}$/.test(n)) LV.qT = setTimeout(() => { $('#q-phone').value = ''; openLead({ phone: n }); }, 350);
+});
 $('#l-save').onclick = async () => {
   const d = LV.data, btn = $('#l-save');
   $('#l-err').textContent = '';
@@ -1082,11 +1104,15 @@ $('#l-save').onclick = async () => {
   toast(data.duplicate ? 'This contact was already saved.' : 'Contact saved' + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
   loadLead({ lead: data.lead_id });
 };
-const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝'};
+const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁'};
 function histLine(h){
   switch (h.kind) {
     case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'whatsapp' ? 'WhatsApp · ' : h.contact === 'note' ? 'Note · ' : 'Call · '}${esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
-    case 'maqsam': return `Maqsam · ${esc(h.agents || '—')} · ${esc(h.state)}${h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}`;
+    case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || 'no agent picked up')} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}`;
+    case 'bk_created': return `Booking <b>#${esc(h.booking_id)}</b> created · ${esc(h.product || '')}${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.supplier ? ' · ' + esc(h.supplier) : ''}<div class="hn">Status now: <b>${esc(h.status || '—')}</b>${h.credited ? ' · credited to ' + esc(h.credited) : ''}</div>`;
+    case 'bk_status': return `Booking <b>#${esc(h.booking_id)}</b> → <b class="${/Rejected|Failed/.test(h.status) ? 'tx-red' : ''}">${esc(h.status)}</b>${h.reason ? `<div class="hn">${esc(h.reason)}</div>` : ''}`;
+    case 'bk_pickup': return `Car handed over · booking <b>#${esc(h.booking_id)}</b>${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.plate ? ' · ' + esc(h.plate) : ''}`;
+    case 'bk_ended': return `Contract ended · booking <b>#${esc(h.booking_id)}</b>${h.days != null ? ` · after ${h.days} days` : ''}`;
     case 'rescheduled': return `<b>${esc(h.agent)}</b> moved the follow-up <s>${fmtWhen(h.old_due)}</s> → <b>${fmtWhen(h.new_due)}</b>${h.reason ? ' · ' + esc(optLabel('reschedule_reason', h.reason)) : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'next_step': return `<b>${esc(h.agent)}</b> set a follow-up for <b>${fmtWhen(h.new_due)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'handoff': return `<b>${esc(h.agent)}</b> handed off ${h.agent === h.from ? '' : '<b>' + esc(h.from) + '</b>\'s lead '}to <b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
