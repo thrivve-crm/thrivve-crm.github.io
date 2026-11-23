@@ -993,7 +993,9 @@ function renderNext(){
   $('#l-next').innerHTML = `<h2>Next step</h2>
     ${n ? `<div class="next ${n.overdue ? 'over' : ''}"><div class="big">${fmtDay(n.due_at)}</div>
             <div class="small">${n.overdue ? `<b class="tx-red">Overdue ${ago(n.due_at)}</b> · ` : ''}Follow-up by <b>${esc(n.owner_name)}</b>${n.reason ? ' · moved: ' + esc(optLabel('reschedule_reason', n.reason)) : ''}</div></div>`
-         : `<p class="muted small">${closed ? 'Lead is closed — log a new contact to reopen it.' : L.stage === 'booked' ? (d.booking?.needs_new_offer ? 'Supplier failed the booking — offer another car and log the outcome below.' : 'Booked — no follow-up needed.') : 'No follow-up scheduled.'}</p>`}
+         : `<p class="muted small">${closed ? `Lead is closed (${L.stage === 'lost' ? 'lost' : 'disqualified'}).` : L.stage === 'booked' ? (d.booking?.needs_new_offer ? 'Supplier failed the booking — offer another car and log the outcome below.' : 'Booked — no follow-up needed.') : 'No follow-up scheduled.'}</p>`}
+    ${closed && (L.can_edit || !L.owner) ? `<div class="row mt"><input id="ro-note" placeholder="Why reopen? (optional)" style="flex:1;min-width:200px"><button class="btn" id="ro-go">Reopen lead</button></div>
+      <p class="small muted">Reopening moves it back to Contacted and puts a follow-up on ${L.owner_name ? esc(L.owner_name) + '\'s' : 'your'} list for today.</p>` : ''}
     ${L.can_edit && !closed ? `<div class="row mt">
         <button class="btn ghost" id="nx-toggle">${n ? 'Change time' : 'Set a follow-up'}</button>
         ${closers.length ? '<button class="btn ghost" id="ho-toggle">Hand off to closer</button>' : ''}</div>
@@ -1005,6 +1007,12 @@ function renderNext(){
         <div class="f"><label>Hand off to</label><select id="ho-to">${closers.map(a => `<option value="${a.id}">${esc(a.name)} (${a.sales_role})</option>`).join('')}</select></div>
         <div class="f"><label>Handoff note</label><input id="ho-note" placeholder="What the closer needs to know"></div><button class="btn" id="ho-save">Hand off</button></div>
         <p class="small muted">The closer becomes responsible for the next step. Your earlier contacts stay credited to you.</p></div>` : ''}`;
+  $('#ro-go')?.addEventListener('click', async e => {
+    busy(e.target, 'saving');
+    const { error } = await sb.rpc('reopen_lead', { p_lead: L.id, p_note: $('#ro-note').value || null });
+    if (error) { busy(e.target, 'bad'); return toast(friendly(error.message)); }
+    busy(e.target, 'ok', 'Reopened ✓'); toast('Lead reopened · follow-up today'); loadLead({ lead: L.id });
+  });
   $('#nx-toggle')?.addEventListener('click', () => $('#nx-form').classList.toggle('hide'));
   $('#ho-toggle')?.addEventListener('click', () => $('#ho-form').classList.toggle('hide'));
   $('#nx-save')?.addEventListener('click', async e => {
@@ -1104,7 +1112,7 @@ $('#l-save').onclick = async () => {
   toast(data.duplicate ? 'This contact was already saved.' : 'Contact saved' + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
   loadLead({ lead: data.lead_id });
 };
-const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁'};
+const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁', reopened:'↩️'};
 function histLine(h){
   switch (h.kind) {
     case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'whatsapp' ? 'WhatsApp · ' : h.contact === 'note' ? 'Note · ' : 'Call · '}${esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
@@ -1118,6 +1126,7 @@ function histLine(h){
     case 'handoff': return `<b>${esc(h.agent)}</b> handed off ${h.agent === h.from ? '' : '<b>' + esc(h.from) + '</b>\'s lead '}to <b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'assigned': return `${h.agent ? '<b>' + esc(h.agent) + '</b> assigned' : 'Assigned'} ${h.from ? esc(h.from) + ' → ' : 'to '}<b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'booking': return `Booking #${esc(h.data?.booking_id)} → <b>${esc(h.data?.status)}</b>`;
+    case 'reopened': return `<b>${esc(h.agent || '')}</b> reopened the lead${h.data?.was ? ' (was ' + esc(h.data.was) + (h.data.lost_reason ? ' · ' + esc(optLabel('lost_reason', h.data.lost_reason) || optLabel('disqualify_reason', h.data.lost_reason)) : '') + ')' : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'created': return `Lead created${h.to ? ' for <b>' + esc(h.to) + '</b>' : ''}`;
     default: return esc(h.kind);
   }
@@ -2075,14 +2084,16 @@ async function loadImports(){
 
 // ---------------- performance (admin) ----------------
 const pct = v => v == null ? '—' : (v*100).toFixed(1) + '%';
+// live Maqsam status checks started on 19 Nov 2026; earlier days need the daily "Agent State Activity" report (Imports)
+const TRACK_NOTE = '<div class="small mt">Maqsam status tracking started on <b>19 Nov 2026</b>. Days before that are measured only if the daily Agent State report is uploaded in Imports. Pick a period from 20 Nov to see measured days.</div>';
 const notMeasured = s => [
     s.days_in_progress ? s.days_in_progress + ' shift(s) still running' : '',
     s.days_whatsapp ? s.days_whatsapp + ' WhatsApp duty day(s) — not measured' : '',
-    (s.days_insufficient - (s.days_in_progress || 0)) > 0 ? (s.days_insufficient - (s.days_in_progress || 0)) + ' day(s) without Maqsam states' : '',
+    (s.days_insufficient - (s.days_in_progress || 0)) > 0 ? (s.days_insufficient - (s.days_in_progress || 0)) + ' day(s) without Maqsam status data' : '',
     s.days_off ? s.days_off + ' day(s) off' : ''].filter(Boolean).join(' · ');
 const shiftCell = s => !s ? '<span class="muted">No schedule in this period</span>'
   : !s.days_scheduled ? `<span class="muted">Day off${s.days_off > 1 ? ' (' + s.days_off + ' days)' : ''} — nothing to measure</span>`
-  : !s.days_measured ? `<span class="muted">Not measured yet — ${esc(notMeasured(s))}</span>`
+  : !s.days_measured ? `<span class="muted">Not measured yet — ${esc(notMeasured(s))}</span>${(s.days_insufficient - (s.days_in_progress || 0)) > 0 ? TRACK_NOTE : ''}`
   : s.lost_min == null ? `<b>${pct(s.adherence)}</b><div class="small muted">${s.days_measured} day(s) measured</div>` : `<b>${pct(s.adherence)}</b><div class="small muted">${s.required_min - s.lost_min} / ${s.required_min} min · ${s.days_measured} day(s)${s.days_live ? ' · ' + s.days_live + ' from live checks (±1 min)' : ''}</div>
      <div class="small">Lost ${s.lost_min} min · late ${s.late_min} · early leave ${s.early_min}</div>
      <div class="small muted">Manual work: ${s.documented_manual_min} min documented, ${s.inferred_manual_min} min inferred${notMeasured(s) ? ' · ' + esc(notMeasured(s)) : ''}</div>`;
