@@ -612,6 +612,18 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
         <div class="card" id="bd-target"></div>
         <div class="card" id="bd-retention"></div>
       </div>
+      <div class="card hide" id="bd-tg-box"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Targets</h2><button class="btn ghost sm" id="bd-tg-close">Close</button></div>
+        <p class="small muted">A target is the number of active bookings (contracts running) a product should have on the end date. Set it for the year, a month, or any period; when periods overlap, the shortest one is used.</p>
+        <div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="f"><label>Product</label><select id="tg-prod"><option>Lease To Own</option><option>Rent Car</option></select></div>
+          <div class="f"><label>Active bookings target</label><input id="tg-n" type="number" min="1" step="1" style="width:130px"></div>
+          <div class="f"><label>Period</label><div class="seg sm" id="tg-per"><button data-v="year" class="on">This year</button><button data-v="month">This month</button><button data-v="custom">Custom</button></div></div>
+          <div class="f"><label>From</label><input id="tg-from" type="date"></div>
+          <div class="f"><label>To</label><input id="tg-to" type="date"></div>
+          <button class="btn" id="tg-save">Save target</button>
+        </div>
+        <div class="tbl mt" id="tg-list"></div>
+      </div>
       <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Day by day</h2><div class="legend" id="bd-legend"></div></div><div id="bd-daily" class="chart"></div></div>
       <div class="grid2">
         <div class="card"><h2>By supplier <span class="small muted">(bookings created in the period)</span></h2><div class="tbl" id="bd-supplier"></div></div>
@@ -1402,12 +1414,17 @@ function renderBookDash(){
   $('#bd-contracts').innerHTML = `<h2>Active bookings over the period</h2><div class="flow"><div><span class="small muted">At the start</span><b>${n0(k.active_start)}</b></div><div class="plus">+${n0(k.new)}<span class="small muted">handed over</span></div><div class="minus">−${n0(k.ended)}<span class="small muted">ended</span></div><div><span class="small muted">At the end</span><b class="kpi-link" data-drill="active_end">${n0(k.active_end)}</b></div></div>
     <div class="net ${k.active_end - k.active_start >= 0 ? 'up' : 'down'}">${k.active_end - k.active_start >= 0 ? 'Grew by' : 'Shrank by'} ${n0(Math.abs(k.active_end - k.active_start))}</div>
     <p class="small muted">Contracts running at the start of the period, plus cars handed over, minus contracts that ended.</p>`;
-  const tg = d.target, left = Math.max(tg.target - tg.done, 0), perWeek = tg.weeks_left ? left / tg.weeks_left : null;
-  $('#bd-target').innerHTML = `<h2>${tg.year} target — Lease To Own cars handed over</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${n0(tg.done)} <span class="small muted">of ${n0(tg.target)}</span></div>
-    <div class="progress"><span style="width:${Math.min(100, tg.done / tg.target * 100)}%"></span></div>
-    <div class="small">${ratio(tg.done, tg.target)} done · ${n0(left)} to go</div>
-    <div class="small mt">Needed per week: <b>${perWeek == null ? '—' : perWeek.toFixed(1)}</b> · last 4 weeks averaged <b class="${perWeek != null && tg.avg_week_last4 >= perWeek ? 'tx-green' : 'tx-red'}">${tg.avg_week_last4}</b></div>
-    <p class="small muted">Lease To Own handovers from 1 Jan to the end of the selected period (always Lease To Own, whatever product is picked above).</p>`;
+  const tgs = d.targets || [];
+  $('#bd-target').innerHTML = `<div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Target — net active bookings</h2><button class="btn ghost sm" id="bd-tg-edit">Set targets</button></div>${
+    tgs.length ? tgs.map(tg => { const gap = tg.target - tg.active_now, ok = tg.needed_per_week == null || tg.net_week_last4 >= tg.needed_per_week;
+      return `<div class="mt"><div class="small muted">${esc(tg.product)} · by ${dLabel(tg.to)}</div>
+      <div style="font-size:24px;font-weight:600;color:var(--ink)">${n0(tg.active_now)} <span class="small muted">of ${n0(tg.target)} active</span></div>
+      <div class="progress"><span style="width:${Math.max(0, Math.min(100, tg.active_now / tg.target * 100))}%"></span></div>
+      <div class="small">${gap > 0 ? `${n0(gap)} more needed` : `target reached (+${n0(-gap)})`} · ${tg.days_left} days left</div>
+      ${gap > 0 && tg.needed_per_week != null ? `<div class="small">Needed: <b>+${tg.needed_per_week}</b> net / week · last 4 weeks: <b class="${ok ? 'tx-green' : 'tx-red'}">${tg.net_week_last4 > 0 ? '+' : ''}${tg.net_week_last4}</b> / week</div>
+      <div class="small muted">At this pace: about ${n0(tg.projection)} by ${dLabel(tg.to)}</div>` : ''}</div>`; }).join('')
+    : '<p class="muted mt">No target covers this date. Use “Set targets”.</p>'}
+    <p class="small muted mt">Net = cars handed over minus contracts ended, so the target is the number of contracts running on the end date.</p>`;
   const rt = d.retention30;
   $('#bd-retention').innerHTML = `<h2>Still running 30 days after pickup</h2><div style="font-size:26px;font-weight:600;color:var(--ink)">${ratio(rt.kept, rt.cohort)}</div>
     <div class="small">${frac(rt.kept, rt.cohort)} contracts${rt.cohort - rt.kept ? ` · <a href="#" data-drill="retention_lost">${n0(rt.cohort - rt.kept)} returned within 30 days</a>` : ''}</div>
@@ -1423,6 +1440,43 @@ function renderBookDash(){
   $('#bd-model').innerHTML = d.by_model.length ? `<table><thead><tr><th>Model</th><th>New bookings</th><th>Pickups</th><th>Active now</th></tr></thead><tbody>${
     d.by_model.slice(0, 15).map(x => `<tr><td>${esc(x.model)}</td><td>${n0(x.created)}</td><td>${n0(x.pickups)}</td><td>${n0(x.active)}</td></tr>`).join('')}</tbody></table>` : '';
 }
+const TG = { id: null };
+function tgPeriod(v){
+  const t = new Date(Date.now() + 3 * 3600e3), y = t.getUTCFullYear(), m = t.getUTCMonth();
+  const iso = d => d.toISOString().slice(0, 10);
+  if (v === 'year') { $('#tg-from').value = `${y}-01-01`; $('#tg-to').value = `${y}-12-31`; }
+  if (v === 'month') { $('#tg-from').value = iso(new Date(Date.UTC(y, m, 1))); $('#tg-to').value = iso(new Date(Date.UTC(y, m + 1, 0))); }
+  $('#tg-from').disabled = $('#tg-to').disabled = v !== 'custom';
+  $$('#tg-per button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+}
+async function tgLoad(){
+  const { data, error } = await sb.rpc('booking_targets_list');
+  if (error) return $('#tg-list').innerHTML = `<p class="err">${esc(error.message)}</p>`;
+  TG.rows = data || [];
+  $('#tg-list').innerHTML = TG.rows.length ? `<table><thead><tr><th>Product</th><th>From</th><th>To</th><th>Target (active)</th><th></th></tr></thead><tbody>${
+    TG.rows.map(r => `<tr><td>${esc(r.product)}</td><td class="nowrap">${dLabel(r.from)}</td><td class="nowrap">${dLabel(r.to)}</td><td>${n0(r.target)}</td>
+      <td class="nowrap"><button class="btn ghost sm" data-tg-edit="${r.id}">Edit</button> <button class="btn ghost sm" data-tg-del="${r.id}">Delete</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">No targets yet.</p>';
+}
+function tgReset(){ TG.id = null; $('#tg-n').value = ''; $('#tg-save').textContent = 'Save target'; tgPeriod('year'); }
+$('#v-bookdash').addEventListener('click', async e => {
+  if (e.target.closest('#bd-tg-edit')) { $('#bd-tg-box').classList.remove('hide'); tgReset(); await tgLoad(); $('#bd-tg-box').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (e.target.closest('#bd-tg-close')) return $('#bd-tg-box').classList.add('hide');
+  const per = e.target.closest('#tg-per button'); if (per) return tgPeriod(per.dataset.v);
+  const ed = e.target.closest('[data-tg-edit]');
+  if (ed) { const r = TG.rows.find(x => String(x.id) === ed.dataset.tgEdit); TG.id = r.id; $('#tg-prod').value = r.product; $('#tg-n').value = r.target; tgPeriod('custom'); $('#tg-from').value = r.from; $('#tg-to').value = r.to; $('#tg-save').textContent = 'Update target'; return; }
+  const del = e.target.closest('[data-tg-del]');
+  if (del) { const r = TG.rows.find(x => String(x.id) === del.dataset.tgDel);
+    if (!confirm(`Delete the ${r.product} target (${n0(r.target)} by ${dLabel(r.to)})?`)) return;
+    const { error } = await sb.rpc('booking_target_delete', { p_id: r.id }); if (error) return toast(error.message);
+    toast('Target deleted'); tgReset(); await tgLoad(); return loadBookDash(); }
+  if (e.target.closest('#tg-save')) {
+    const n = parseInt($('#tg-n').value, 10);
+    if (!(n > 0)) return toast('Enter the number of active bookings to reach');
+    const { error } = await sb.rpc('booking_target_save', { p_id: TG.id, p_product: $('#tg-prod').value, p_from: $('#tg-from').value, p_to: $('#tg-to').value, p_target: n });
+    if (error) return toast(error.message);
+    toast(TG.id ? 'Target updated' : 'Target saved'); tgReset(); await tgLoad(); return loadBookDash();
+  }
+});
 const BD_TITLES = { snap_active: 'Active bookings now', snap_total: 'Successfully booked (active + awaiting pickup + under review)', snap_awaiting_pickup: 'Awaiting pickup', snap_review: 'Under Thrivve review',
   created: 'New bookings', pickups: 'Cars handed over (new contracts)', ended: 'Contracts ended', rejected: 'Rejected by Thrivve', supplier_failed: 'Rejected by supplier', pickup_failed: 'Cancelled / not picked up', 'rejected+supplier_failed': 'Rejected (by Thrivve or by the supplier)',
   active_end: 'Active bookings at the end of the period', retention_lost: 'Returned within 30 days (handed over 30–120 days ago)' };
