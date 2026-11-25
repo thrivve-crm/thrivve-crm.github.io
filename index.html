@@ -385,7 +385,7 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
               </div>
               <div class="row mt">
                 <div class="f"><label>Car of interest</label><select id="l-car"></select><input id="l-car-other" class="hide" placeholder="Which car? e.g. Nissan Sunny 2026" style="margin-top:6px" autocomplete="off"></div>
-                <div class="f" id="l-name-w"><label>Customer name</label><input id="l-name" autocomplete="off"></div>
+                <div class="f hide" id="l-name-w"><label>Customer name</label><input id="l-name" autocomplete="off"></div>
                 <div class="f hide" id="l-source-w"><label>Source</label><select id="l-source"></select></div>
               </div>
               <div class="f mt"><label id="l-note-l">Note</label><textarea id="l-note" placeholder="What was said, what was promised"></textarea></div>
@@ -953,17 +953,18 @@ async function loadLead(o){
 }
 function renderSummary(){
   const d = LV.data, L = d.lead, b = d.booking;
-  if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. ${can('assign') ? 'Assign it to an agent, or log' : 'Saving'} a contact to create the lead${can('assign') ? '' : ' and assign it to you'}.</p>
-    ${can('assign') ? `<div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
-      <div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button></div>` : ''}`;
-    if (can('assign')) { fillSelect($('#l-new-src'), 'lead_source', null, '—');
+  if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. Fill in the name and source here once; they are saved on the lead when you ${can('assign') ? 'assign it or ' : ''}log a contact.</p>
+    <div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name" autocomplete="off"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
+    ${can('assign') ? `<div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button>` : ''}</div>`;
+    fillSelect($('#l-new-src'), 'lead_source', null, '—');
+    if (can('assign')) {
       $('#l-assign-go').onclick = async e => { busy(e.target, 'saving');
         const { data: id, error } = await sb.rpc('assign_lead', { p_phone: d.phone, p_agent: $('#l-assign').value, p_name: $('#l-new-name').value || null, p_source: $('#l-new-src').value || null });
         if (error) { busy(e.target, 'bad'); return toast(error.message); }
         busy(e.target, 'ok', 'Assigned ✓'); loadLead({ phone: d.phone }); }; }
     return; }
   $('#l-summary').innerHTML = `<div class="sum-h"><div><h2 style="margin:0">${esc(L.name || 'No name yet')}</h2>
-      <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button></div></div>
+      <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button>${L.can_edit ? ' · <button class="link" id="l-edit">Edit details</button>' : ''}</div></div>
       <div>${stagePill(L.stage)}</div></div>
     ${b?.needs_new_offer ? `<div class="banner purple">Supplier failed booking #${b.id} (${esc(b.status)}). Offer the customer another car and log the outcome.</div>` : ''}
     <dl class="facts">
@@ -975,8 +976,26 @@ function renderSummary(){
       <dt>Source</dt><dd>${esc(optLabel('lead_source', L.source)) || '—'}</dd>
       ${L.lost_reason ? `<dt>Closed because</dt><dd>${esc(optLabel('lost_reason', L.lost_reason) || optLabel('disqualify_reason', L.lost_reason))}</dd>` : ''}
     </dl>
+    <div id="l-edit-box" class="hide mt"><div class="row">
+      <div class="f"><label>Customer name</label><input id="le-name" autocomplete="off"></div>
+      <div class="f"><label>Source</label><select id="le-src"></select></div>
+      <div class="f"><label>Car of interest</label><select id="le-car"></select><input id="le-car-other" class="hide" placeholder="Which car?" style="margin-top:6px" autocomplete="off"></div></div>
+      <div class="row mt"><button class="btn" id="le-save">Save details</button><button class="btn ghost" id="le-cancel">Cancel</button><span id="le-err" class="err small"></span></div></div>
     ${can('assign') ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
   $('#l-summary [data-copy]')?.addEventListener('click', e => { navigator.clipboard?.writeText(e.target.dataset.copy); toast('Phone copied'); });
+  $('#l-edit')?.addEventListener('click', () => {
+    $('#le-name').value = L.name || ''; fillSelect($('#le-src'), 'lead_source', L.source, '—'); fillSelect($('#le-car'), 'car_model', L.car, '—');
+    $('#le-car-other').value = L.car_other || ''; $('#le-car-other').classList.toggle('hide', $('#le-car').value !== 'other');
+    $('#le-err').textContent = ''; $('#l-edit-box').classList.remove('hide'); $('#le-name').focus(); });
+  $('#le-car')?.addEventListener('change', () => $('#le-car-other').classList.toggle('hide', $('#le-car').value !== 'other'));
+  $('#le-cancel')?.addEventListener('click', () => $('#l-edit-box').classList.add('hide'));
+  $('#le-save')?.addEventListener('click', async e => {
+    busy(e.target, 'saving');
+    const { data, error } = await sb.rpc('update_lead_details', { p_lead: L.id, p_name: $('#le-name').value || null, p_source: $('#le-src').value || null,
+      p_car: $('#le-car').value || null, p_car_other: $('#le-car').value === 'other' ? ($('#le-car-other').value.trim() || null) : null });
+    if (error) { busy(e.target, 'bad'); return $('#le-err').textContent = friendly(error.message); }
+    busy(e.target, 'ok', data.changed ? 'Saved ✓' : 'No changes'); if (data.changed) { toast('Lead details saved'); loadLead({ lead: L.id }); } else $('#l-edit-box').classList.add('hide');
+  });
   $('#l-assign-go')?.addEventListener('click', async e => {
     busy(e.target, 'saving');
     const { error } = await sb.rpc('assign_lead', { p_phone: L.phone, p_agent: $('#l-assign').value });
@@ -1042,7 +1061,6 @@ function resetForm(){
   $('#l-outcome').innerHTML = activeOpts('call_outcome').map(o => `<button data-v="${esc(o.value)}">${esc(o.label_en)}</button>`).join('');
   fillSelect($('#l-car'), 'car_model', L?.car, '—'); fillSelect($('#l-source'), 'lead_source', L?.source, '—');
   $('#l-name').value = L?.name || ''; $('#l-note').value = ''; $('#l-next-at').value = ''; $('#l-err').textContent = '';
-  $('#l-source-w').classList.toggle('hide', !!L?.source);
   $('#l-car-other').value = L?.car_other || ''; $('#l-car-other').classList.toggle('hide', $('#l-car').value !== 'other');
   busy($('#l-save'));
   formRules();
@@ -1052,6 +1070,7 @@ function formRules(){
   const reasonList = r.reason, rr = reasonList ? ((LOOKALL[reasonList] || []).find(o => o.value === $('#l-reason').value)?.rule || {}) : {};
   const keepOpen = !!rr.keeps_open, isNote = LV.kind === 'note';
   $('#l-outcome').parentElement.classList.toggle('hide', isNote);
+  $('#l-car').closest('.row').classList.toggle('hide', isNote);           // a note is just text: no car, name or source
   $('#l-reason-w').classList.toggle('hide', !reasonList || isNote);
   if (reasonList && $('#l-reason').dataset.list !== reasonList) { fillSelect($('#l-reason'), reasonList, null); $('#l-reason').dataset.list = reasonList; }
   $('#l-reason-l').textContent = reasonList === 'disqualify_reason' ? 'Disqualify reason *' : 'Lost reason *';
@@ -1110,15 +1129,15 @@ $('#l-save').onclick = async () => {
   const t0 = performance.now();
   const { data, error } = await sb.rpc('log_contact', {
     p_lead: d.lead?.id || null, p_phone: d.lead ? null : d.phone, p_outcome: outcome, p_kind: LV.kind, p_reason: reason,
-    p_note: $('#l-note').value || null, p_next_at: nextAt, p_car: $('#l-car').value || null, p_name: $('#l-name').value || null,
-    p_source: $('#l-source').value || null, p_client_id: LV.clientId, p_car_other: $('#l-car').value === 'other' ? ($('#l-car-other').value.trim() || null) : null });     // same id on retry → saved once
+    p_note: $('#l-note').value || null, p_next_at: nextAt, p_car: isNote ? null : ($('#l-car').value || null), p_name: d.lead ? null : ($('#l-new-name')?.value || null),
+    p_source: d.lead ? null : ($('#l-new-src')?.value || null), p_client_id: LV.clientId, p_car_other: !isNote && $('#l-car').value === 'other' ? ($('#l-car-other').value.trim() || null) : null });     // same id on retry → saved once
   LV.saveMs = Math.round(performance.now() - t0);
   if (error) { busy(btn, 'bad'); return $('#l-err').textContent = friendly(error.message); }
   busy(btn, 'ok', data.duplicate ? 'Already saved ✓' : 'Saved ✓');
   toast(data.duplicate ? 'This contact was already saved.' : (isNote ? 'Note saved' : 'Contact saved') + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
   loadLead({ lead: data.lead_id });
 };
-const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁', reopened:'↩️'};
+const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁', reopened:'↩️', edited:'✏️'};
 function histLine(h){
   switch (h.kind) {
     case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'note' ? 'Note' : (h.contact === 'whatsapp' ? 'WhatsApp · ' : 'Call · ') + esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
@@ -1127,6 +1146,9 @@ function histLine(h){
     case 'bk_status': return `Booking <b>#${esc(h.booking_id)}</b> → <b class="${/Rejected|Failed/.test(h.status) ? 'tx-red' : ''}">${esc(h.status)}</b>${h.reason ? `<div class="hn">${esc(h.reason)}</div>` : ''}`;
     case 'bk_pickup': return `Car handed over · booking <b>#${esc(h.booking_id)}</b>${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.plate ? ' · ' + esc(h.plate) : ''}`;
     case 'bk_ended': return `Contract ended · booking <b>#${esc(h.booking_id)}</b>${h.days != null ? ` · after ${h.days} days` : ''}`;
+    case 'edited': return `<b>${esc(h.agent || '')}</b> edited the lead${Object.entries(h.data || {}).map(([k, v]) => {
+        const lab = { name: 'Name', source: 'Source', car: 'Car' }[k] || k, f = x => k === 'source' ? (optLabel('lead_source', x) || x) : k === 'car' ? (optLabel('car_model', x) || x) : x;
+        return `<div class="hn">${lab}: ${v[0] ? '<s>' + esc(f(v[0])) + '</s> → ' : ''}<b>${esc(f(v[1]) || '—')}</b></div>`; }).join('')}`;
     case 'rescheduled': return `<b>${esc(h.agent)}</b> moved the follow-up <s>${fmtWhen(h.old_due)}</s> → <b>${fmtWhen(h.new_due)}</b>${h.reason ? ' · ' + esc(optLabel('reschedule_reason', h.reason)) : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'next_step': return `<b>${esc(h.agent)}</b> set a follow-up for <b>${fmtWhen(h.new_due)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'handoff': return `<b>${esc(h.agent)}</b> handed off ${h.agent === h.from ? '' : '<b>' + esc(h.from) + '</b>\'s lead '}to <b>${esc(h.to)}</b>${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
