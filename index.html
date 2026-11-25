@@ -97,7 +97,7 @@ button.link{border:0;background:none;color:var(--brand);cursor:pointer;padding:2
 .banner{border-radius:10px;padding:10px 12px;margin-top:10px;font-size:14px} .banner.purple{background:var(--purple-soft);color:var(--purple)}
 .next{border-left:4px solid var(--brand);background:#faf8ff;border-radius:8px;padding:10px 12px} .next.over{border-color:var(--red);background:#fff7f6} .next .big{font-size:20px;font-weight:700}
 .sub{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
-.tl .it.k-log{} .tl .hn{background:#f7f6fb;border-radius:6px;padding:4px 8px;margin-top:3px;font-size:14px;white-space:pre-wrap}
+.tl .hs{background:#f4f8ff} .tl .it.k-log{} .tl .hn{background:#f7f6fb;border-radius:6px;padding:4px 8px;margin-top:3px;font-size:14px;white-space:pre-wrap}
 .mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px} .mp-grid .card{margin:0} .mp b{font-size:22px}
 tr.dim td{opacity:.55} tr.dim td:last-child,tr.dim td:nth-last-child(2){opacity:1}
 .switch{position:relative;display:inline-block;width:38px;height:22px} .switch input{opacity:0;width:0;height:0}
@@ -1141,7 +1141,7 @@ const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', han
 function histLine(h){
   switch (h.kind) {
     case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'note' ? 'Note' : (h.contact === 'whatsapp' ? 'WhatsApp · ' : 'Call · ') + esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
-    case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || 'no agent picked up')} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}`;
+    case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || 'no agent picked up')} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}${h.summary ? `<div class="hn hs" dir="auto"><span class="small muted">Maqsam summary${h.sentiment ? ' · <b class="' + ({positive:'tx-green', negative:'tx-red'}[h.sentiment] || '') + '">' + esc(h.sentiment) + '</b>' : ''}</span><br>${esc(h.summary)}</div>` : ''}`;
     case 'bk_created': return `Booking <b>#${esc(h.booking_id)}</b> created · ${esc(h.product || '')}${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.supplier ? ' · ' + esc(h.supplier) : ''}<div class="hn">Status now: <b>${esc(h.status || '—')}</b>${h.credited ? ' · credited to ' + esc(h.credited) : ''}</div>`;
     case 'bk_status': return `Booking <b>#${esc(h.booking_id)}</b> → <b class="${/Rejected|Failed/.test(h.status) ? 'tx-red' : ''}">${esc(h.status)}</b>${h.reason ? `<div class="hn">${esc(h.reason)}</div>` : ''}`;
     case 'bk_pickup': return `Car handed over · booking <b>#${esc(h.booking_id)}</b>${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.plate ? ' · ' + esc(h.plate) : ''}`;
