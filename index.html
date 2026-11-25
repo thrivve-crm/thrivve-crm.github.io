@@ -1037,7 +1037,8 @@ function fillSelect(sel, list, cur, blank = 'Choose…'){
 function resetForm(){
   const L = LV.data.lead;
   LV.outcome = null; LV.kind = 'call'; LV.clientId = crypto.randomUUID();
-  $$('#l-kind button').forEach(b => b.classList.toggle('on', b.dataset.v === 'call'));
+  LV.kind = ['lost','disqualified'].includes(L?.stage) ? 'note' : 'call';     // a closed lead opens on "Note only" so a note never reopens it by accident
+  $$('#l-kind button').forEach(b => b.classList.toggle('on', b.dataset.v === LV.kind));
   $('#l-outcome').innerHTML = activeOpts('call_outcome').map(o => `<button data-v="${esc(o.value)}">${esc(o.label_en)}</button>`).join('');
   fillSelect($('#l-car'), 'car_model', L?.car, '—'); fillSelect($('#l-source'), 'lead_source', L?.source, '—');
   $('#l-name').value = L?.name || ''; $('#l-note').value = ''; $('#l-next-at').value = ''; $('#l-err').textContent = '';
@@ -1050,14 +1051,16 @@ function formRules(){
   const r = (LOOKALL.call_outcome || []).find(o => o.value === LV.outcome)?.rule || {};
   const reasonList = r.reason, rr = reasonList ? ((LOOKALL[reasonList] || []).find(o => o.value === $('#l-reason').value)?.rule || {}) : {};
   const keepOpen = !!rr.keeps_open, isNote = LV.kind === 'note';
-  $('#l-reason-w').classList.toggle('hide', !reasonList);
+  $('#l-outcome').parentElement.classList.toggle('hide', isNote);
+  $('#l-reason-w').classList.toggle('hide', !reasonList || isNote);
   if (reasonList && $('#l-reason').dataset.list !== reasonList) { fillSelect($('#l-reason'), reasonList, null); $('#l-reason').dataset.list = reasonList; }
   $('#l-reason-l').textContent = reasonList === 'disqualify_reason' ? 'Disqualify reason *' : 'Lost reason *';
   const fu = keepOpen ? 'required' : (r.closes ? 'none' : (r.follow_up || 'optional'));
-  $('#l-next-w').classList.toggle('hide', !LV.outcome || fu === 'none');
+  $('#l-next-w').classList.toggle('hide', isNote || !LV.outcome || fu === 'none');
   $('#l-next-l').innerHTML = fu === 'required' ? 'Next follow-up day *' : 'Next follow-up (optional)';
-  $('#l-note-l').textContent = (r.note === 'required' || rr.note === 'required') ? 'Note *' : 'Note';
+  $('#l-note-l').textContent = (isNote || r.note === 'required' || rr.note === 'required') ? 'Note *' : 'Note';
   $('#l-save').textContent = LV.outcome ? (r.closes === 'booked' ? 'Save — mark booked' : r.closes && !keepOpen ? 'Save — close lead' : 'Save contact') : 'Save contact';
+  if (isNote) $('#l-save').textContent = ['lost','disqualified'].includes(LV.data?.lead?.stage) ? 'Save note — lead stays closed' : 'Save note';
   $('#l-save')._label = $('#l-save').textContent;
   if (keepOpen) $('#l-err').textContent = 'This reason keeps the lead open — set when to call back.'; else if ($('#l-err').textContent.startsWith('This reason keeps')) $('#l-err').textContent = '';
   const t = todayRiyadh();
@@ -1096,26 +1099,29 @@ $('#q-phone').addEventListener('input', () => {
 $('#l-save').onclick = async () => {
   const d = LV.data, btn = $('#l-save');
   $('#l-err').textContent = '';
-  if (!LV.outcome) return $('#l-err').textContent = 'Choose an outcome.';
-  const r = (LOOKALL.call_outcome || []).find(o => o.value === LV.outcome)?.rule || {};
-  const reason = r.reason ? ($('#l-reason').value || null) : null;
-  const nextAt = $('#l-next-w').classList.contains('hide') ? null : fromRiyadhDay($('#l-next-at').value);
+  const isNote = LV.kind === 'note';
+  if (isNote && !$('#l-note').value.trim()) return $('#l-err').textContent = 'Write the note.';
+  if (!isNote && !LV.outcome) return $('#l-err').textContent = 'Choose an outcome.';
+  const outcome = isNote ? 'other' : LV.outcome;             // a note changes nothing on the lead: no stage, no follow-up
+  const r = (LOOKALL.call_outcome || []).find(o => o.value === outcome)?.rule || {};
+  const reason = !isNote && r.reason ? ($('#l-reason').value || null) : null;
+  const nextAt = isNote || $('#l-next-w').classList.contains('hide') ? null : fromRiyadhDay($('#l-next-at').value);
   busy(btn, 'saving');
   const t0 = performance.now();
   const { data, error } = await sb.rpc('log_contact', {
-    p_lead: d.lead?.id || null, p_phone: d.lead ? null : d.phone, p_outcome: LV.outcome, p_kind: LV.kind, p_reason: reason,
+    p_lead: d.lead?.id || null, p_phone: d.lead ? null : d.phone, p_outcome: outcome, p_kind: LV.kind, p_reason: reason,
     p_note: $('#l-note').value || null, p_next_at: nextAt, p_car: $('#l-car').value || null, p_name: $('#l-name').value || null,
     p_source: $('#l-source').value || null, p_client_id: LV.clientId, p_car_other: $('#l-car').value === 'other' ? ($('#l-car-other').value.trim() || null) : null });     // same id on retry → saved once
   LV.saveMs = Math.round(performance.now() - t0);
   if (error) { busy(btn, 'bad'); return $('#l-err').textContent = friendly(error.message); }
   busy(btn, 'ok', data.duplicate ? 'Already saved ✓' : 'Saved ✓');
-  toast(data.duplicate ? 'This contact was already saved.' : 'Contact saved' + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
+  toast(data.duplicate ? 'This contact was already saved.' : (isNote ? 'Note saved' : 'Contact saved') + (data.next_at ? ' · next follow-up ' + fmtWhen(data.next_at) : ''));
   loadLead({ lead: data.lead_id });
 };
 const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', handoff:'🤝', assigned:'👤', booking:'🚗', created:'✨', stage:'•', note:'📝', bk_created:'🧾', bk_status:'🔄', bk_pickup:'🚗', bk_ended:'🏁', reopened:'↩️'};
 function histLine(h){
   switch (h.kind) {
-    case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'whatsapp' ? 'WhatsApp · ' : h.contact === 'note' ? 'Note · ' : 'Call · '}${esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
+    case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'note' ? 'Note' : (h.contact === 'whatsapp' ? 'WhatsApp · ' : 'Call · ') + esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
     case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || 'no agent picked up')} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}`;
     case 'bk_created': return `Booking <b>#${esc(h.booking_id)}</b> created · ${esc(h.product || '')}${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.supplier ? ' · ' + esc(h.supplier) : ''}<div class="hn">Status now: <b>${esc(h.status || '—')}</b>${h.credited ? ' · credited to ' + esc(h.credited) : ''}</div>`;
     case 'bk_status': return `Booking <b>#${esc(h.booking_id)}</b> → <b class="${/Rejected|Failed/.test(h.status) ? 'tx-red' : ''}">${esc(h.status)}</b>${h.reason ? `<div class="hn">${esc(h.reason)}</div>` : ''}`;
