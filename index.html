@@ -404,7 +404,7 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
       <div class="card">
         
         <div class="row"><div class="f"><label>From</label><input type="date" id="pf-from"></div>
-          <div class="f"><label>To</label><input type="date" id="pf-to"></div><button class="btn" id="pf-go">Calculate</button></div>
+          <div class="f"><label>To</label><input type="date" id="pf-to"></div><div class="f" style="max-width:200px"><label>Team</label><select id="pf-team"></select></div><button class="btn" id="pf-go">Calculate</button></div>
         <p class="small muted">Four separate measures — no weights and no overall score. "Insufficient data" means a required source is missing for that agent and period.</p>
         <div id="pf-banner"></div>
         <div id="pf-out"></div>
@@ -650,6 +650,8 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
           <span class="small muted">Time of day</span>
           <div class="seg sm" id="cd-win"><button data-v="0-1440" class="on">All day</button><button data-v="540-720">09–12</button><button data-v="660-780">11–13</button><button data-v="780-1020">13–17</button><button data-v="1020-1260">17–21</button><button data-v="custom">Custom</button></div>
           <span class="row hide" id="cd-win-custom" style="gap:6px;align-items:center"><input type="time" id="cd-win-from" step="300" value="10:30" style="width:120px"><span class="small muted">to</span><input type="time" id="cd-win-to" step="300" value="14:00" style="width:120px"><button class="btn sm" id="cd-win-go">Apply</button></span>
+          <span class="small muted" data-perm="performance">Team</span>
+          <select id="cd-team" data-perm="performance" style="width:auto;padding:5px 8px"></select>
           <span class="small muted" data-perm="performance">Agents</span>
           <div class="seg sm" id="cd-agents" data-perm="performance"></div>
           <span class="small muted">Outcome</span>
@@ -690,6 +692,7 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
           <div class="f"><label>Work e-mail</label><input id="tm-n-email" class="ltr" placeholder="name@thrivve.me" autocomplete="off"></div>
           <div class="f" style="max-width:200px"><label>Access</label><select id="tm-n-access"></select></div>
           <div class="f" style="max-width:150px"><label>Sales role</label><select id="tm-n-sales"><option value="both">Both</option><option value="opener">Opener</option><option value="closer">Closer</option></select></div>
+          <div class="f" style="max-width:190px"><label>Team</label><select id="tm-n-team"></select></div>
           <button class="btn" id="tm-n-save">Add</button><button class="btn ghost" id="tm-n-cancel">Cancel</button>
         </div>
         <p class="small muted" style="margin:10px 0 0">Admins see and change everything, including this page. New sales people are added to performance and the schedule; admins are not (you can change that below).</p>
@@ -697,7 +700,7 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
       <div class="card">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px">
           <h2 style="margin:0">People <span class="cnt" id="tm-count"></span></h2>
-          <div class="row" style="align-items:center"><input id="tm-q" placeholder="Search name or e-mail" style="max-width:240px">
+          <div class="row" style="align-items:center"><input id="tm-q" placeholder="Search name or e-mail" style="max-width:240px"><select id="tm-team" style="width:auto"></select>
             <label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="tm-inactive" style="width:auto"> Show inactive</label></div>
         </div>
         <div class="tbl" id="tm-people"></div>
@@ -709,6 +712,14 @@ table.heat th.rk.click,table.heat tfoot td[data-ht]{cursor:pointer}table.heat th
         </div>
         <p class="small muted" style="margin:0 0 12px">Tick what each role can see and do. Changes apply on the server, so a hidden page cannot be opened another way. Everyone always has their own Today, customers, My performance, Reports (own rows) and the Schedule.</p>
         <div class="tbl" id="tm-roles"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+          <h2 style="margin:0">Teams</h2>
+          <div class="row"><input id="tm-t-name" placeholder="New team name" style="max-width:220px"><button class="btn ghost" id="tm-t-add">+ New team</button></div>
+        </div>
+        <p class="small muted" style="margin:0 0 12px">A team is a label and a filter on calls, the customer history and performance. Only people on a <b>sales</b> team (or with no team yet) can own customers; other teams only show their calls and numbers. Set each person's team in the table above.</p>
+        <div class="tbl" id="tm-teams"></div>
       </div>
     </section>
 
@@ -758,7 +769,13 @@ const OUT = {interested:'Interested',call_back:'Call back later',no_answer:'No a
 const LST = {new:['New','p-blue'],contacted:['Contacted','p-gray'],no_answer:['No answer','p-gray'],follow_up:['Follow-up','p-amber'],won:['Won','p-green'],lost:['Lost','p-red'],disqualified:['Disqualified','p-red']};
 const FUS = {done_on_time:['On time','p-green'],missed:['Missed','p-red'],pending:['Pending','p-amber'],awaiting_data:['Awaiting data','p-gray'],covered_by_other:['Covered by another agent','p-blue'],cancelled_before_due:['Cancelled before due','p-gray']};
 const pill = ([t,c]) => `<span class="pill ${c}">${esc(t)}</span>`;
-let ME = null, AGENTS = [], LOOK = {}, LOOKALL = {};
+let ME = null, AGENTS = [], LOOK = {}, LOOKALL = {}, TEAMS = [];
+// Teams: a label + filter. Sales teams own customers; other teams (support, performance…) only make calls
+const teamLabel = k => TEAMS.find(t => t.key === k)?.label || '';
+const teamOf = id => AGENTS.find(a => a.id === id)?.team || null;
+const isSales = a => a.can_sign_in !== false && (!a.team || !!TEAMS.find(t => t.key === a.team)?.sales);
+const inTeam = (a, f) => !f || (f === 'none' ? !a.team : a.team === f);
+const teamFilterOpts = () => '<option value="">All teams</option>' + TEAMS.map(t => `<option value="${esc(t.key)}">${esc(t.label)}</option>`).join('') + '<option value="none">No team</option>';
 const can = p => !!ME && (ME.role === 'admin' || (ME.perms || []).includes(p));
 
 // ---------------- auth ----------------
@@ -773,12 +790,12 @@ async function boot(){
   $$('.admin').forEach(e => e.classList.toggle('hide', ME.role !== 'admin'));
   applyPerms();
   const [ag, lk] = await Promise.all([
-    sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role').order('name'),
+    sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role,team,can_sign_in').order('name'),
     sb.from('lookup_options').select('*').order('sort')]);
-  AGENTS = ag.data || [];
+  AGENTS = ag.data || []; await loadTeams();
   LOOK = {}; LOOKALL = {};
   (lk.data || []).forEach(o => { (LOOKALL[o.list] ||= []).push(o); if (o.active) (LOOK[o.list] ||= []).push(o); });
-  $('#q-agent').innerHTML = (ME.role === 'admin' ? '' : '<option value="">Me</option>') + AGENTS.filter(a => a.role === 'agent' && a.active && a.id !== ME.id).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  $('#q-agent').innerHTML = (ME.role === 'admin' ? '' : '<option value="">Me</option>') + AGENTS.filter(a => a.role === 'agent' && a.active && isSales(a) && a.id !== ME.id).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
   const t = todayRiyadh();
   $('#fa-from').value = addDays(t, -30); $('#fa-to').value = t; $('#pf-from').value = addDays(t, -30); $('#pf-to').value = addDays(t, -1); $('#rv-from').value = addDays(t, -14); $('#rv-to').value = t; $('#qa-day').value = addDays(t, -1); $('#b-from').value = addDays(t, -30); $('#b-to').value = t;
   $('#mp-from').value = addDays(t, -30); $('#mp-to').value = addDays(t, -1);
@@ -955,7 +972,7 @@ function renderSummary(){
   const d = LV.data, L = d.lead, b = d.booking;
   if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. Fill in the name and source here once; they are saved on the lead when you ${can('assign') ? 'assign it or ' : ''}log a contact.</p>
     <div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name" autocomplete="off"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
-    ${can('assign') ? `<div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button>` : ''}</div>`;
+    ${can('assign') ? `<div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent' && isSales(a)).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button>` : ''}</div>`;
     fillSelect($('#l-new-src'), 'lead_source', null, '—');
     if (can('assign')) {
       $('#l-assign-go').onclick = async e => { busy(e.target, 'saving');
@@ -981,7 +998,7 @@ function renderSummary(){
       <div class="f"><label>Source</label><select id="le-src"></select></div>
       <div class="f"><label>Car of interest</label><select id="le-car"></select><input id="le-car-other" class="hide" placeholder="Which car?" style="margin-top:6px" autocomplete="off"></div></div>
       <div class="row mt"><button class="btn" id="le-save">Save details</button><button class="btn ghost" id="le-cancel">Cancel</button><span id="le-err" class="err small"></span></div></div>
-    ${can('assign') ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
+    ${can('assign') ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent' && isSales(a)).map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
   $('#l-summary [data-copy]')?.addEventListener('click', e => { navigator.clipboard?.writeText(e.target.dataset.copy); toast('Phone copied'); });
   $('#l-edit')?.addEventListener('click', () => {
     $('#le-name').value = L.name || ''; fillSelect($('#le-src'), 'lead_source', L.source, '—'); fillSelect($('#le-car'), 'car_model', L.car, '—');
@@ -1008,7 +1025,7 @@ function renderNext(){
   if (!L) { $('#l-next').classList.add('hide'); return; }
   $('#l-next').classList.remove('hide');
   const closed = ['lost','disqualified'].includes(L.stage);
-  const closers = AGENTS.filter(a => a.active && a.role === 'agent' && ['closer','both'].includes(a.sales_role) && a.id !== L.owner);
+  const closers = AGENTS.filter(a => a.active && a.role === 'agent' && isSales(a) && ['closer','both'].includes(a.sales_role) && a.id !== L.owner);
   $('#l-next').innerHTML = `<h2>Next step</h2>
     ${n ? `<div class="next ${n.overdue ? 'over' : ''}"><div class="big">${fmtDay(n.due_at)}</div>
             <div class="small">${n.overdue ? `<b class="tx-red">Overdue ${ago(n.due_at)}</b> · ` : ''}Follow-up by <b>${esc(n.owner_name)}</b>${n.reason ? ' · moved: ' + esc(optLabel('reschedule_reason', n.reason)) : ''}</div></div>`
@@ -1141,7 +1158,7 @@ const HK = {log:'📝', maqsam:'📞', rescheduled:'🕑', next_step:'🕑', han
 function histLine(h){
   switch (h.kind) {
     case 'log': return `<b>${esc(h.agent)}</b> · ${h.contact === 'note' ? 'Note' : (h.contact === 'whatsapp' ? 'WhatsApp · ' : 'Call · ') + esc(optLabel('call_outcome', h.outcome))}${h.reason ? ' · ' + esc(optLabel('lost_reason', h.reason) || optLabel('disqualify_reason', h.reason)) : ''}${h.next ? ` · next ${fmtWhen(h.next)}` : ''}${h.note ? `<div class="hn">${esc(h.note)}</div>` : ''}`;
-    case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || 'no agent picked up')} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}${h.summary ? `<div class="hn hs" dir="auto"><span class="small muted">Maqsam summary${h.sentiment ? ' · <b class="' + ({positive:'tx-green', negative:'tx-red'}[h.sentiment] || '') + '">' + esc(h.sentiment) + '</b>' : ''}</span><br>${esc(h.summary)}</div>` : ''}`;
+    case 'maqsam': return `Maqsam ${h.type === 'Inbound' ? 'inbound' : 'outbound'} call · ${esc(h.agents || (h.agent_raw ? h.agent_raw + ' (not linked to a person)' : 'no agent picked up'))} · <b class="${h.answered ? 'tx-green' : 'tx-red'}">${esc(h.state)}</b>${h.answered && h.talk_sec ? ' · ' + Math.round(h.talk_sec / 6) / 10 + ' min' : ''}${!h.answered && h.ring_sec ? ' · rang ' + h.ring_sec + ' s' : ''}${h.recording ? ` · <a href="${esc(h.recording)}" target="_blank" rel="noopener">Recording</a>` : ''}${h.summary ? `<div class="hn hs" dir="auto"><span class="small muted">Maqsam summary${h.sentiment ? ' · <b class="' + ({positive:'tx-green', negative:'tx-red'}[h.sentiment] || '') + '">' + esc(h.sentiment) + '</b>' : ''}</span><br>${esc(h.summary)}</div>` : ''}`;
     case 'bk_created': return `Booking <b>#${esc(h.booking_id)}</b> created · ${esc(h.product || '')}${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.supplier ? ' · ' + esc(h.supplier) : ''}<div class="hn">Status now: <b>${esc(h.status || '—')}</b>${h.credited ? ' · credited to ' + esc(h.credited) : ''}</div>`;
     case 'bk_status': return `Booking <b>#${esc(h.booking_id)}</b> → <b class="${/Rejected|Failed/.test(h.status) ? 'tx-red' : ''}">${esc(h.status)}</b>${h.reason ? `<div class="hn">${esc(h.reason)}</div>` : ''}`;
     case 'bk_pickup': return `Car handed over · booking <b>#${esc(h.booking_id)}</b>${h.vehicle ? ' · ' + esc(h.vehicle) : ''}${h.plate ? ' · ' + esc(h.plate) : ''}`;
@@ -1595,8 +1612,9 @@ function cdRange(){
   return periodOf(CD.preset);
 }
 async function loadCallDash(){
-  if (!$('#cd-agents').innerHTML && can('performance'))
-    $('#cd-agents').innerHTML = AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<button data-v="${a.id}">${esc(a.name.split(' ')[0] + ' ' + (a.name.split(' ')[1] || '')[0] + '.')}</button>`).join('');
+  if (!$('#cd-agents').innerHTML && can('performance')) {
+    $('#cd-team').innerHTML = teamFilterOpts();
+    $('#cd-agents').innerHTML = AGENTS.filter(a => a.active && a.role === 'agent').map(a => `<button data-v="${a.id}">${esc(a.name.split(' ')[0] + ' ' + (a.name.split(' ')[1] || '')[0] + '.')}</button>`).join(''); }
   const [f, t] = cdRange();
   $('#cd-kpis').innerHTML = '<p class="muted">Loading…</p>';
   const { data, error } = await sb.rpc('calls_dashboard', { p_from: f, p_to: t, p_agents: CD.agents.size ? [...CD.agents] : null, p_min_from: CD.win[0], p_min_to: CD.win[1], p_states: CD.states });
@@ -1667,7 +1685,7 @@ seg('#cd-trend-metric', v => { CD.trendMetric = v; renderTrend(); });
 const CD_COLS = [['agent','Agent'],['total','Calls'],['connected','Connected'],['rate','Connect rate'],['lost','Not connected'],['abandoned','Abandoned'],['ab_rate','Abandon rate'],['talk_sec','Talk time'],['aht','AHT'],['avgdur','Avg duration'],
   ['reached','Customers reached'],['sched_h','Scheduled hours'],['per_h','Calls / sched. hour'],['talk_share','Talk / sched. time'],['first_late','First call vs shift start'],['transferred','Transferred']];
 function agentRows(){
-  return CD.data.agents.map(a => ({ ...a, agent: nm(a.agent_id), rate: a.total ? a.connected / a.total : 0, aht: a.connected ? a.talk_sec / a.connected : 0, avgdur: a.total ? a.dur_sec / a.total : 0,
+  return CD.data.agents.map(a => ({ ...a, agent: nm(a.agent_id) + (teamOf(a.agent_id) ? ' · ' + teamLabel(teamOf(a.agent_id)) : ''), rate: a.total ? a.connected / a.total : 0, aht: a.connected ? a.talk_sec / a.connected : 0, avgdur: a.total ? a.dur_sec / a.total : 0,
     sched_h: a.sched_min ? a.sched_min / 60 : null, per_h: a.sched_min ? a.total / (a.sched_min / 60) : null, talk_share: a.sched_min ? a.talk_sec / (a.sched_min * 60) : null, first_late: a.first_call_late_avg, ab_rate: a.total ? (a.abandoned || 0) / a.total : 0 }));
 }
 function renderAgentTable(){
@@ -1786,6 +1804,9 @@ $('#cd-states-pop').onclick = e => { e.stopPropagation(); const a = e.target.clo
   CD.states = sel.length === boxes.length ? null : sel; CD.hiddenOut.clear();
   $('#cd-states-btn').textContent = statesLabel(); $('#cd-states-pop').classList.add('hide'); loadCallDash(); };
 document.addEventListener('click', e => { if (!e.target.closest('#cd-states')) $('#cd-states-pop')?.classList.add('hide'); });
+$('#cd-team').onchange = () => {
+  const f = $('#cd-team').value; CD.agents = new Set(f ? AGENTS.filter(a => a.active && a.role === 'agent' && inTeam(a, f)).map(a => a.id) : []);
+  $$('#cd-agents button').forEach(b => b.classList.toggle('on', CD.agents.has(b.dataset.v))); loadCallDash(); };
 $('#cd-agents').onclick = e => { const b = e.target.closest('button'); if (!b) return; b.classList.toggle('on'); CD.agents.has(b.dataset.v) ? CD.agents.delete(b.dataset.v) : CD.agents.add(b.dataset.v); loadCallDash(); };
 seg('#cd-hm-rows', v => { CD.hmRows = v; renderHeat(); });
 seg('#cd-hm-metric', v => { CD.hmMetric = v; renderHeat(); });
@@ -1809,25 +1830,39 @@ const TM = { data: null };
 async function loadTeam(){
   const { data, error } = await sb.rpc('team_list');
   if (error) return $('#tm-people').innerHTML = `<p class="err" style="padding:12px">${esc(error.message)}</p>`;
-  TM.data = data; renderPeople(); renderRoles();
+  TM.data = data; TEAMS = data.teams || TEAMS;
+  if (!$('#tm-team').innerHTML) $('#tm-team').innerHTML = teamFilterOpts();
+  $('#tm-n-team').innerHTML = teamOptions('');
+  renderPeople(); renderRoles(); renderTeams();
   $('#tm-n-access').innerHTML = accessOptions('agent');
+}
+const teamOptions = cur => '<option value="">No team</option>' + TEAMS.map(t => `<option value="${esc(t.key)}" ${cur === t.key ? 'selected' : ''}>${esc(t.label)}${t.sales ? '' : ' (not sales)'}</option>`).join('');
+function renderTeams(){
+  $('#tm-teams').innerHTML = `<table><thead><tr><th>Team</th><th style="width:170px">Owns customers (sales)</th><th style="width:110px">People</th><th style="width:170px"></th></tr></thead><tbody>${
+    TEAMS.map(t => `<tr data-key="${esc(t.key)}"><td><input class="tt-label" value="${esc(t.label)}" style="font-weight:600;padding:5px 8px;max-width:260px"></td>
+      <td><label class="switch" title="Sales team — its people can own customers"><input type="checkbox" class="tt-sales" ${t.sales ? 'checked' : ''}><span></span></label></td>
+      <td>${t.members ?? TM.data.people.filter(p => p.active && p.team === t.key).length}</td>
+      <td><button class="btn ghost sm tt-save">Save</button> <button class="link tt-del">Delete</button></td></tr>`).join('') || '<tr><td colspan="4" class="muted">No teams yet.</td></tr>'}</tbody></table>`;
 }
 const accessOptions = cur => `<option value="admin" ${cur === 'admin' ? 'selected' : ''}>Admin — everything</option>` +
   TM.data.roles.map(r => `<option value="${esc(r.key)}" ${cur === r.key ? 'selected' : ''}>${esc(r.label)}</option>`).join('');
 function renderPeople(){
   const q = $('#tm-q').value.trim().toLowerCase(), all = $('#tm-inactive').checked;
-  const ppl = TM.data.people.filter(p => (all || p.active) && (!q || (p.name + ' ' + p.email).toLowerCase().includes(q)));
+  const tf = $('#tm-team').value;
+  const ppl = TM.data.people.filter(p => (all || p.active) && inTeam(p, tf) && (!q || (p.name + ' ' + p.email).toLowerCase().includes(q)));
   $('#tm-count').textContent = `${TM.data.people.filter(p => p.active).length} active`;
-  $('#tm-people').innerHTML = `<table><thead><tr><th>Person</th><th style="width:210px">Access</th><th style="width:130px">Sales role</th><th>Performance</th><th>Schedule</th><th>Active</th><th>Sign-in</th><th></th></tr></thead><tbody>${
+  $('#tm-people').innerHTML = `<table><thead><tr><th style="min-width:210px">Person</th><th style="width:170px">Access</th><th style="width:110px">Sales role</th><th style="width:160px">Team</th><th>Performance</th><th>Schedule</th><th>Active</th><th>CRM sign-in</th><th></th></tr></thead><tbody>${
     ppl.map(p => `<tr data-id="${p.id}" class="${p.active ? '' : 'dim'}">
       <td><input class="tm-name" value="${esc(p.name)}" style="font-weight:600;padding:5px 8px"><input class="tm-email ltr small" value="${esc(p.email)}" style="margin-top:4px;padding:4px 8px;font-size:12.5px;color:var(--muted)"></td>
       <td><select class="tm-access">${accessOptions(p.access)}</select></td>
       <td><select class="tm-sales">${['both','opener','closer'].map(r => `<option value="${r}" ${p.sales_role === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></td>
+      <td><select class="tm-tm">${teamOptions(p.team || '')}</select></td>
       <td><label class="switch" title="Counted in Performance"><input type="checkbox" class="tm-perf" ${p.in_performance ? 'checked' : ''}><span></span></label></td>
       <td><label class="switch" title="On the team schedule"><input type="checkbox" class="tm-sched" ${p.on_schedule ? 'checked' : ''}><span></span></label></td>
       <td><label class="switch"><input type="checkbox" class="tm-active" ${p.active ? 'checked' : ''}><span></span></label></td>
-      <td class="small">${p.signed_in ? '<span class="pill p-green">Signed in</span>' : '<span class="pill p-gray" title="Has not signed in yet">Invited</span>'}</td>
-      <td><button class="btn ghost sm tm-save">Save</button></td></tr>`).join('') || '<tr><td colspan="8" class="muted">No one matches.</td></tr>'}</tbody></table>`;
+      <td class="small nowrap"><label class="switch" title="Can sign in to the CRM"><input type="checkbox" class="tm-signin" ${p.can_sign_in !== false ? 'checked' : ''}><span></span></label>
+        ${p.can_sign_in === false ? '<span class="pill p-gray" title="Calls and numbers only — no CRM access">No access</span>' : p.signed_in ? '<span class="pill p-green">Signed in</span>' : '<span class="pill p-gray" title="Has not signed in yet">Invited</span>'}</td>
+      <td><button class="btn ghost sm tm-save">Save</button></td></tr>`).join('') || '<tr><td colspan="9" class="muted">No one matches.</td></tr>'}</tbody></table>`;
 }
 function renderRoles(){
   const roles = TM.data.roles;
@@ -1839,11 +1874,32 @@ function renderRoles(){
 }
 $('#tm-q').oninput = () => TM.data && renderPeople();
 $('#tm-inactive').onchange = () => TM.data && renderPeople();
+$('#tm-team').onchange = () => TM.data && renderPeople();
+$('#tm-teams').onclick = async e => {
+  const tr = e.target.closest('tr[data-key]'); if (!tr) return; const key = tr.dataset.key;
+  if (e.target.classList.contains('tt-save')) {
+    busy(e.target, 'saving', '…');
+    const { error } = await sb.rpc('save_team', { p_key: key, p_label: tr.querySelector('.tt-label').value, p_sales: tr.querySelector('.tt-sales').checked });
+    if (error) { busy(e.target, 'bad'); return toast(error.message); }
+    busy(e.target, 'ok', 'Saved ✓'); await loadTeams(); loadTeam();
+  } else if (e.target.classList.contains('tt-del')) {
+    const { error } = await sb.rpc('delete_team', { p_key: key });
+    if (error) return toast(error.message); toast('Team deleted'); await loadTeams(); loadTeam();
+  }
+};
+$('#tm-teams').onchange = e => { const b = e.target.closest('tr')?.querySelector('.tt-save'); if (b) b.classList.add('accent-ring'); };
+$('#tm-t-add').onclick = async e => {
+  const label = $('#tm-t-name').value.trim(); if (!label) return toast('Type a name for the team.');
+  busy(e.target, 'saving');
+  const { error } = await sb.rpc('save_team', { p_key: null, p_label: label, p_sales: false });
+  if (error) { busy(e.target, 'bad'); return toast(error.message); }
+  busy(e.target, 'ok', 'Added ✓'); $('#tm-t-name').value = ''; await loadTeams(); loadTeam();
+};
 $('#tm-new-btn').onclick = () => { $('#tm-new').classList.remove('hide'); $('#tm-n-name').focus(); };
 $('#tm-n-cancel').onclick = () => $('#tm-new').classList.add('hide');
 $('#tm-n-save').onclick = async e => {
   busy(e.target, 'saving');
-  const { error } = await sb.rpc('save_member', { p_id: null, p_name: $('#tm-n-name').value, p_email: $('#tm-n-email').value, p_access: $('#tm-n-access').value, p_sales_role: $('#tm-n-sales').value });
+  const { error } = await sb.rpc('save_member', { p_id: null, p_name: $('#tm-n-name').value, p_email: $('#tm-n-email').value, p_access: $('#tm-n-access').value, p_sales_role: $('#tm-n-sales').value, p_team: $('#tm-n-team').value });
   if (error) { busy(e.target, 'bad'); return toast(error.message); }
   busy(e.target, 'ok', 'Added ✓'); toast($('#tm-n-name').value + ' added — they can sign in with Google now.');
   $('#tm-n-name').value = ''; $('#tm-n-email').value = ''; $('#tm-new').classList.add('hide'); await refreshAgents(); loadTeam();
@@ -1854,7 +1910,8 @@ $('#tm-people').onclick = async e => {
   busy(btn, 'saving', '…');
   const { error } = await sb.rpc('save_member', { p_id: tr.dataset.id, p_name: tr.querySelector('.tm-name').value, p_email: tr.querySelector('.tm-email').value,
     p_access: tr.querySelector('.tm-access').value, p_sales_role: tr.querySelector('.tm-sales').value, p_active: tr.querySelector('.tm-active').checked,
-    p_in_performance: tr.querySelector('.tm-perf').checked, p_on_schedule: tr.querySelector('.tm-sched').checked });
+    p_in_performance: tr.querySelector('.tm-perf').checked, p_on_schedule: tr.querySelector('.tm-sched').checked,
+    p_team: tr.querySelector('.tm-tm').value, p_can_sign_in: tr.querySelector('.tm-signin').checked });
   if (error) { busy(btn, 'bad'); return toast(error.message); }
   busy(btn, 'ok', 'Saved ✓'); await refreshAgents(); loadTeam();
 };
@@ -1880,8 +1937,9 @@ $('#tm-r-add').onclick = async e => {
   if (error) { busy(e.target, 'bad'); return toast(error.message); }
   busy(e.target, 'ok', 'Added ✓'); $('#tm-r-name').value = ''; loadTeam();
 };
+async function loadTeams(){ const { data } = await sb.from('teams').select('key,label,sales,sort').order('sort'); TEAMS = data || []; $('#pf-team') && ($('#pf-team').innerHTML = teamFilterOpts()); }
 async function refreshAgents(){
-  const { data } = await sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role').order('name');
+  const { data } = await sb.from('agents').select('id,name,email,role,active,in_performance,sales_role,access_role,team,can_sign_in').order('name');
   if (data) AGENTS = data;
 }
 
@@ -1889,7 +1947,7 @@ async function refreshAgents(){
 async function loadSettings(){
   const { data: vis } = await sb.from('metric_visibility').select('*').order('sort');
   $('#st-vis').innerHTML = (vis || []).map(v => `<label class="setrow"><span>${esc(v.label)}</span><span class="switch"><input type="checkbox" data-key="${v.key}" ${v.visible ? 'checked' : ''}><span></span></span></label>`).join('');
-  $('#st-roles').innerHTML = `<table><tbody>${AGENTS.filter(a => a.role === 'agent' && a.active).map(a => `<tr><td>${esc(a.name)}</td><td style="width:170px"><select data-agent="${a.id}">${['opener','closer','both'].map(r => `<option value="${r}" ${a.sales_role === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
+  $('#st-roles').innerHTML = `<table><tbody>${AGENTS.filter(a => a.role === 'agent' && a.active && isSales(a)).map(a => `<tr><td>${esc(a.name)}</td><td style="width:170px"><select data-agent="${a.id}">${['opener','closer','both'].map(r => `<option value="${r}" ${a.sales_role === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table>`;
 }
 $('#st-vis').onchange = async e => {
   const k = e.target.dataset.key; if (!k) return;
@@ -2151,15 +2209,15 @@ async function loadPerf(){
   const S = by(data.shift), C = by(data.conversion), F = by(data.followups), Q = by(data.quality);
   const u = data.unattributed || {total:0, unattributed:0};
   $('#pf-banner').innerHTML = u.unattributed ? `<p class="small"><span class="pill p-amber">Partial</span> ${u.unattributed} of ${u.total} bookings in this period are not attributed yet — conversion and booking credit will rise as they are attributed.</p>` : '';
-  const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active).map(a => a.id);
+  const ids = AGENTS.filter(a => a.role === 'agent' && a.in_performance && a.active && inTeam(a, $('#pf-team').value)).map(a => a.id);
   $('#pf-out').innerHTML = `<table><thead><tr><th>Agent</th><th>1 · Shift adherence</th><th>2 · Conversion to valid booking</th><th>3 · Follow-up adherence</th><th>4 · Call quality & CRM accuracy</th></tr></thead><tbody>${
-    ids.map(id => `<tr><td><b>${esc(nm(id))}</b></td><td>${shiftCell(S[id])}</td><td>${convCell(C[id])}</td><td>${fuCell(F[id])}</td><td>${qCell(Q[id])}</td></tr>`).join('')}</tbody></table>`;
+    ids.map(id => `<tr><td><b>${esc(nm(id))}</b>${teamOf(id) ? `<div class="small muted">${esc(teamLabel(teamOf(id)))}</div>` : ''}</td><td>${shiftCell(S[id])}</td><td>${convCell(C[id])}</td><td>${fuCell(F[id])}</td><td>${qCell(Q[id])}</td></tr>`).join('')}</tbody></table>`;
   const cr = data.credit || [];
   $('#pf-credit').innerHTML = cr.length ? `<table><thead><tr><th>Agent</th><th>Product</th><th>Open</th><th>Delivered</th><th>Failed at supplier</th><th>Rejected at review</th><th>Under review</th><th>Without a call on record</th></tr></thead><tbody>${
     cr.filter(r => ids.includes(r.agent_id)).map(r => `<tr><td>${esc(nm(r.agent_id))}</td><td class="small">${esc(r.product||'')}</td><td>${r.open_share ?? 0}</td><td>${r.delivered_share ?? 0}</td><td>${r.failed_share ?? 0}</td><td>${r.rejected_review_share ?? 0}</td><td>${r.pending_review_share ?? 0}</td><td>${r.without_call_evidence ?? 0}</td></tr>`).join('')}</tbody></table>
     <p class="small muted">A rejection at review or a supplier failure is shown for context and is not counted against the agent.</p>` : '<p class="muted">No attributed bookings in this period.</p>';
 }
-$('#pf-go').onclick = loadPerf;
+$('#pf-go').onclick = loadPerf; $('#pf-team').onchange = loadPerf;
 
 // ---------------- quality (admin) ----------------
 const QI = [['opening','Opening'],['needs','Understanding the need'],['offer','Explaining the offer'],['objections','Handling objections'],['closing','Closing / agreeing the next step']];
