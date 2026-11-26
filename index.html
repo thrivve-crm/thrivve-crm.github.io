@@ -992,7 +992,7 @@ function renderSummary(){
         busy(e.target, 'ok', 'Assigned ✓'); loadLead({ phone: d.phone }); }; }
     return; }
   $('#l-summary').innerHTML = `<div class="sum-h"><div><h2 style="margin:0">${esc(L.name || P?.name || 'No name yet')}${!L.name && P?.name ? ' <span class="small muted" style="font-weight:400">· from bookings</span>' : ''}</h2>
-      <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button>${L.can_edit ? ' · <button class="link" id="l-edit">Edit details</button>' : ''}</div></div>
+      <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button> · <button class="link" id="l-edit">Edit details</button></div></div>
       <div>${stagePill(L.stage)}</div></div>
     ${b?.needs_new_offer ? `<div class="banner purple">Supplier failed booking #${b.id} (${esc(b.status)}). Offer the customer another car and log the outcome.</div>` : ''}
     <dl class="facts">
