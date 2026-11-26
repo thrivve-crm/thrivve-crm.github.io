@@ -97,7 +97,7 @@ button.link{border:0;background:none;color:var(--brand);cursor:pointer;padding:2
 .banner{border-radius:10px;padding:10px 12px;margin-top:10px;font-size:14px} .banner.purple{background:var(--purple-soft);color:var(--purple)}
 .next{border-left:4px solid var(--brand);background:#faf8ff;border-radius:8px;padding:10px 12px} .next.over{border-color:var(--red);background:#fff7f6} .next .big{font-size:20px;font-weight:700}
 .sub{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
-.tl .hs{background:#f4f8ff} .tl .it.k-log{} .tl .hn{background:#f7f6fb;border-radius:6px;padding:4px 8px;margin-top:3px;font-size:14px;white-space:pre-wrap}
+.tl .hs{background:#f4f8ff} .tl .hn{line-height:1.45} .tl .hn.clamp{max-height:calc(2.9em + 8px);overflow:hidden} .tl .hs.clamp{max-height:calc(4.35em + 8px)} .tl .hn-more{background:none;border:0;padding:2px 0 0;color:var(--brand,#65278a);font-weight:600;font-size:13px;cursor:pointer} .tl .it.k-log{} .tl .hn{background:#f7f6fb;border-radius:6px;padding:4px 8px;margin-top:3px;font-size:14px;white-space:pre-wrap}
 .mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px} .mp-grid .card{margin:0} .mp b{font-size:22px}
 tr.dim td{opacity:.55} tr.dim td:last-child,tr.dim td:nth-last-child(2){opacity:1}
 .switch{position:relative;display:inline-block;width:38px;height:22px} .switch input{opacity:0;width:0;height:0}
@@ -1165,6 +1165,17 @@ function renderHistory(){
   $('#l-tl').innerHTML = h.length ? `<div class="tl">${h.slice(st.page * st.size, (st.page + 1) * st.size).map(x =>
     `<div class="it k-${x.kind}"><div class="h">${HK[x.kind] || '•'} ${fmtDT(x.at)}</div><div>${histLine(x)}</div></div>`).join('')}</div>` : '<p class="muted small">No history yet.</p>';
   if (h.length > st.size || st.page) pager($('#l-tl-pg'), st, h.length, renderHistory); else $('#l-tl-pg').innerHTML = '';
+  clampHist($('#l-tl'));
+}
+// Notes/summaries longer than 2 lines are folded with a "See more" toggle
+function clampHist(root){
+  root.querySelectorAll('.hn').forEach(el => {
+    el.classList.add('clamp');
+    if (el.scrollHeight <= el.clientHeight + 2) { el.classList.remove('clamp'); return; }
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'hn-more'; b.textContent = 'See more';
+    b.onclick = () => { const open = el.classList.toggle('clamp'); b.textContent = open ? 'See more' : 'See less'; };
+    el.after(b);
+  });
 }
 
 // ---------------- My performance ----------------
