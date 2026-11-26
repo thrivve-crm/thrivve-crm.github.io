@@ -968,10 +968,21 @@ async function loadLead(o){
   $('#l-empty').classList.add('hide'); $('#l-body').classList.remove('hide');
   renderSummary(); renderNext(); resetForm(); renderHistory();
 }
+// What the booking system knows about this customer (name, customer ID, the car they have with us now)
+const fmtDate = t => t ? new Date(t).toLocaleDateString('en-GB', { timeZone: 'Asia/Riyadh', day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+function profileFacts(P, L){
+  if (!P) return '';
+  const c = P.current, last = P.last;
+  return `${P.customer_id ? `<dt>Customer ID</dt><dd class="ltr">${esc(String(P.customer_id))}</dd>` : ''}
+    <dt>Car with us</dt><dd>${c ? `<b>${esc(c.vehicle || '—')}</b>${c.plate ? ` · <span class="ltr">${esc(c.plate)}</span>` : ''} · ${esc(c.product || '')}<div class="small muted">Since ${fmtDate(c.since)}${c.months ? ' · ' + c.months + '-month contract' : ''}${c.supplier ? ' · ' + esc(c.supplier) : ''} · booking #${c.id}</div>`
+      : `<span class="muted">None now</span>${last?.vehicle ? `<div class="small muted">Last booking: ${esc(last.vehicle)} · ${esc(last.product || '')} · ${esc(last.status || '')}</div>` : ''}`}</dd>
+    <dt>Bookings</dt><dd>${P.bookings} in total · ${P.delivered} handed over</dd>`;
+}
 function renderSummary(){
-  const d = LV.data, L = d.lead, b = d.booking;
+  const d = LV.data, L = d.lead, b = d.booking, P = d.profile;
   if (!L) { $('#l-summary').innerHTML = `<h2>New customer</h2><p class="ltr"><b>${esc(d.phone)}</b></p><p class="small muted">Not in the CRM yet. Fill in the name and source here once; they are saved on the lead when you ${can('assign') ? 'assign it or ' : ''}log a contact.</p>
-    <div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name" autocomplete="off"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
+    ${P ? `<dl class="facts">${P.name ? `<dt>Name in bookings</dt><dd>${esc(P.name)}</dd>` : ''}${profileFacts(P)}</dl>` : ''}
+    <div class="row mt"><div class="f"><label>Customer name</label><input id="l-new-name" autocomplete="off" value="${esc(P?.name || '')}"></div><div class="f"><label>Source</label><select id="l-new-src"></select></div>
     ${can('assign') ? `<div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent' && isSales(a)).map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('')}</select></div><button class="btn" id="l-assign-go">Assign</button>` : ''}</div>`;
     fillSelect($('#l-new-src'), 'lead_source', null, '—');
     if (can('assign')) {
@@ -980,7 +991,7 @@ function renderSummary(){
         if (error) { busy(e.target, 'bad'); return toast(error.message); }
         busy(e.target, 'ok', 'Assigned ✓'); loadLead({ phone: d.phone }); }; }
     return; }
-  $('#l-summary').innerHTML = `<div class="sum-h"><div><h2 style="margin:0">${esc(L.name || 'No name yet')}</h2>
+  $('#l-summary').innerHTML = `<div class="sum-h"><div><h2 style="margin:0">${esc(L.name || P?.name || 'No name yet')}${!L.name && P?.name ? ' <span class="small muted" style="font-weight:400">· from bookings</span>' : ''}</h2>
       <div class="ltr muted"><span>${esc(L.phone)}</span> <button class="link" data-copy="${esc(L.phone)}" title="Copy">copy</button>${L.can_edit ? ' · <button class="link" id="l-edit">Edit details</button>' : ''}</div></div>
       <div>${stagePill(L.stage)}</div></div>
     ${b?.needs_new_offer ? `<div class="banner purple">Supplier failed booking #${b.id} (${esc(b.status)}). Offer the customer another car and log the outcome.</div>` : ''}
@@ -989,7 +1000,8 @@ function renderSummary(){
       <dt>Last outcome</dt><dd>${esc(optLabel('call_outcome', L.last_outcome)) || '—'}${L.last_outcome_at ? ` <span class="small muted">· ${fmtWhen(L.last_outcome_at)}</span>` : ''}</dd>
       <dt>Last Maqsam call</dt><dd>${fmtWhen(L.last_call_at)}</dd>
       <dt>Booking</dt><dd>${b ? `#${b.id} ${pill(BKO[b.outcome] || [b.status,'p-gray'])} <span class="small muted">${esc(b.status)}${b.validity ? ' · ' + esc(BKV[b.validity] || b.validity) : ''}</span>` : '<span class="muted">No booking</span>'}</dd>
-      <dt>Car</dt><dd>${L.car === 'other' && L.car_other ? 'Other: ' + esc(L.car_other) : (esc(optLabel('car_model', L.car)) || '—')}</dd>
+      ${profileFacts(P, L)}
+      <dt>Car of interest</dt><dd>${L.car === 'other' && L.car_other ? 'Other: ' + esc(L.car_other) : (esc(optLabel('car_model', L.car)) || '—')}</dd>
       <dt>Source</dt><dd>${esc(optLabel('lead_source', L.source)) || '—'}</dd>
       ${L.lost_reason ? `<dt>Closed because</dt><dd>${esc(optLabel('lost_reason', L.lost_reason) || optLabel('disqualify_reason', L.lost_reason))}</dd>` : ''}
     </dl>
@@ -1001,7 +1013,7 @@ function renderSummary(){
     ${can('assign') ? `<div class="row mt"><div class="f"><label>Assign to</label><select id="l-assign">${AGENTS.filter(a => a.active && a.role === 'agent' && isSales(a)).map(a => `<option value="${a.id}" ${a.id === L.owner ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}</select></div><button class="btn ghost" id="l-assign-go">Assign</button></div>` : ''}`;
   $('#l-summary [data-copy]')?.addEventListener('click', e => { navigator.clipboard?.writeText(e.target.dataset.copy); toast('Phone copied'); });
   $('#l-edit')?.addEventListener('click', () => {
-    $('#le-name').value = L.name || ''; fillSelect($('#le-src'), 'lead_source', L.source, '—'); fillSelect($('#le-car'), 'car_model', L.car, '—');
+    $('#le-name').value = L.name || P?.name || ''; fillSelect($('#le-src'), 'lead_source', L.source, '—'); fillSelect($('#le-car'), 'car_model', L.car, '—');
     $('#le-car-other').value = L.car_other || ''; $('#le-car-other').classList.toggle('hide', $('#le-car').value !== 'other');
     $('#le-err').textContent = ''; $('#l-edit-box').classList.remove('hide'); $('#le-name').focus(); });
   $('#le-car')?.addEventListener('change', () => $('#le-car-other').classList.toggle('hide', $('#le-car').value !== 'other'));
